@@ -1,8 +1,6 @@
 import paho.mqtt.client as paho
 import time
 import broker_config
-import abc
-
 
 class Client_Dialog_System():
     def __init__(self,name,msg_publish_type,msg_subscribe_type):
