@@ -1,8 +1,8 @@
-import clientdialogsystem as cds
+import broker_client as bc
 
-class DM(cds.Client_Dialog_System):
-    def __init__(self,name,msg_publish_type,msg_subscribe_type):
-        cds.Client_Dialog_System.__init__(self,name,msg_publish_type,msg_subscribe_type)
+class DM(bc.Client_Dialog_System):
+    def __init__(self,name,msg_subscribe_type,msg_publish_type):
+        bc.Client_Dialog_System.__init__(self,name,msg_subscribe_type,msg_publish_type)
 
     def _treat_msg(self,msg):
         msg_value = float(msg.payload.decode('utf-8'))
@@ -10,7 +10,10 @@ class DM(cds.Client_Dialog_System):
         if msg_value > 38.5:
             displayed_msg +=  " DANGER!!! Has fiever!"
         print(displayed_msg)
+        print("Will send message back to client.")
+        self.publish(displayed_msg)
 
-my_dum_DM = DM("my_dum_DM","m_DM","m_NLU")
-my_dum_DM.start_client()
-my_dum_DM._loop_forever()
+if __name__ == "__main__":
+    my_dum_DM = DM("my_dum_DM","m_NLU","m_DM")
+    my_dum_DM.start_client()
+    my_dum_DM._loop_forever()
