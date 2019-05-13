@@ -63,7 +63,6 @@ class Server(bc.Client_Dialog_System):
     def treat_msg_from_module(self,msg):
         t = str(msg.topic)
         client_id = t.split("/")[-1]
-        print(client_id)
         self.publish(str(msg.payload.decode('utf-8')),config.MSG_SERVER_OUT+client_id)
 
     def start_timer(self,client_id):
@@ -75,7 +74,6 @@ class Server(bc.Client_Dialog_System):
         if client_id not in self.timer_threads.keys():
             print("%s ERR: client %s already stoped!")
         else:
-            print(self.timer_threads[client_id])
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
 
@@ -96,9 +94,10 @@ class Server(bc.Client_Dialog_System):
             self.start_timer(client_id)
 
         else:
-            # forward message by posting on dedicated topic and reset timer
+            # if not a reconnection, forward message by posting on dedicated topic and reset timer
+            if config.MSG_CONNECTION not in msg_txt:
+                self.publish(msg_txt,topic=config.MSG_SERVER_IN+client_id)
             self.reset_timer(client_id)
-            self.publish(msg_txt,topic=config.MSG_SERVER_IN+client_id)
 
 
 if __name__ == "__main__":

@@ -23,3 +23,6 @@ MSG_DM = MSG_MAIN_TOPIC+"DM/"
 
 '''For client, main server publishes on'''
 MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
+
+# Connection message from client:
+MSG_CONNECTION = "new client connected"
