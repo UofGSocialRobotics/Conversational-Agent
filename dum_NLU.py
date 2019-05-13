@@ -13,7 +13,7 @@ class NLU(bc.Client_Dialog_System):
 
     def treat_msg(self,msg):
         temperature = read_from_imaginary_thermometer()
-        print("\n\n%s: doing something with message and postiting result for DM\nResult is: %d"%(self.name,temperature))
+        # print("\n\n%s: doing something with message and postiting result for DM\nResult is: %d"%(self.name,temperature))
         self.publish(str(temperature))
 
 

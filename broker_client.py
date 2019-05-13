@@ -63,7 +63,6 @@ class Client_Dialog_System():
         self.client.stop_loop()
 
     def publish(self,message,topic=None):
-        print("%s: in publish"%self.name)
         if topic == None :
             if self.msg_publish_type == None:
                 print("%s ERR: no topic provided to publish message \"%s\""%(self.name,message))

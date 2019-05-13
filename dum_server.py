@@ -14,6 +14,10 @@ def shut_down(clients_dict,threads_dict,client_id):
     for c in clients_dict[client_id].values():
         c.disconnect()
         del c
+    del clients_dict[client_id]
+    # print("print dict")
+    # for key,value in clients_dict.items():
+    #     print(key,value)
     for t in threads_dict[client_id].values():
         t.join()
 
@@ -59,7 +63,6 @@ class Server(bc.Client_Dialog_System):
     def treat_msg_from_module(self,msg):
         t = str(msg.topic)
         client_id = t.split("/")[-1]
-        print(" treat_msg_from_module")
         print(client_id)
         self.publish(str(msg.payload.decode('utf-8')),config.MSG_SERVER_OUT+client_id)
 
@@ -69,10 +72,11 @@ class Server(bc.Client_Dialog_System):
         self.timer_threads[client_id] = timer
 
     def reset_timer(self,client_id):
-        if client_id not in self.client_threads.keys():
+        if client_id not in self.timer_threads.keys():
             print("%s ERR: client %s already stoped!")
         else:
-            self.client_threads[client_id].cancel()
+            print(self.timer_threads[client_id])
+            self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
 
 
@@ -92,12 +96,10 @@ class Server(bc.Client_Dialog_System):
             self.start_timer(client_id)
 
         else:
-            # forward message by posting on dedicated topic
-            self.publish(msg_txt,topic=config.MSG_SERVER_IN+client_id)
+            # forward message by posting on dedicated topic and reset timer
             self.reset_timer(client_id)
+            self.publish(msg_txt,topic=config.MSG_SERVER_IN+client_id)
 
-
-        # (cancel and) start timer to kill thread after time elapased.
 
 if __name__ == "__main__":
     my_server = Server("main_server",config.MSG_CLIENT)

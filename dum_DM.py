@@ -1,4 +1,5 @@
 import broker_client as bc
+import helper_functions as helper
 
 class DM(bc.Client_Dialog_System):
     def __init__(self,name,msg_subscribe_type,msg_publish_type):
@@ -9,8 +10,6 @@ class DM(bc.Client_Dialog_System):
         displayed_msg = "Temperature is: %.2f."%msg_value
         if msg_value > 38.5:
             displayed_msg +=  " DANGER!!! Has fiever!"
-        print(displayed_msg)
-        print("Will send message back to client.")
         self.publish(displayed_msg)
 
 if __name__ == "__main__":

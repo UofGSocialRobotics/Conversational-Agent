@@ -3,7 +3,7 @@ ADDRESS = "iot.eclipse.org"
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 10
+CONNECTION_TIMEOUT = 30
 
 ''' MESSAGES'''
 '''Main topic'''
