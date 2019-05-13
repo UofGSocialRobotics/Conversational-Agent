@@ -10,37 +10,40 @@ class Client_Dialog_System():
         self.client = None
         print("%s: init"%(self.name))
 
-    def _treat_msg(self,msg):
-        err_msg = "%s ERR: _treat_msg should have been overwritten in children classes"%self.name
+    def treat_msg(self,msg):
+        err_msg = "%s ERR: treat_msg should have been overwritten in children classes"%self.name
         print(err_msg)
         raise NotImplementedError(err_msg) #not working!?!?
 
-    def _on_message(self,client, userdata, msg):
+    def on_message(self,client, userdata, msg):
         helper.print_message(self.name,"received",str(msg.payload),msg.topic)
-        self._treat_msg(msg)
+        self.treat_msg(msg)
         # print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
-    def _on_publish(self,client,user_data,mid):  #keep function signature from paho
+    def on_publish(self,client,user_data,mid):  #keep function signature from paho
         print("%s pusblished msg, id = %s"%(self.name,str(mid)))
 
-    def _on_subscribe(self,client, userdata, mid, granted_qos): #keep function signature from paho
+    def on_subscribe(self,client, userdata, mid, granted_qos): #keep function signature from paho
         # print("Subscribed: "+str(mid)+" "+str(granted_qos))
         print("%s: subscribed, %s, %s"%(self.name,str(mid),str(granted_qos)))
+        
+    def on_disconnect(client, userdata, rc):
+        print("%s disconnecting."%self.name)
 
 
-    def _connect(self):
+    def connect(self):
         if self.client:
             print("Already connected")
         else:
             self.client = paho.Client()
-            self.client.on_publish = self._on_publish
-            self.client.on_subscribe = self._on_subscribe
-            self.client.on_message = self._on_message
+            self.client.on_publish = self.on_publish
+            self.client.on_subscribe = self.on_subscribe
+            self.client.on_message = self.on_message
             self.client.connect(config.ADDRESS, config.PORT)
             # self.client.loop_start()
             print("%s: connexion started"%self.name)
 
-    def _subscribe(self,topic=None):
+    def subscribe(self,topic=None):
         if topic == None:
             if self.msg_subscribe_type == None :
                 print("%s ERR: no topic provided to subscribe to topic"%(self.name))
@@ -50,13 +53,13 @@ class Client_Dialog_System():
         self.client.subscribe(topic, qos=2)
 
 
-    def _loop_start(self):
+    def loop_start(self):
         self.client.loop_start()
 
-    def _loop_forever(self):
+    def loop_forever(self):
         self.client.loop_forever()
 
-    def _stop_loop(self):
+    def stop_loop(self):
         self.client.stop_loop()
 
     def publish(self,message,topic=None):
@@ -70,11 +73,14 @@ class Client_Dialog_System():
         (rc,mid) = self.client.publish(topic, message, qos=2)
 
     def start_client(self):
-        self._connect()
-        self._subscribe()
-        # self._loop_forever()
+        self.connect()
+        self.subscribe()
+        # self.loop_forever()
 
     def start_client_and_loop_forver(self):
-        self._connect()
-        self._subscribe()
-        self._loop_forever()
+        self.connect()
+        self.subscribe()
+        self.loop_forever()
+
+    def disconnect(self):
+        self.client.disconnect()
