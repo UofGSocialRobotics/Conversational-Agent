@@ -1,7 +1,5 @@
-import dum_DM as dm
-import dum_NLU as nlu
 import threading
-import broker_config as config
+import config
 import paho.mqtt.client as paho
 import helper_functions as helper
 
@@ -160,10 +158,10 @@ class Server:
         self.clients[client_id] = dict()
         self.client_threads[client_id] = dict()
         # create dedicated NLU
-        new_nlu = nlu.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id, msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
+        new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id, msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["nlu"] = new_nlu
         # create dedicated DM
-        new_dm = dm.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
+        new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["dm"] = new_dm
 
         # star services in dedicated threads
