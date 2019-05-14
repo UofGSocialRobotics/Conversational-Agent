@@ -122,7 +122,7 @@ class Server:
         # and start timer to kill services if no activity
         if client_id not in self.clients.keys():
             if config.MSG_CONNECTION in msg_txt:
-                self.subscribe_whiteboard(config.MSG_DM+client_id)
+                self.subscribe_whiteboard(config.MSG_NLG+client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
             else : # tell client they were disconnected
@@ -163,6 +163,9 @@ class Server:
         # create dedicated DM
         new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["dm"] = new_dm
+        # create dedicated NLG
+        new_dm = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id, msg_publish_type=config.MSG_NLG+client_id, whiteboard=self.whiteboard)
+        self.clients[client_id]["nlg"] = new_dm
 
         # star services in dedicated threads
         for key, s in self.clients[client_id].items():

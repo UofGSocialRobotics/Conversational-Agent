@@ -11,6 +11,10 @@ NLU = dum_NLU.NLU
 import dum_DM
 DM = dum_DM.DM
 
+##
+import dum_NLG
+NLG = dum_NLG.NLG
+
 ####################################################################################################
 ##                                        Broker config                                           ##
 ####################################################################################################
@@ -18,7 +22,7 @@ ADDRESS = "iot.eclipse.org"
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 10
+CONNECTION_TIMEOUT = 30
 
 
 ####################################################################################################
@@ -36,8 +40,11 @@ MSG_SERVER_IN= MSG_MAIN_TOPIC+"Server_in/"
 ## For DM, NLU publishes on
 MSG_NLU = MSG_MAIN_TOPIC+"NLU/"
 
-## For Main Server, DM published on
+## For NLG, DM published on
 MSG_DM = MSG_MAIN_TOPIC+"DM/"
+
+## For main server, NLG publishes on
+MSG_NLG = MSG_MAIN_TOPIC+"NLG/"
 
 ## For client, main server publishes on
 MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
