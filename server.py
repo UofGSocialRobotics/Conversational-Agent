@@ -1,4 +1,3 @@
-import broker_client as bc
 import dum_DM as dm
 import dum_NLU as nlu
 import threading
@@ -30,9 +29,9 @@ class Server:
     For each new client, the server creates new dedicates services (NLU, DM, NLG)
     Server is also in charge to send back messages to specific clients  - using specific channels.
     '''
-    def __init__(self, name, local_broker):
+    def __init__(self, name, whiteboard):
         self.name = name
-        self.local_broker = local_broker
+        self.whiteboard = whiteboard
         self.client = None
         print("%s: init" % self.name)
         self.clients = dict()
@@ -124,29 +123,33 @@ class Server:
         # On first connection, create dedicated NLU/DM/NLG and subscribe to new DM topic
         # and start timer to kill services if no activity
         if client_id not in self.clients.keys():
-            print("server suscribing to "+config.MSG_DM+client_id)
-            self.subscribe_local_broker(config.MSG_DM+client_id)
-            self.create_services(client_id)
-            self.start_timer(client_id)
+            if config.MSG_CONNECTION in msg_txt:
+                self.subscribe_whiteboard(config.MSG_DM+client_id)
+                self.create_services(client_id)
+                self.start_timer(client_id)
+            else : # tell client they were disconnected
+                error_message = "ERROR, you were disconnected. Start session again by refreshing page."
+                self.publish_distant_broker(error_message, config.MSG_SERVER_OUT+client_id)
+
 
         else:
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
             if config.MSG_CONNECTION not in msg_txt:
                 topic = config.MSG_SERVER_IN+client_id
-                self.publish_local_broker(msg_txt, topic)
+                self.publish_whiteboard(msg_txt, topic)
             self.reset_timer(client_id)
 
     ####################################################################################################
-    ##                                Methods related to local broker                                 ##
+    ##                                Methods related to local whiteboard                             ##
     ####################################################################################################
-    def publish_local_broker(self, message, topic):
-        self.local_broker.publish(message, topic)
+    def publish_whiteboard(self, message, topic):
+        self.whiteboard.publish(message, topic)
 
-    def on_local_message(self, message, topic):
+    def on_whiteboard_message(self, message, topic):
         self.treat_message_from_module(message, topic)
 
-    def subscribe_local_broker(self, topic):
-        self.local_broker.subscribe(subscriber=self, topic=topic)
+    def subscribe_whiteboard(self, topic):
+        self.whiteboard.subscribe(subscriber=self, topic=topic)
 
     ####################################################################################################
     ##                                Methods related to local services                               ##
@@ -157,10 +160,10 @@ class Server:
         self.clients[client_id] = dict()
         self.client_threads[client_id] = dict()
         # create dedicated NLU
-        new_nlu = nlu.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id, msg_publish_type=config.MSG_NLU+client_id, local_broker=self.local_broker)
+        new_nlu = nlu.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id, msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["nlu"] = new_nlu
         # create dedicated DM
-        new_dm = dm.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, local_broker=self.local_broker)
+        new_dm = dm.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["dm"] = new_dm
 
         # star services in dedicated threads

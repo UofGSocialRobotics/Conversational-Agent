@@ -1,9 +1,9 @@
 
 
-class LocalBrocker:
-    def __init__(self, name="loacl broker"):
+class Whiteboard:
+    def __init__(self, name="whiteboard"):
         self.name = name
-        print("Started local_broker")
+        print("Started whiteboard")
         # dict topics: keys are topics (strings) and values are ClientDialogSystems
         self.topics = dict()
         # dict subscribers: keys are subscribers (ClientDialogSystems) and values are topics (strings)
@@ -62,7 +62,7 @@ class LocalBrocker:
         if subscribers is not None:
             for s in subscribers:
                 print(s)
-                s.on_local_message(message, topic)
+                s.on_whiteboard_message(message, topic)
 
     def publish(self, message, topic):
         self.forward_message(message, topic)

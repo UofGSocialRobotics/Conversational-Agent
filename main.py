@@ -1,8 +1,8 @@
-import local_broker
+import whiteboard
 import server
 
-my_local_broker = local_broker.LocalBrocker()
+my_whiteboard = whiteboard.Whiteboard()
 
-my_server = server.Server(name="main_server", local_broker=my_local_broker)
+my_server = server.Server(name="main_server", whiteboard=my_whiteboard)
 my_server.start_service()
 
