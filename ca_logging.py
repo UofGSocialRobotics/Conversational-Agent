@@ -7,7 +7,7 @@ log.setLevel(logging.DEBUG)
 
 # Create handlers
 c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('file.log')
+f_handler = logging.FileHandler('server_logs.log')
 c_handler.setLevel(logging.DEBUG)
 f_handler.setLevel(logging.INFO)
 
