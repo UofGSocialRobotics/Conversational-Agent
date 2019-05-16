@@ -12,25 +12,27 @@ def loop_forever(whiteboard):
 
 
 class WhiteBoardClient:
-    def __init__(self, name, msg_subscribe_type, msg_publish_type):
+    def __init__(self, name, msg_subscribe_types, msg_publish_type):
         self.name = name
         self.msg_publish_type = msg_publish_type
-        self.msg_subscribe_type = msg_subscribe_type
+        self.msg_subscribe_types = msg_subscribe_types
         self.service_started = False
         log.info("%s: init" % self.name)
 
-    def subscribe(self, topic):
-        whiteboard.subscribe(self, topic)
+    def subscribe(self, topics):
+        for t in topics:
+            whiteboard.subscribe(self, t)
 
     def unsubscribe(self):
-        whiteboard.unsubscribe(self, self.msg_subscribe_type)
+        for topic in self.msg_subscribe_types:
+            whiteboard.unsubscribe(self, topic)
 
     def start_thread(self):
             t = threading.Thread(target=loop_forever, args=(self, ))
             t.start()
 
     def start_service(self):
-        self.subscribe(self.msg_subscribe_type)
+        self.subscribe(self.msg_subscribe_types)
         self.start_thread()
         log.info("%s: started service" % self.name)
 

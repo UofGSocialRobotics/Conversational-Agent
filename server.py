@@ -159,17 +159,22 @@ class Server(paho.Client):
         self.clients[client_id] = dict()
         self.client_threads[client_id] = dict()
         # create dedicated NLU
-        new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id,
+        new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_types=[config.MSG_SERVER_IN+client_id],
                              msg_publish_type=config.MSG_NLU+client_id)
         self.clients[client_id]["nlu"] = new_nlu
+        # create dedicated sentiment analysis
+        new_sa = config.SentimentAnalysis(name="SA"+client_id, msg_subscribe_types=[config.MSG_SERVER_IN+client_id],
+                             msg_publish_type=config.MSG_SA+client_id)
+        self.clients[client_id]["sa"] = new_sa
         # create dedicated DM
-        new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id,
+        new_dm = config.DM(name="DM"+client_id, msg_subscribe_types=[config.MSG_NLU+client_id,config.MSG_SA+client_id],
                            msg_publish_type=config.MSG_DM+client_id)
         self.clients[client_id]["dm"] = new_dm
         # create dedicated NLG
-        new_nlg = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id,
+        new_nlg = config.NLG(name="NLG"+client_id, msg_subscribe_types=[config.MSG_DM+client_id],
                             msg_publish_type=config.MSG_NLG+client_id)
         self.clients[client_id]["nlg"] = new_nlg
+        log.debug("main server create services")
 
         # star services in dedicated threads
         for key, s in self.clients[client_id].items():

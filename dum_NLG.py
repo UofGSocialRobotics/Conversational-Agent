@@ -3,8 +3,8 @@ import random
 
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, name, msg_subscribe_type, msg_publish_type):
-        wbc.WhiteBoardClient.__init__(self,name, msg_subscribe_type, msg_publish_type)
+    def __init__(self, name, msg_subscribe_types, msg_publish_type):
+        wbc.WhiteBoardClient.__init__(self,name, msg_subscribe_types, msg_publish_type)
 
     def generate_idk_answers(self):
         possible_answers = ["I do not understand your question.", "Could you rephrase your question ? I can't understand.",\
@@ -36,5 +36,7 @@ class NLG(wbc.WhiteBoardClient):
                 new_message = self.generate_positive_answer_to_fever_question(temperature)
             else :
                 new_message = self.generate_negative_answer_to_fever_question(temperature)
+            if splited_msg[2] == "NICE":
+                new_message += "\nYou sound like you are polite to me!! You must be a nice person! I like you :-)"
         self.publish(new_message)
 

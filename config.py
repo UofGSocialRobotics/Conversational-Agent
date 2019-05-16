@@ -11,9 +11,13 @@ NLU = dum_NLU.NLU
 import dum_DM
 DM = dum_DM.DM
 
-##
+## NLG
 import dum_NLG
 NLG = dum_NLG.NLG
+
+## Sentiment analysis
+import dum_sentiment_analysis
+SentimentAnalysis = dum_sentiment_analysis.SentimentAnalysis
 
 ####################################################################################################
 ##                                        Broker config                                           ##
@@ -39,6 +43,9 @@ MSG_SERVER_IN= MSG_MAIN_TOPIC+"Server_in/"
 
 ## For DM, NLU publishes on
 MSG_NLU = MSG_MAIN_TOPIC+"NLU/"
+
+## FOR DM, SentimentAnalysis publishes on
+MSG_SA = MSG_MAIN_TOPIC+"SA/"
 
 ## For NLG, DM published on
 MSG_DM = MSG_MAIN_TOPIC+"DM/"
