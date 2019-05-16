@@ -23,16 +23,16 @@ def stop_services(clients_dict, threads_dict, client_id):
         t.join()
 
 
-class Server:
+class Server(paho.Client):
     '''
     Server is the main point of contact for all web clients.
     For each new client, the server creates new dedicates services (NLU, DM, NLG)
     Server is also in charge to send back messages to specific clients  - using specific channels.
     '''
     def __init__(self, name, whiteboard):
+        paho.Client.__init__(self)
         self.name = name
         self.whiteboard = whiteboard
-        self.client = None
         log.info("%s: init" % self.name)
         self.clients = dict()
         self.client_threads = dict()
@@ -46,7 +46,7 @@ class Server:
     def start_service(self):
         self.connect_distant_broker()
         self.subscribe_distant_broker()
-        self.client.loop_forever()
+        self.loop_forever()
 
 
     # def treat_message(self, msg, topic):
@@ -75,26 +75,22 @@ class Server:
         log.info("%s disconnecting." % self.name)
 
     def connect_distant_broker(self):
-        if self.client:
-            log.warn("Already connected")
-        else:
-            self.client = paho.Client()
-            self.client.on_publish = self.on_publish
-            self.client.on_subscribe = self.on_subscribe
-            self.client.on_message = self.on_message
-            self.client.connect(config.ADDRESS, config.PORT)
-            # self.client.loop_start()
-            log.info("%s: connexion started"%self.name)
+        self.on_publish = self.on_publish
+        self.on_subscribe = self.on_subscribe
+        self.on_message = self.on_message
+        self.connect(config.ADDRESS, config.PORT)
+        # self.loop_start()
+        log.info("%s: connexion started"%self.name)
 
     def subscribe_distant_broker(self):
         topic = config.MSG_CLIENT
         log.info("%s: subscribing to %s" % (self.name, topic))
-        self.client.subscribe(topic, qos=2)
+        self.subscribe(topic, qos=2)
 
 
     def publish_distant_broker(self, message, topic):
         helper.print_message(self.name, "publishing", message, topic)
-        (rc, mid) = self.client.publish(topic, message, qos=2)
+        (rc, mid) = self.publish(topic, message, qos=2)
 
     ####################################################################################################
     ##                                Methods related to distant client                               ##
@@ -157,7 +153,6 @@ class Server:
 
 
     def create_services(self, client_id):
-        log.debug("%s in create services" % self.name)
         self.clients[client_id] = dict()
         self.client_threads[client_id] = dict()
         # create dedicated NLU
