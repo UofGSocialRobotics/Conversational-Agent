@@ -2,6 +2,8 @@ import threading
 import config
 import paho.mqtt.client as paho
 import helper_functions as helper
+from ca_logging import log
+
 
 # service is a instance of a Client_Dialog_System or inherited class.
 def start_service(service):
@@ -9,7 +11,7 @@ def start_service(service):
     service.start_service()
 
 def stop_services(clients_dict, threads_dict, client_id):
-    print("Shuting down services for client %s" % (client_id))
+    log.info("Shuting down services for client %s" % (client_id))
     for c in clients_dict[client_id].values():
         c.stop_service()
         del c
@@ -31,7 +33,7 @@ class Server:
         self.name = name
         self.whiteboard = whiteboard
         self.client = None
-        print("%s: init" % self.name)
+        log.info("%s: init" % self.name)
         self.clients = dict()
         self.client_threads = dict()
         self.timer_threads = dict()
@@ -64,17 +66,17 @@ class Server:
         # print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
     def on_publish(self, client, user_data, mid):  #keep function signature from paho
-        print("%s pusblished msg, id = %s" % (self.name, str(mid)))
+        log.info("%s pusblished msg, id = %s" % (self.name, str(mid)))
 
     def on_subscribe(self, client, userdata, mid, granted_qos): #keep function signature from paho
-        print("%s: subscribed, %s, %s" % (self.name, str(mid), str(granted_qos)))
+        log.info("%s: subscribed, %s, %s" % (self.name, str(mid), str(granted_qos)))
 
     def on_disconnect(client, userdata, rc):
-        print("%s disconnecting." % self.name)
+        log.info("%s disconnecting." % self.name)
 
     def connect_distant_broker(self):
         if self.client:
-            print("Already connected")
+            log.warn("Already connected")
         else:
             self.client = paho.Client()
             self.client.on_publish = self.on_publish
@@ -82,11 +84,11 @@ class Server:
             self.client.on_message = self.on_message
             self.client.connect(config.ADDRESS, config.PORT)
             # self.client.loop_start()
-            print("%s: connexion started"%self.name)
+            log.info("%s: connexion started"%self.name)
 
     def subscribe_distant_broker(self):
         topic = config.MSG_CLIENT
-        print("%s: suscribing to %s" % (self.name, topic))
+        log.info("%s: subscribing to %s" % (self.name, topic))
         self.client.subscribe(topic, qos=2)
 
 
@@ -105,7 +107,7 @@ class Server:
 
     def reset_timer(self, client_id):
         if client_id not in self.timer_threads.keys():
-            print("%s ERR: client %s already stoped!")
+            log.warn("%s: client %s already stoped!" % self.name)
         else:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
@@ -155,16 +157,20 @@ class Server:
 
 
     def create_services(self, client_id):
+        log.debug("%s in create services" % self.name)
         self.clients[client_id] = dict()
         self.client_threads[client_id] = dict()
         # create dedicated NLU
-        new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id, msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
+        new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id,
+                             msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["nlu"] = new_nlu
         # create dedicated DM
-        new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id, msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
+        new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id,
+                           msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["dm"] = new_dm
         # create dedicated NLG
-        new_dm = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id, msg_publish_type=config.MSG_NLG+client_id, whiteboard=self.whiteboard)
+        new_dm = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id,
+                            msg_publish_type=config.MSG_NLG+client_id, whiteboard=self.whiteboard)
         self.clients[client_id]["nlg"] = new_dm
 
         # star services in dedicated threads

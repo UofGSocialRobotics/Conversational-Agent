@@ -1,9 +1,9 @@
-
+from ca_logging import log
 
 class Whiteboard:
     def __init__(self, name="whiteboard"):
         self.name = name
-        print("Started whiteboard")
+        log.info("Started whiteboard")
         # dict topics: keys are topics (strings) and values are ClientDialogSystems
         self.topics = dict()
         # dict subscribers: keys are subscribers (ClientDialogSystems) and values are topics (strings)
@@ -43,25 +43,23 @@ class Whiteboard:
     def subscribe(self, subscriber, topic):
         v = self.add_subscriber_to_topic(subscriber, topic) + self.add_topic_to_subscriber(subscriber, topic)
         if v != 2:
-            print("ERR, %s already subscribed to %s." % (subscriber.name, topic))
+            log.warning("%s already subscribed to %s." % (subscriber.name, topic))
 
     def unsubscribe(self, subscriber, topic):
         v = self.remove_subscriber_from_topic(subscriber, topic) + self.remove_topic_from_subscriber(subscriber, topic)
         if v != 2:
-            print("ERR, %s not subscribed to %s." % (subscriber.name, topic))
+            log.warning("ERR, %s not subscribed to %s." % (subscriber.name, topic))
 
     def get_subscribers(self, topic):
         if topic in self.topics.keys():
             return self.topics[topic]
         else :
-            print("Topic %s has no subscribers"%topic)
+            log.warning("Topic %s has no subscribers" % topic)
 
     def forward_message(self, message, topic):
-        print(self.name+" in forward_message")
         subscribers = self.get_subscribers(topic)
         if subscribers is not None:
             for s in subscribers:
-                print(s)
                 s.on_whiteboard_message(message, topic)
 
     def publish(self, message, topic):

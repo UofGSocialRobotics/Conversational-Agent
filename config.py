@@ -29,7 +29,7 @@ CONNECTION_TIMEOUT = 30
 ##                                           Messages                                             ##
 ####################################################################################################
 ## Main topic
-MSG_MAIN_TOPIC = "UoGSocialRobotics/ConversationalAgent/"
+MSG_MAIN_TOPIC = "UoGSR/ca/"
 
 ## Client publishes on
 MSG_CLIENT = MSG_MAIN_TOPIC+"Client/"

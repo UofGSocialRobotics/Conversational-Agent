@@ -1,5 +1,8 @@
 import whiteboard
 import server
+from ca_logging import log
+
+log.info("Starting system")
 
 my_whiteboard = whiteboard.Whiteboard()
 

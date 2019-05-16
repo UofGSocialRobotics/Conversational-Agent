@@ -27,15 +27,11 @@ class NLG(wbc.WhiteBoardClient):
         return random.choice(possible_answers)
 
     def treat_message(self, message, topic):
-        print("in treat message")
-        print(message)
         if message == "DONT UNDERSTAND":
             new_message = self.generate_idk_answers()
         else:
             splited_msg = message.split(":")
             temperature = float(splited_msg[1].strip())
-            print(splited_msg[0])
-            print(temperature)
             if splited_msg[0] == "Yes":
                 new_message = self.generate_positive_answer_to_fever_question(temperature)
             else :

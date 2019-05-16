@@ -1,6 +1,7 @@
 import helper_functions as helper
 import threading
 import time
+from ca_logging import log
 
 def loop_forever(whiteboard):
     whiteboard.service_started = True
@@ -15,7 +16,7 @@ class WhiteBoardClient:
         self.msg_subscribe_type = msg_subscribe_type
         self.whiteboard = whiteboard
         self.service_started = False
-        print("%s: init" % self.name)
+        log.info("%s: init" % self.name)
 
     def subscribe(self, topic):
         self.whiteboard.subscribe(self, topic)
@@ -30,7 +31,7 @@ class WhiteBoardClient:
     def start_service(self):
         self.subscribe(self.msg_subscribe_type)
         self.start_thread()
-        print("%s: started service" % self.name)
+        log.info("%s: started service" % self.name)
 
     def stop_service(self):
         self.unsubscribe()
@@ -41,7 +42,7 @@ class WhiteBoardClient:
         self.treat_message(message,topic)
 
     def treat_message(self, message, topic):
-        print("----------------- ERR: method treat_message should be overwritter in inherited classes! -----------------")
+        log.warning("%s: method treat_message should be overwritter in inherited classes! -----------------" % self.name)
 
     def publish(self, message):
         helper.print_message(self.name, "publishing", message, self.msg_publish_type)
