@@ -3,7 +3,7 @@ import config
 import paho.mqtt.client as paho
 import helper_functions as helper
 from ca_logging import log
-
+from whiteboard import whiteboard
 
 # service is a instance of a Client_Dialog_System or inherited class.
 def start_service(service):
@@ -24,15 +24,14 @@ def stop_services(clients_dict, threads_dict, client_id):
 
 
 class Server(paho.Client):
-    '''
+    """
     Server is the main point of contact for all web clients.
     For each new client, the server creates new dedicates services (NLU, DM, NLG)
     Server is also in charge to send back messages to specific clients  - using specific channels.
-    '''
-    def __init__(self, name, whiteboard):
+    """
+    def __init__(self, name):
         paho.Client.__init__(self)
         self.name = name
-        self.whiteboard = whiteboard
         log.info("%s: init" % self.name)
         self.clients = dict()
         self.client_threads = dict()
@@ -109,6 +108,10 @@ class Server(paho.Client):
             self.start_timer(client_id)
 
     def treat_message_from_client(self, msg):
+        """
+        Creates dedicated services for client on first connection, or just forward the message.
+        :param msg: client's message
+        """
         # get client ID
         msg_full = str(msg.payload.decode('utf-8'))
         msg_split = msg_full.split(':')
@@ -139,13 +142,13 @@ class Server(paho.Client):
     ##                                Methods related to local whiteboard                             ##
     ####################################################################################################
     def publish_whiteboard(self, message, topic):
-        self.whiteboard.publish(message, topic)
+        whiteboard.publish(message, topic)
 
     def on_whiteboard_message(self, message, topic):
         self.treat_message_from_module(message, topic)
 
     def subscribe_whiteboard(self, topic):
-        self.whiteboard.subscribe(subscriber=self, topic=topic)
+        whiteboard.subscribe(subscriber=self, topic=topic)
 
     ####################################################################################################
     ##                                Methods related to local services                               ##
@@ -157,16 +160,16 @@ class Server(paho.Client):
         self.client_threads[client_id] = dict()
         # create dedicated NLU
         new_nlu = config.NLU(name="NLU"+client_id, msg_subscribe_type=config.MSG_SERVER_IN+client_id,
-                             msg_publish_type=config.MSG_NLU+client_id, whiteboard=self.whiteboard)
+                             msg_publish_type=config.MSG_NLU+client_id)
         self.clients[client_id]["nlu"] = new_nlu
         # create dedicated DM
         new_dm = config.DM(name="DM"+client_id, msg_subscribe_type=config.MSG_NLU+client_id,
-                           msg_publish_type=config.MSG_DM+client_id, whiteboard=self.whiteboard)
+                           msg_publish_type=config.MSG_DM+client_id)
         self.clients[client_id]["dm"] = new_dm
         # create dedicated NLG
-        new_dm = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id,
-                            msg_publish_type=config.MSG_NLG+client_id, whiteboard=self.whiteboard)
-        self.clients[client_id]["nlg"] = new_dm
+        new_nlg = config.NLG(name="NLG"+client_id, msg_subscribe_type=config.MSG_DM+client_id,
+                            msg_publish_type=config.MSG_NLG+client_id)
+        self.clients[client_id]["nlg"] = new_nlg
 
         # star services in dedicated threads
         for key, s in self.clients[client_id].items():

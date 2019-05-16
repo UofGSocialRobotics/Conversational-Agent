@@ -3,8 +3,8 @@ import random
 
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, name, msg_subscribe_type, msg_publish_type, whiteboard):
-        wbc.WhiteBoardClient.__init__(self,name, msg_subscribe_type, msg_publish_type, whiteboard)
+    def __init__(self, name, msg_subscribe_type, msg_publish_type):
+        wbc.WhiteBoardClient.__init__(self,name, msg_subscribe_type, msg_publish_type)
 
     def generate_idk_answers(self):
         possible_answers = ["I do not understand your question.", "Could you rephrase your question ? I can't understand.",\

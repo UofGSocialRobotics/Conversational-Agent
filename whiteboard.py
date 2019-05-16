@@ -1,15 +1,44 @@
 from ca_logging import log
 
+
 class Whiteboard:
+    """Singleton class"""
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """
+        :return: the unique whiteboard object
+        """
+        if Whiteboard.__instance == None:
+            Whiteboard()
+        return  Whiteboard.__instance
+
+
     def __init__(self, name="whiteboard"):
-        self.name = name
-        log.info("Started whiteboard")
-        # dict topics: keys are topics (strings) and values are ClientDialogSystems
-        self.topics = dict()
-        # dict subscribers: keys are subscribers (ClientDialogSystems) and values are topics (strings)
-        self.subscribers = dict()
+        """
+        This constructor in virtually private.
+        :param name: the name of the whiteboard.
+        """
+        if Whiteboard.__instance != None:
+            log.error("Singleton Class: contructor should not be called. Use Whiteboard.getInstance()")
+        else:
+            Whiteboard.__instance = self
+            self.name = name
+            log.info("Started whiteboard")
+            # dict topics: keys are topics (strings) and values are ClientDialogSystems
+            self.topics = dict()
+            # dict subscribers: keys are subscribers (ClientDialogSystems) and values are topics (strings)
+            self.subscribers = dict()
 
     def add_elt(self, key, value, d_txt):
+        """
+        Adds value to a dictionary (given by t_txt) at key
+        :param key:
+        :param value:
+        :param d_txt:
+        :return: 1 success / -1 error code
+        """
         d = self.subscribers if d_txt == "subscriber" else self.topics
         if key not in d.keys():
             d[key] = list()
@@ -19,6 +48,9 @@ class Whiteboard:
         return 1
 
     def remove_elt(self, key, value, d_txt):
+        """
+        Same as add_elt but to remove the value.
+        """
         d = self.subscribers if d_txt == "subscriber" else self.topics
         if key in d.keys():
             if value in d[key]:
@@ -57,6 +89,9 @@ class Whiteboard:
             log.warning("Topic %s has no subscribers" % topic)
 
     def forward_message(self, message, topic):
+        """
+        forwards message to all subscribers to topic by calling the on_whiteboard_message() method
+        """
         subscribers = self.get_subscribers(topic)
         if subscribers is not None:
             for s in subscribers:
@@ -64,3 +99,7 @@ class Whiteboard:
 
     def publish(self, message, topic):
         self.forward_message(message, topic)
+
+
+"""Will be used by modules that import whiteboard."""
+whiteboard = Whiteboard.getInstance()

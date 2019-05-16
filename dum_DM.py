@@ -5,8 +5,8 @@ def read_from_imaginary_thermometer():
     return 36 + random.uniform(0, 1)*4
 
 class DM(wbc.WhiteBoardClient):
-    def __init__(self, name, msg_subscribe_type, msg_publish_type, whiteboard):
-        wbc.WhiteBoardClient.__init__(self, name, msg_subscribe_type, msg_publish_type, whiteboard)
+    def __init__(self, name, msg_subscribe_type, msg_publish_type):
+        wbc.WhiteBoardClient.__init__(self, name, msg_subscribe_type, msg_publish_type)
 
     def treat_message(self, msg, topic):
         if msg == "ASK_FEVER":
