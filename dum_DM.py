@@ -15,8 +15,13 @@ class DM(wbc.WhiteBoardClient):
             self.from_SA = msg
         elif "NLU" in topic:
             self.from_NLU = msg
+
+        # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
-            nice = self.from_SA
+            if "pos" in self.from_SA:
+                nice = "NICE"
+            else:
+                nice = "NOT_NICE"
             if self.from_NLU == "ASK_FEVER":
                 temperature = read_from_imaginary_thermometer()
                 if temperature > 38.5:
@@ -25,6 +30,8 @@ class DM(wbc.WhiteBoardClient):
                     new_msg = "No: " + str(temperature) + ":" + nice
             else:
                 new_msg = "DONT UNDERSTAND"
+            self.from_NLU = None
+            self.from_SA = None
             self.publish(new_msg)
 
 

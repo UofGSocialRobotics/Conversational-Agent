@@ -22,7 +22,7 @@ class NLG(wbc.WhiteBoardClient):
     def generate_negative_answer_to_fever_question(self,temperature):
         possible_answers = ["It looks like you're fine, your temperature is %.2f." % temperature,\
                             "I think you're OK, as your temperature is %.2f" % temperature, \
-                            "I'm delighted too tell you that you seem perfectly fine!!! Your temperature is %.2f" % temperature,\
+                            "I'm delighted to tell you that you seem perfectly fine!!! Your temperature is %.2f" % temperature,\
                             "Your temperature is %.2f. Your are fine." % temperature]
         return random.choice(possible_answers)
 
