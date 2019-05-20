@@ -7,6 +7,7 @@ Python 3.7
 To install python packages, run:
 ```shell
 pip install paho-mqtt
+pip install nltk
 ```
 
 ## Start server
