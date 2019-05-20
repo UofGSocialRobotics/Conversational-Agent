@@ -1,24 +1,3 @@
-
-####################################################################################################
-##                                          Modules                                               ##
-####################################################################################################
-
-## NLU
-import dum_NLU
-NLU = dum_NLU.NLU
-
-## DM
-import dum_DM
-DM = dum_DM.DM
-
-## NLG
-import dum_NLG
-NLG = dum_NLG.NLG
-
-## Sentiment analysis
-import dum_sentiment_analysis
-SentimentAnalysis = dum_sentiment_analysis.SentimentAnalysis
-
 ####################################################################################################
 ##                                        Broker config                                           ##
 ####################################################################################################
@@ -59,3 +38,31 @@ MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
 # Connection message from client:
 MSG_CONNECTION = "new client connected"
 
+
+####################################################################################################
+##                                          Modules                                               ##
+####################################################################################################
+
+## NLU
+import dum_NLU
+NLU = dum_NLU.NLU
+NLU_subscribes = [MSG_SERVER_IN]
+NLU_publishes = MSG_NLU
+
+## DM
+import dum_DM
+DM = dum_DM.DM
+DM_subscribes = [MSG_NLU, MSG_SA]
+DM_publishes = MSG_DM
+
+## NLG
+import dum_NLG
+NLG = dum_NLG.NLG
+NLG_subscribes = [MSG_DM]
+NLG_publishes = MSG_NLG
+
+## Sentiment analysis
+import dum_sentiment_analysis
+SentimentAnalysis = dum_sentiment_analysis.SentimentAnalysis
+SentimentAnalysis_subscribes = [MSG_SERVER_IN]
+SentimentAnalysis_publishes = MSG_SA

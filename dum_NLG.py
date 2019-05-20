@@ -1,10 +1,12 @@
 import whiteboard_client as wbc
 import random
-
+import helper_functions as helper
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, name, msg_subscribe_types, msg_publish_type):
-        wbc.WhiteBoardClient.__init__(self,name, msg_subscribe_types, msg_publish_type)
+    def __init__(self, subscribes, publishes, clientid):
+        subscribes = helper.append_c_to_elts(subscribes, clientid)
+        publishes = publishes + clientid
+        wbc.WhiteBoardClient.__init__(self, "NLG"+clientid, subscribes, publishes)
 
     def generate_idk_answers(self):
         possible_answers = ["I do not understand your question.", "Could you rephrase your question ? I can't understand.",\

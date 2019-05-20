@@ -10,6 +10,12 @@ pip install paho-mqtt
 pip install nltk
 ```
 
+Run in tyour python environment:
+```python
+import nltk
+nltk.download('vader_lexicon')
+```
+
 ## Start server
 
 ```shell

@@ -12,10 +12,10 @@ def loop_forever(whiteboard):
 
 
 class WhiteBoardClient:
-    def __init__(self, name, msg_subscribe_types, msg_publish_type):
+    def __init__(self, name, subscribes, publishes):
         self.name = name
-        self.msg_publish_type = msg_publish_type
-        self.msg_subscribe_types = msg_subscribe_types
+        self.publishes = publishes
+        self.subscribes = subscribes
         self.service_started = False
         log.info("%s: init" % self.name)
 
@@ -24,7 +24,7 @@ class WhiteBoardClient:
             whiteboard.subscribe(self, t)
 
     def unsubscribe(self):
-        for topic in self.msg_subscribe_types:
+        for topic in self.subscribes:
             whiteboard.unsubscribe(self, topic)
 
     def start_thread(self):
@@ -32,7 +32,7 @@ class WhiteBoardClient:
             t.start()
 
     def start_service(self):
-        self.subscribe(self.msg_subscribe_types)
+        self.subscribe(self.subscribes)
         self.start_thread()
         log.info("%s: started service" % self.name)
 
@@ -48,6 +48,6 @@ class WhiteBoardClient:
         log.error("$s: method treat_message should be overwriten in inherited classes!" % name)
 
     def publish(self, message):
-        helper.print_message(self.name, "publishing", message, self.msg_publish_type)
-        whiteboard.publish(message, self.msg_publish_type)
+        helper.print_message(self.name, "publishing", message, self.publishes)
+        whiteboard.publish(message, self.publishes)
 
