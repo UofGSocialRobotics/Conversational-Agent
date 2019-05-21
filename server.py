@@ -7,18 +7,6 @@ from ca_logging import log
 from whiteboard import whiteboard
 import time
 
-def stop_services(clients_dict, client_id):
-    log.info("Shuting down services for client %s" % client_id)
-    for c in clients_dict[client_id].values():
-        c.stop_service()
-        del c
-    del clients_dict[client_id]
-    # for t in threads_dict[client_id].values():
-    #     t.join()
-
-
-def on_log(client, obj, level, string):
-    helper.raise_error(client= client, level= level, error_msg=string)
 
 
 class Server(paho.Client):
@@ -53,15 +41,6 @@ class Server(paho.Client):
         log.info("------------ QUIT ------------")
         exit(0)
 
-    def stop_all_services(self):
-        for client_id, service_dict in self.clients.items():
-            for service in service_dict.values():
-                service.stop_service()
-            self.timer_threads[client_id].cancel()
-            time.sleep(1)
-            log.debug("in stop_services, thread(s) left:")
-            log.debug(threading.enumerate())
-
     ####################################################################################################
     ##                                Methods related to distant broker                               ##
     ####################################################################################################
@@ -87,7 +66,7 @@ class Server(paho.Client):
         # self.on_publish = self.on_publish
         # self.on_subscribe = self.on_subscribe
         # self.on_message = self.on_message
-        self.on_log = on_log
+        # self.on_log = on_log
         self.connect(config.ADDRESS, config.PORT)
         # self.loop_start()
         log.info("%s: connexion started"%self.name)
@@ -107,7 +86,7 @@ class Server(paho.Client):
     ####################################################################################################
 
     def start_timer(self, client_id):
-        timer = threading.Timer(config.CONNECTION_TIMEOUT, function=stop_services, args=(self.clients, client_id))
+        timer = threading.Timer(config.CONNECTION_TIMEOUT, function=self.stop_services, args=(client_id,))
         timer.start()
         self.timer_threads[client_id] = timer
 
@@ -165,7 +144,6 @@ class Server(paho.Client):
     ##                                Methods related to local services                               ##
     ####################################################################################################
 
-
     def create_services(self, client_id):
         self.clients[client_id] = dict()
         # create dedicated NLU
@@ -184,6 +162,23 @@ class Server(paho.Client):
         # star services in dedicated threads
         for key, s in self.clients[client_id].items():
             s.start_service()
+
+    def stop_services(self, client_id):
+        log.info("Shuting down services for client %s" % client_id)
+        for c in self.clients[client_id].values():
+            c.stop_service()
+            del c
+        del self.clients[client_id]
+
+    def stop_all_services(self):
+        for client_id, service_dict in self.clients.items():
+            for service in service_dict.values():
+                service.stop_service()
+            if client_id in self.timer_threads.keys():
+                self.timer_threads[client_id].cancel()
+            time.sleep(1)
+            log.debug("in stop_all_services, thread(s) left:")
+            log.debug(threading.enumerate())
 
     def treat_message_from_module(self, message, topic):
         client_id = topic.split("/")[-1]

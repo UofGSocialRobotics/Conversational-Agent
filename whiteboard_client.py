@@ -4,15 +4,8 @@ import time
 from ca_logging import log
 from whiteboard import whiteboard
 
-
-def loop_forever(whiteboard):
-    whiteboard.service_started = True
-    while whiteboard.service_started:
-        time.sleep(.1)
-    # print("stop client loop_forever")
-
-def on_log(client, obj, level, string):
-    helper.raise_error(client= client, level= level, error_msg=string)
+# def on_log(client, obj, level, string):
+#     helper.raise_error(client= client, level= level, error_msg=string)
 
 
 class WhiteBoardClient:
@@ -32,11 +25,11 @@ class WhiteBoardClient:
             whiteboard.unsubscribe(self, topic)
 
     def start_thread(self):
-            t = threading.Thread(target=loop_forever, args=(self, ))
+            t = threading.Thread(target=self.loop_forever)
             t.start()
 
     def start_service(self):
-        self.on_log = on_log
+        # self.on_log = on_log
         self.subscribe(self.subscribes)
         self.start_thread()
         log.info("%s: started service" % self.name)
@@ -56,3 +49,8 @@ class WhiteBoardClient:
         helper.print_message(self.name, "publishing", message, self.publishes)
         whiteboard.publish(message, self.publishes)
 
+    def loop_forever(self):
+        self.service_started = True
+        while self.service_started:
+            time.sleep(.1)
+        # print("stop client loop_forever")

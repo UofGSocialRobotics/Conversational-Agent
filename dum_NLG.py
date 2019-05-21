@@ -37,7 +37,7 @@ class NLG(wbc.WhiteBoardClient):
             temperature = float(splited_msg[1].strip())
             if splited_msg[0] == "Yes":
                 new_message = self.generate_positive_answer_to_fever_question(temperature)
-            else :
+            else:
                 new_message = self.generate_negative_answer_to_fever_question(temperature)
             if splited_msg[2] == "NICE":
                 new_message += "\nYou sound like you are polite to me!! You must be a nice person! I like you :-)"
