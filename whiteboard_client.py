@@ -7,8 +7,12 @@ from whiteboard import whiteboard
 
 def loop_forever(whiteboard):
     whiteboard.service_started = True
-    while whiteboard.service_started :
-        time.sleep(1)
+    while whiteboard.service_started:
+        time.sleep(.1)
+    # print("stop client loop_forever")
+
+def on_log(client, obj, level, string):
+    helper.raise_error(client= client, level= level, error_msg=string)
 
 
 class WhiteBoardClient:
@@ -32,6 +36,7 @@ class WhiteBoardClient:
             t.start()
 
     def start_service(self):
+        self.on_log = on_log
         self.subscribe(self.subscribes)
         self.start_thread()
         log.info("%s: started service" % self.name)

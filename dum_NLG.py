@@ -29,6 +29,7 @@ class NLG(wbc.WhiteBoardClient):
         return random.choice(possible_answers)
 
     def treat_message(self, message, topic):
+        # err = errror_here
         if message == "DONT UNDERSTAND":
             new_message = self.generate_idk_answers()
         else:

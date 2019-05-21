@@ -2,25 +2,23 @@ import threading
 import config
 import paho.mqtt.client as paho
 import helper_functions as helper
+import traceback
 from ca_logging import log
 from whiteboard import whiteboard
+import time
 
-# service is a instance of a Client_Dialog_System or inherited class.
-def start_service(service):
-    # print("Creating new service in dedicated thread. Service name: %s" % (service.name))
-    service.start_service()
-
-def stop_services(clients_dict, threads_dict, client_id):
-    log.info("Shuting down services for client %s" % (client_id))
+def stop_services(clients_dict, client_id):
+    log.info("Shuting down services for client %s" % client_id)
     for c in clients_dict[client_id].values():
         c.stop_service()
         del c
     del clients_dict[client_id]
-    # print("print dict")
-    # for key, value in clients_dict.items():
-    #     print(key, value)
-    for t in threads_dict[client_id].values():
-        t.join()
+    # for t in threads_dict[client_id].values():
+    #     t.join()
+
+
+def on_log(client, obj, level, string):
+    helper.raise_error(client= client, level= level, error_msg=string)
 
 
 class Server(paho.Client):
@@ -34,7 +32,6 @@ class Server(paho.Client):
         self.name = name
         log.info("%s: init" % self.name)
         self.clients = dict()
-        self.client_threads = dict()
         self.timer_threads = dict()
 
 
@@ -45,24 +42,37 @@ class Server(paho.Client):
     def start_service(self):
         self.connect_distant_broker()
         self.subscribe_distant_broker()
-        self.loop_forever()
+        try:
+            self.loop_forever()
+        except KeyboardInterrupt:
+            self.quit()
 
+    def quit(self):
+        self.stop_all_services()
+        self.disconnect()
+        log.info("------------ QUIT ------------")
+        exit(0)
 
-    # def treat_message(self, msg, topic):
-    #     #identify sender
-    #     if config.MSG_DM in msg.topic:
-    #         self.treat_message_from_module(msg)
-    #     else:
-    #         self.treat_message_from_client(msg)
+    def stop_all_services(self):
+        for client_id, service_dict in self.clients.items():
+            for service in service_dict.values():
+                service.stop_service()
+            self.timer_threads[client_id].cancel()
+            time.sleep(1)
+            log.debug("in stop_services, thread(s) left:")
+            log.debug(threading.enumerate())
 
     ####################################################################################################
     ##                                Methods related to distant broker                               ##
     ####################################################################################################
 
     def on_message(self, client, userdata, msg):
-        helper.print_message(self.name, "received", str(msg.payload), msg.topic)
-        self.treat_message_from_client(msg)
-        # print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+        try:
+            helper.print_message(self.name, "received", str(msg.payload), msg.topic)
+            self.treat_message_from_client(msg)
+        except:
+            traceback.print_exc()
+            self.quit()
 
     def on_publish(self, client, user_data, mid):  #keep function signature from paho
         log.info("%s pusblished msg, id = %s" % (self.name, str(mid)))
@@ -70,13 +80,14 @@ class Server(paho.Client):
     def on_subscribe(self, client, userdata, mid, granted_qos): #keep function signature from paho
         log.info("%s: subscribed, %s, %s" % (self.name, str(mid), str(granted_qos)))
 
-    def on_disconnect(client, userdata, rc):
+    def on_disconnect(self, client, userdata, rc):
         log.info("%s disconnecting." % self.name)
 
     def connect_distant_broker(self):
-        self.on_publish = self.on_publish
-        self.on_subscribe = self.on_subscribe
-        self.on_message = self.on_message
+        # self.on_publish = self.on_publish
+        # self.on_subscribe = self.on_subscribe
+        # self.on_message = self.on_message
+        self.on_log = on_log
         self.connect(config.ADDRESS, config.PORT)
         # self.loop_start()
         log.info("%s: connexion started"%self.name)
@@ -96,7 +107,7 @@ class Server(paho.Client):
     ####################################################################################################
 
     def start_timer(self, client_id):
-        timer = threading.Timer(config.CONNECTION_TIMEOUT, function=stop_services, args=(self.clients, self.client_threads, client_id))
+        timer = threading.Timer(config.CONNECTION_TIMEOUT, function=stop_services, args=(self.clients, client_id))
         timer.start()
         self.timer_threads[client_id] = timer
 
@@ -157,7 +168,6 @@ class Server(paho.Client):
 
     def create_services(self, client_id):
         self.clients[client_id] = dict()
-        self.client_threads[client_id] = dict()
         # create dedicated NLU
         new_nlu = config.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
         self.clients[client_id]["nlu"] = new_nlu
@@ -173,9 +183,7 @@ class Server(paho.Client):
 
         # star services in dedicated threads
         for key, s in self.clients[client_id].items():
-            t = threading.Thread(target=start_service, args=(s, ))
-            self.client_threads[client_id][key] = t
-            t.start()
+            s.start_service()
 
     def treat_message_from_module(self, message, topic):
         client_id = topic.split("/")[-1]

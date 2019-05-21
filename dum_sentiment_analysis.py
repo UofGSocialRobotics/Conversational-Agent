@@ -2,7 +2,6 @@ import whiteboard_client as wbc
 from ca_logging import log
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import helper_functions as helper
-from ca_logging import log
 
 class SentimentAnalysis(wbc.WhiteBoardClient,SentimentIntensityAnalyzer):
     def __init__(self, subscribes, publishes, clientid):
@@ -13,12 +12,10 @@ class SentimentAnalysis(wbc.WhiteBoardClient,SentimentIntensityAnalyzer):
 
 
     def treat_message(self, msg, topic):
-
         # Dumb Sentiment analysis performed using nltk library.
         # The result is almost always neutral
         # ToDo: Retrain the pipeline OR use StanfordCoreNLP library
 
-        log.debug("SA in treat message.")
         ss = self.polarity_scores(msg)
 
         ## Check the sentiment scores in ss[k] and send the tag in k ("pos", "neg" or "neu") with the highest value.
@@ -29,6 +26,10 @@ class SentimentAnalysis(wbc.WhiteBoardClient,SentimentIntensityAnalyzer):
                 if ss[k]>max_sent_value:
                     new_msg = k
                     max_sent_value = ss[k]
+        # if "hi" in msg:
+        #     new_msg = "NICE"
+        # else:
+        #     new_msg = "NOT_NICE"
 
         helper.print_message(self.name,"publishing",new_msg,self.publishes)
         self.publish(new_msg)
