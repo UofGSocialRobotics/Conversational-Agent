@@ -50,14 +50,16 @@ NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
 ## DM
+import DM
 import dum_DM
-DM = dum_DM.DM
+DM = DM.DM
 DM_subscribes = [MSG_NLU, MSG_SA]
 DM_publishes = MSG_DM
 
 ## NLG
 import dum_NLG
-NLG = dum_NLG.NLG
+import NLG
+NLG = NLG.NLG
 NLG_subscribes = [MSG_DM]
 NLG_publishes = MSG_NLG
 

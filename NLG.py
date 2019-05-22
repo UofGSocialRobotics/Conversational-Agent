@@ -8,6 +8,11 @@ class NLG(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, "NLG"+clientid, subscribes, publishes)
 
     def treat_message(self, message, topic):
+
+
+
+
+
         sentence = message
         self.publish(sentence)
 
