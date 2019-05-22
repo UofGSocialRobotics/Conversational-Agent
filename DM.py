@@ -26,10 +26,7 @@ class DM(wbc.WhiteBoardClient):
             for line in f:
                 line_input = line.split(",")
                 node = DMNode(line_input[0], line_input[1], line_input[2])
-                print(node.stateName)
                 for i in range(3, len(line_input)):
-                    print(i)
-                    print(line_input[i])
                     if "-" in line_input[i]:
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
@@ -49,11 +46,7 @@ class DM(wbc.WhiteBoardClient):
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
 
-            if self.currState == "start":
-                print(self.nodes)
-                next_state = self.nodes.get("start").get_action("greet")
-            else:
-                next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
+            next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
             self.currState = next_state
             self.from_NLU = None
