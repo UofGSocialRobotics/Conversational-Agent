@@ -31,12 +31,6 @@ class DM(wbc.WhiteBoardClient):
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
 
-    def get_action_state_id(self, intent):
-        if intent in self.nodes:
-            return self.nodes.get(intent)
-        else:
-            return 0
-
     def treat_message(self, msg, topic):
 
         if "SA" in topic:
