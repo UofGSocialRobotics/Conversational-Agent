@@ -22,5 +22,4 @@ class NLG(wbc.WhiteBoardClient):
     def treat_message(self, message, topic):
 
         sentence = random.choice(self.sentenceDB[message])
-        #sentence = message
         self.publish(sentence)

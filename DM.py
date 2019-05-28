@@ -1,5 +1,6 @@
 import whiteboard_client as wbc
 import helper_functions as helper
+import urllib.request
 from ca_logging import log
 
 
@@ -18,6 +19,9 @@ class DM(wbc.WhiteBoardClient):
         self.from_NLU = None
         self.from_SA = None
         self.nodes = {}
+        #user_likes = []
+        #user_dislikes = []
+        self.user_model = {"likes": [], "dislikes": []}
         self.load_model("./resources/dm/Model.csv")
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
@@ -40,7 +44,16 @@ class DM(wbc.WhiteBoardClient):
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
 
+            # Store entities (actors,directors, genres) in the user frame)
+            # Todo: Actually store preferred entities
+            if "inform" in msg:
+                self.user_model["likes"].append(msg)
+
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
+
+            if "inform(movie)" in next_state:
+                reco = MovieQuery.recommend()
+                next_state = next_state + " " + reco
 
             self.currState = next_state
             self.from_NLU = None
@@ -72,3 +85,20 @@ class DMNode:
             return self.rules.get(user_intent)
         else:
             return self.stateDefault
+
+# To query the movie DB and get a movie title
+class MovieQuery:
+    def __init__(self, state_name, state_default, state_ack):
+        self.movieDB_key = "6e3c2d4a2501c86cd7e0571ada291f55"
+        self.discover_address = "https://api.themoviedb.org/3/discover/movie?api_key="
+        self.property = "&sort_by=popularity.desc"
+
+    def recommend(self):
+        movies_list = self.queryMoviesList()
+        return movies_list[0]
+
+    def queryMoviesList(self):
+        query_url = self.discover_address + self.movieDB_key + self.property
+        data = urllib.request.urlopen(query_url)
+        result = data.read()
+        return result
