@@ -1,5 +1,6 @@
+intent,CS,sentence,whatever
 greeting,NONE,Hi! How are you doing today?,
-greeting,NONE,Hello there! How are you?
+greeting,NONE,Hello there! How are you?,
 greeting,SD,Hi! How are you doing today? I'm feeling a little nervous as this is my first day in this job.,
 greeting,QESD,Hi! My name is Cora. What's your name?,
 greeting,PR,Hi! How are you doing today? It's my great pleasure to meet you.,

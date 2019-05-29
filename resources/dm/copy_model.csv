@@ -1,5 +1,5 @@
 start,greeting,FALSE,,
-greeting,request(genre),TRUE,,
+greeting,introduce,TRUE,,
 greet_back,request_back(last_movie),TRUE,,
 request_back(last_movie),inform(opinion_last_movie),FALSE,,
 inform(opinion_last_movie),inform(movie),TRUE,,
