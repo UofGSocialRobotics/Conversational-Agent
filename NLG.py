@@ -1,5 +1,6 @@
 import whiteboard_client as wbc
 import helper_functions as helper
+import json
 import random
 
 class NLG(wbc.WhiteBoardClient):
@@ -10,6 +11,8 @@ class NLG(wbc.WhiteBoardClient):
         self.sentenceDB = {}
         self.load_model("./resources/nlg/sentence_db.csv")
 
+        self.moviesList = []
+
     def load_model(self, path):
         with open(path) as f:
             for line in f:
@@ -19,7 +22,18 @@ class NLG(wbc.WhiteBoardClient):
                 else:
                     self.sentenceDB[line_input[0]] = [line_input[2]]
 
-    def treat_message(self, message, topic):
-
-        sentence = random.choice(self.sentenceDB[message])
+    def treat_message(self, msg, topic):
+        message = json.loads(msg)
+        print(message)
+        sentence = random.choice(self.sentenceDB[message['intent']])
+        self.moviesList = message['movies']
+        sentence = self.replace(sentence)
         self.publish(sentence)
+
+    def replace(self, sentence):
+        if "#title" in sentence:
+            movListString = ""
+            for mov in self.moviesList:
+                movListString = movListString + " " + mov
+            sentence = sentence.replace("#title", movListString.replace("?", "e"))
+        return sentence
