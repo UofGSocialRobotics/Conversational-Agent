@@ -38,6 +38,9 @@ MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
 # Connection message from client:
 MSG_CONNECTION = "new client connected"
 
+# Confirm connection to client:
+MSG_CONFIRM_CONNECTION = "Connection confirmed"
+
 
 ####################################################################################################
 ##                                          Modules                                               ##

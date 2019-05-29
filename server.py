@@ -116,6 +116,8 @@ class Server(paho.Client):
                 self.subscribe_whiteboard(config.MSG_NLG+client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
+                confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
+                self.publish_distant_broker(confirm_connection_messsage, config.MSG_SERVER_OUT+client_id)
             else : # tell client they were disconnected
                 error_message = "ERROR, you were disconnected. Start session again by refreshing page."
                 self.publish_distant_broker(error_message, config.MSG_SERVER_OUT+client_id)

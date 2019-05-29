@@ -11,7 +11,7 @@ class NLG(wbc.WhiteBoardClient):
         self.sentenceDB = {}
         self.load_model("./resources/nlg/sentence_db.csv")
 
-        self.moviesList = []
+        self.movie = ""
 
     def load_model(self, path):
         with open(path) as f:
@@ -24,16 +24,21 @@ class NLG(wbc.WhiteBoardClient):
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
-        print(message)
         sentence = random.choice(self.sentenceDB[message['intent']])
-        self.moviesList = message['movies']
-        sentence = self.replace(sentence)
+        self.movie = message['movies']
+        sentence = self.set_movie_tile_in_sentence(sentence)
         self.publish(sentence)
 
-    def replace(self, sentence):
+    def set_movie_tile_in_sentence(self, sentence):
         if "#title" in sentence:
-            movListString = ""
-            for mov in self.moviesList:
-                movListString = movListString + " " + mov
-            sentence = sentence.replace("#title", movListString.replace("?", "e"))
+            # movListString = ""
+            # for mov in self.moviesList:
+            #     movListString = movListString + " " + mov
+            sentence = sentence.replace("#title", self.movie.replace("?", "e"))
         return sentence
+
+if __name__ == "__main__":
+    fake_msg = {'intent': 'inform(movie)', 'movies': 'John Wick: Chapter 3 – Parabellum'}
+    json_msg = json.dumps(fake_msg)
+    nlg=NLG("test_subscribe", "test_publishes", "test12345")
+    nlg.treat_message(json_msg,"test")
