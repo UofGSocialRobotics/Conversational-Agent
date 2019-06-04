@@ -45,6 +45,7 @@ class DM(wbc.WhiteBoardClient):
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
 
+        # Todo Save and Load User Model
             # Store entities (actors,directors, genres) in the user frame
             if self.store_pref and "inform" in self.from_NLU['intent']:
                 if '+' in self.from_NLU['polarity']:
@@ -69,7 +70,6 @@ class DM(wbc.WhiteBoardClient):
             # Get a movie recommendation title
             if "inform(movie)" in next_state:
                 self.movie['title'] = self.recommend()
-                print(self.movie['title'])
                 # Todo get movie info
                 self.set_movie_info(self.movie['title'])
 
@@ -80,8 +80,8 @@ class DM(wbc.WhiteBoardClient):
             new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state)
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, list_movies, user_intent, previous_intent):
-        frame = {'intent': intention, 'movies': list_movies, 'user_intent': user_intent, 'previous_intent': previous_intent}
+    def msg_to_json(self, intention, movie, user_intent, previous_intent):
+        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -167,7 +167,6 @@ class DM(wbc.WhiteBoardClient):
     def get_cast_id(self, cast_name):
         cast_name = cast_name.replace(" ", "%20")
         query_url = config.MOVIEDB_SEARCH_PERSON_ADDRESS + config.MOVIEDB_KEY + "&query=" + cast_name
-        print(query_url)
         data = urllib.request.urlopen(query_url)
         result = data.read()
         movies = json.loads(result)
@@ -176,7 +175,6 @@ class DM(wbc.WhiteBoardClient):
     def set_movie_info(self, movie_name):
         movie_name = movie_name.replace(" ", "%20")
         omdbURL = config.OMDB_SEARCH_MOVIE_INFO + movie_name + "&r=json" + "&apikey=" + config.OMDB_KEY
-        print(omdbURL)
         data = urllib.request.urlopen(omdbURL)
         result = data.read()
         movie_info = json.loads(result)
