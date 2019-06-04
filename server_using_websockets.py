@@ -1,7 +1,9 @@
 from simple_websocket_server import WebSocketServer, WebSocket
 import ds_manager
-# import threading
+import threading
 import traceback
+from ca_logging import log
+import config
 
 class SimpleEcho(WebSocket):
     def handle(self):
@@ -28,7 +30,7 @@ class DSManagerUsingWebsockets(WebSocket, ds_manager.DSManager):
 
     def connected(self):
         print(self.address, 'connected')
-        self.send_message("Thanks for reaching out")
+        self.send_message(config.MSG_CONFIRM_CONNECTION)
         ds_manager.DSManager.__init__(self)
 
     def handle_close(self):
@@ -38,18 +40,13 @@ class DSManagerUsingWebsockets(WebSocket, ds_manager.DSManager):
 
 class ServerUsingWebSockets:
     def start_service(self):
-        print("here")
         server = WebSocketServer('localhost', 9000, DSManagerUsingWebsockets)
-        # # print("here2")
-        # t = threading.Thread(target=server.serve_forever)
-        # print("here3")
-        # t.start()
-        server.serve_forever()
+        t = threading.Thread(target=server.serve_forever)
         try:
-            server.serve_forever()
+            t.start()
+            log.info("WebSocket Server ready, waiting for connections. Running on localhost:9000.")
         except KeyboardInterrupt:
-            server.quit()
-        print("here4")
-        # server.serve_forever()
+            traceback.print_exc()
+            exit(0)
 
 
