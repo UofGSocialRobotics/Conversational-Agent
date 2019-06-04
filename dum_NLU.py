@@ -14,17 +14,19 @@ class NLU(wbc.WhiteBoardClient):
 
         if "like" in msg_lower or "love" in msg_lower:
             user_intention = 'inform'
-            user_entity = 'Tom Cruise'
+            user_entity = 'western'
+            entity_type = 'genre'
             entity_polarity = "+"
         else:
             user_intention = 'inform'
             user_entity = 'Jennifer Lawrence'
-            entity_polarity = "-"
-        new_msg = self.msg_to_json(user_intention, user_entity, entity_polarity)
+            entity_type = 'cast'
+            entity_polarity = "+"
+        new_msg = self.msg_to_json(user_intention, user_entity, entity_type, entity_polarity)
         self.publish(new_msg)
 
-    def msg_to_json(self, intent, entity, polarity):
-        frame = {'intent': intent, 'entity': entity, 'polarity': polarity}
+    def msg_to_json(self, intent, entity, entity_type, polarity):
+        frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}
         json_msg = json.dumps(frame)
         return json_msg
 

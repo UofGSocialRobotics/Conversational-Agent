@@ -2,6 +2,7 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import urllib.request
 import json
+import config
 from ca_logging import log
 
 
@@ -9,27 +10,20 @@ class DM(wbc.WhiteBoardClient):
     def __init__(self, subscribes, publishes, clientid):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, "DM"+clientid, subscribes, publishes)
+        wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes)
 
         self.currState = "start"
         # Do we store the users preferences in a user model?
         self.store_pref = True
-        # Do we generate acknowledgement?
-        self.use_acks = True
-
-        self.movieDB_key = "6e3c2d4a2501c86cd7e0571ada291f55"
-        self.discover_address = "https://api.themoviedb.org/3/discover/movie?api_key="
-        self.property = "&sort_by=popularity.desc"
 
         self.from_NLU = None
-        self.user_intent = None
-        self.user_entity = None
-        self.user_entity_polarity = None
-
         self.from_SA = None
+
+        self.movie = {'title': "", 'year': "", 'plot': "", 'actors': [], 'genres': [], 'poster': ""}
         self.nodes = {}
-        self.user_model = {"liked_entities": [], "disliked_entities": [], 'liked_movies': [], 'disliked_movies': []}
-        self.load_model("./resources/dm/Model.csv")
+        self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
+                           'liked_movies': [], 'disliked_movies': []}
+        self.load_model(config.DM_MODEL)
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
     def load_model(self, path):
@@ -43,7 +37,6 @@ class DM(wbc.WhiteBoardClient):
                 self.nodes[node.stateName] = node
 
     def treat_message(self, msg, topic):
-        reco = ""
 
         if "SA" in topic:
             self.from_SA = msg
@@ -51,43 +44,145 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = json.loads(msg)
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
-            # Store entities (actors,directors, genres) in the user frame)
-            # Todo: Actually store preferred entities
+
+            # Store entities (actors,directors, genres) in the user frame
             if self.store_pref and "inform" in self.from_NLU['intent']:
                 if '+' in self.from_NLU['polarity']:
-                    self.user_model["liked_entities"].append(self.from_NLU['entity'])
-                else:
-                    self.user_model["disliked_entities"].append(self.from_NLU['entity'])
+                    if 'cast' in self.from_NLU['entity_type']:
+                        self.user_model["liked_cast"].append(self.from_NLU['entity'])
+                    elif 'genre' in self.from_NLU['entity_type']:
+                        self.user_model["liked_genres"].append(self.from_NLU['entity'])
+                elif '-' in self.from_NLU['polarity']:
+                    if 'cast' in self.from_NLU['entity_type']:
+                        self.user_model["disliked_cast"].append(self.from_NLU['entity'])
+                    elif 'genre' in self.from_NLU['entity_type']:
+                        self.user_model["disliked_genre"].append(self.from_NLU['entity'])
 
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
-            if "inform(movie)" in next_state:
-                reco = self.recommend()
-                self.user_model['liked_movies'].append(reco)
+            if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
+                if "yes" in self.from_NLU['intent']:
+                    self.user_model['liked_movies'].append(self.movie['title'])
+                elif "request" not in self.from_NLU['intent']:
+                    self.user_model['disliked_movies'].append(self.movie['title'])
 
+            # Get a movie recommendation title
+            if "inform(movie)" in next_state:
+                self.movie['title'] = self.recommend()
+                print(self.movie['title'])
+                # Todo get movie info
+                self.set_movie_info(self.movie['title'])
+
+            prev_state = self.currState
             self.currState = next_state
             self.from_NLU = None
             self.from_SA = None
-            new_msg = self.msg_to_json(next_state, reco)
+            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state)
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, list_movies):
-        frame = {'intent': intention, 'movies': list_movies}
+    def msg_to_json(self, intention, list_movies, user_intent, previous_intent):
+        frame = {'intent': intention, 'movies': list_movies, 'user_intent': user_intent, 'previous_intent': previous_intent}
         json_msg = json.dumps(frame)
         return json_msg
 
     def recommend(self):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
-            if movie['title'] not in self.user_model['liked_movies']:
+            if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
                 return movie['title']
 
     def queryMoviesList(self):
-        query_url = self.discover_address + self.movieDB_key + self.property
+        # Todo Smart blending to get a recommendation matching with both genre and cast
+        movies_with_cast_list = []
+        movies_with_genres_list = []
+        if not self.user_model['liked_genres'] and not self.user_model['liked_cast']:
+            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + config.MOVIE_DB_PROPERTY
+            data = urllib.request.urlopen(query_url)
+            result = data.read()
+            movies = json.loads(result)
+            return movies['results']
+        if self.user_model['liked_genres']:
+            genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
+            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + config.MOVIE_DB_PROPERTY
+            data = urllib.request.urlopen(query_url)
+            result = data.read()
+            movies = json.loads(result)
+            movies_with_genres_list = movies['results']
+        if self.user_model['liked_cast']:
+            cast_id = self.get_cast_id(self.user_model['liked_cast'][-1].lower())
+            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + config.MOVIE_DB_PROPERTY
+            data = urllib.request.urlopen(query_url)
+            result = data.read()
+            movies = json.loads(result)
+            movies_with_cast_list = movies['results']
+        if movies_with_genres_list:
+            if movies_with_cast_list:
+                if len(movies_with_genres_list) > len(movies_with_cast_list):
+                    smallest_list = movies_with_cast_list
+                    biggest_list = movies_with_genres_list
+                else:
+                    smallest_list = movies_with_genres_list
+                    biggest_list = movies_with_cast_list
+
+                j = 0
+                movies_blended_list = []
+                for i in range(len(smallest_list)):
+                    movies_blended_list.append(smallest_list[i])
+                    movies_blended_list.append(biggest_list[i])
+                    j = i
+
+                for k in range(j, len(biggest_list)):
+                    movies_blended_list.append(biggest_list[k])
+
+                return movies_blended_list
+            else:
+                return movies_with_genres_list
+        else:
+            return movies_with_cast_list
+
+    def get_genre_id(self, genre_name):
+        return {
+            'action': 28,
+            'adventure': 12,
+            'animation': 16,
+            'comedy': 35,
+            'comedies': 35,
+            'crime': 80,
+            'documentary': 99,
+            'drama': 18,
+            'family': 10751,
+            'fantasy': 14,
+            'history': 36,
+            'horror': 27,
+            'music': 10402,
+            'romance': 10749,
+            'romantic': 10749,
+            'sci-fi': 878,
+            'syfy': 878,
+            'thriller': 53,
+            'war': 10752,
+            'western': 37
+        }.get(genre_name, 0)
+
+    def get_cast_id(self, cast_name):
+        cast_name = cast_name.replace(" ", "%20")
+        query_url = config.MOVIEDB_SEARCH_PERSON_ADDRESS + config.MOVIEDB_KEY + "&query=" + cast_name
+        print(query_url)
         data = urllib.request.urlopen(query_url)
         result = data.read()
         movies = json.loads(result)
-        return movies['results']
+        return int(movies['results'][0]['id'])
+
+    def set_movie_info(self, movie_name):
+        movie_name = movie_name.replace(" ", "%20")
+        omdbURL = config.OMDB_SEARCH_MOVIE_INFO + movie_name + "&r=json" + "&apikey=" + config.OMDB_KEY
+        print(omdbURL)
+        data = urllib.request.urlopen(omdbURL)
+        result = data.read()
+        movie_info = json.loads(result)
+        self.movie['plot'] = movie_info.get("Plot")
+        self.movie['actors'] = movie_info.get("Actors")
+        self.movie['genres'] = movie_info.get("Genre")
 
 
 # A node corresponds to a specific state of the dialogue. It contains:
