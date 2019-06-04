@@ -42,7 +42,6 @@ class DSManager:
             self.start_timer(client_id)
 
     def treat_message_from_client(self, msg_txt, client_id):
-        print("IN treat_message_from_client")
         """
         Creates dedicated services for client on first connection, or just forward the message.
         :param msg: client's message
