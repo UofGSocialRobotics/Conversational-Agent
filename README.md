@@ -8,6 +8,7 @@ To install python packages, run:
 ```shell
 pip install paho-mqtt
 pip install nltk
+pip install simple-websocket-server
 # pip install google-cloud-language
 ```
 

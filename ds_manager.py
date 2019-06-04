@@ -1,85 +1,29 @@
 import threading
 import config
-import paho.mqtt.client as paho
-import helper_functions as helper
-import traceback
 from ca_logging import log
 from whiteboard import whiteboard
 import time
 
 
-
-class Server(paho.Client):
+class DSManager:
     """
     Server is the main point of contact for all web clients.
     For each new client, the server creates new dedicates services (NLU, DM, NLG)
     Server is also in charge to send back messages to specific clients  - using specific channels.
     """
-    def __init__(self, name):
-        paho.Client.__init__(self)
-        self.name = name
+    def __init__(self):
+
+        self.name = "Dialog-System-Manager"
         log.info("%s: init" % self.name)
-        self.clients = dict()
+        self.clients_services = dict()
         self.timer_threads = dict()
 
 
     ####################################################################################################
     ##                                          General Methods                                       ##
     ####################################################################################################
-
-    def start_service(self):
-        self.connect_distant_broker()
-        self.subscribe_distant_broker()
-        try:
-            self.loop_forever()
-        except KeyboardInterrupt:
-            self.quit()
-
-    def quit(self):
-        self.stop_all_services()
-        self.disconnect()
-        log.info("------------ QUIT ------------")
-        exit(0)
-
-    ####################################################################################################
-    ##                                Methods related to distant broker                               ##
-    ####################################################################################################
-
-    def on_message(self, client, userdata, msg):
-        try:
-            helper.print_message(self.name, "received", str(msg.payload), msg.topic)
-            self.treat_message_from_client(msg)
-        except:
-            traceback.print_exc()
-            self.quit()
-
-    def on_publish(self, client, user_data, mid):  #keep function signature from paho
-        log.info("%s pusblished msg, id = %s" % (self.name, str(mid)))
-
-    def on_subscribe(self, client, userdata, mid, granted_qos): #keep function signature from paho
-        log.info("%s: subscribed, %s, %s" % (self.name, str(mid), str(granted_qos)))
-
-    def on_disconnect(self, client, userdata, rc):
-        log.info("%s disconnecting." % self.name)
-
-    def connect_distant_broker(self):
-        # self.on_publish = self.on_publish
-        # self.on_subscribe = self.on_subscribe
-        # self.on_message = self.on_message
-        # self.on_log = on_log
-        self.connect(config.ADDRESS, config.PORT)
-        # self.loop_start()
-        log.info("%s: connexion started"%self.name)
-
-    def subscribe_distant_broker(self):
-        topic = config.MSG_CLIENT
-        log.info("%s: subscribing to %s" % (self.name, topic))
-        self.subscribe(topic, qos=2)
-
-
-    def publish_distant_broker(self, message, topic):
-        helper.print_message(self.name, "publishing", message, topic)
-        (rc, mid) = self.publish(topic, message, qos=2)
+    def publish_for_client(self, message, topic):
+        pass
 
     ####################################################################################################
     ##                                Methods related to distant client                               ##
@@ -97,32 +41,26 @@ class Server(paho.Client):
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
 
-    def treat_message_from_client(self, msg):
+    def treat_message_from_client(self, msg_txt, client_id):
+        print("IN treat_message_from_client")
         """
         Creates dedicated services for client on first connection, or just forward the message.
         :param msg: client's message
         """
-        # get client ID
-        msg_full = str(msg.payload.decode('utf-8'))
-        msg_split = msg_full.split(':')
-        client_id = msg_split[0]
-        msg_split.pop(0)
-        msg_txt = ':'.join(msg_split)
+
 
         # On first connection, create dedicated NLU/DM/NLG and subscribe to new DM topic
         # and start timer to kill services if no activity
-        if client_id not in self.clients.keys():
+        if client_id not in self.clients_services.keys():
             if config.MSG_CONNECTION in msg_txt:
                 self.subscribe_whiteboard(config.MSG_NLG+client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
                 confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
-                self.publish_distant_broker(confirm_connection_messsage, config.MSG_SERVER_OUT+client_id)
-            else : # tell client they were disconnected
+                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT+client_id)
+            else: # tell client they were disconnected
                 error_message = "ERROR, you were disconnected. Start session again by refreshing page."
-                self.publish_distant_broker(error_message, config.MSG_SERVER_OUT+client_id)
-
-
+                self.publish_for_client(error_message, config.MSG_SERVER_OUT+client_id)
         else:
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
             if config.MSG_CONNECTION not in msg_txt:
@@ -147,33 +85,33 @@ class Server(paho.Client):
     ####################################################################################################
 
     def create_services(self, client_id):
-        self.clients[client_id] = dict()
+        self.clients_services[client_id] = dict()
         # create dedicated NLU
         new_nlu = config.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
-        self.clients[client_id]["nlu"] = new_nlu
+        self.clients_services[client_id]["nlu"] = new_nlu
         # create dedicated sentiment analysis
         new_sa = config.SentimentAnalysis(subscribes=config.SentimentAnalysis_subscribes, publishes=config.SentimentAnalysis_publishes, clientid=client_id)
-        self.clients[client_id]["sa"] = new_sa
+        self.clients_services[client_id]["sa"] = new_sa
         # create dedicated DM
         new_dm = config.DM(subscribes=config.DM_subscribes, publishes=config.DM_publishes, clientid=client_id)
-        self.clients[client_id]["dm"] = new_dm
+        self.clients_services[client_id]["dm"] = new_dm
         # create dedicated NLG
         new_nlg = config.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
-        self.clients[client_id]["nlg"] = new_nlg
+        self.clients_services[client_id]["nlg"] = new_nlg
 
         # star services in dedicated threads
-        for key, s in self.clients[client_id].items():
+        for key, s in self.clients_services[client_id].items():
             s.start_service()
 
     def stop_services(self, client_id):
         log.info("Shuting down services for client %s" % client_id)
-        for c in self.clients[client_id].values():
+        for c in self.clients_services[client_id].values():
             c.stop_service()
             del c
-        del self.clients[client_id]
+        del self.clients_services[client_id]
 
     def stop_all_services(self):
-        for client_id, service_dict in self.clients.items():
+        for client_id, service_dict in self.clients_services.items():
             for service in service_dict.values():
                 service.stop_service()
             if client_id in self.timer_threads.keys():
@@ -184,4 +122,4 @@ class Server(paho.Client):
 
     def treat_message_from_module(self, message, topic):
         client_id = topic.split("/")[-1]
-        self.publish_distant_broker(message, config.MSG_SERVER_OUT+client_id)
+        self.publish_for_client(message, config.MSG_SERVER_OUT+client_id)

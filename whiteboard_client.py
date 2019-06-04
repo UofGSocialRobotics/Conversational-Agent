@@ -25,8 +25,8 @@ class WhiteBoardClient:
             whiteboard.unsubscribe(self, topic)
 
     def start_thread(self):
-            t = threading.Thread(target=self.loop_forever)
-            t.start()
+        t = threading.Thread(target=self.loop_forever)
+        t.start()
 
     def start_service(self):
         # self.on_log = on_log
