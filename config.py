@@ -87,6 +87,7 @@ SentimentAnalysis_publishes = MSG_SA
 ####################################################################################################
 
 DM_MODEL = "./resources/dm/Model.csv"
+USER_MODELS = "./resources/user_models/"
 NLG_SENTENCE_DB = "./resources/nlg/sentence_db.csv"
 NLG_ACK_DB = "./resources/nlg/ack_db.csv"
 

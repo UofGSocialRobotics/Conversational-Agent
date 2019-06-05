@@ -13,6 +13,7 @@ class NLG(wbc.WhiteBoardClient):
         self.sentenceDB = {}
         self.ackDB = {}
 
+        self.user_model = None
         self.user_intent = None
         self.movie = None
 
@@ -44,15 +45,13 @@ class NLG(wbc.WhiteBoardClient):
                         self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
                 else:
                     self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
-                    print(self.ackDB)
                     self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-                    print(self.ackDB)
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
-        print(message['intent'])
         sentence = random.choice(self.sentenceDB[message['intent']])
         self.movie = message['movie']
+        self.user_model = message['user_model']
         self.user_intent = message['user_intent']
         if self.use_acks and message['previous_intent'] in self.ackDB:
             if "yes" in message['user_intent']:
@@ -99,6 +98,11 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = "Sorry, I'm not sure about this movie's genres..."
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
+        if "#last_movie" in sentence:
+            if self.user_model['liked_movies']:
+                sentence = sentence.replace("#last_movie", self.user_model['liked_movies'][-1])
+            else:
+                sentence = "I know you did not accept any of my recommendations last time but did you watch something cool recently?"
         return sentence
 
 

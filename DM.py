@@ -3,6 +3,7 @@ import helper_functions as helper
 import urllib.request
 import json
 import config
+from pathlib import Path
 from ca_logging import log
 
 
@@ -11,6 +12,8 @@ class DM(wbc.WhiteBoardClient):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes)
+
+        self.client_id = clientid
 
         self.currState = "start"
         # Do we store the users preferences in a user model?
@@ -24,6 +27,7 @@ class DM(wbc.WhiteBoardClient):
         self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
                            'liked_movies': [], 'disliked_movies': []}
         self.load_model(config.DM_MODEL)
+        self.load_user_model(config.USER_MODELS, clientid)
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
     def load_model(self, path):
@@ -37,6 +41,17 @@ class DM(wbc.WhiteBoardClient):
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
 
+    def save_user_model(self):
+        file = config.USER_MODELS + self.client_id + ".prefs"
+        with open(file, 'w') as outfile:
+            json.dump(self.user_model, outfile)
+
+    def load_user_model(self, path, client_id):
+        file = Path(path + client_id + ".prefs")
+        if file.is_file():
+            with open(file) as json_file:
+                self.user_model = json.load(json_file)
+
     def treat_message(self, msg, topic):
 
         if "SA" in topic:
@@ -45,6 +60,7 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = json.loads(msg)
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
+
 
         # Todo Save and Load User Model
             # Store entities (actors,directors, genres) in the user frame
@@ -73,15 +89,23 @@ class DM(wbc.WhiteBoardClient):
                 self.movie['title'] = self.recommend()
                 self.set_movie_info(self.movie['title'])
 
+            # if the user comes back
+            if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
+                next_state = "greet_back"
+
+            # saves the user model at the end of the interaction
+            if next_state == 'bye':
+                self.save_user_model()
+
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state)
+            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state, self.user_model)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, movie, user_intent, previous_intent):
-        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent}
+    def msg_to_json(self, intention, movie, user_intent, previous_intent, user_frame):
+        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame}
         json_msg = json.dumps(frame)
         return json_msg
 
