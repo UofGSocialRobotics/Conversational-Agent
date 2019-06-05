@@ -20,7 +20,6 @@ class NLG(wbc.WhiteBoardClient):
         self.use_acks = True
 
         self.load_sentence_model(config.NLG_SENTENCE_DB)
-        # Todo add basic acks
         self.load_ack_model(config.NLG_ACK_DB)
 
     def load_sentence_model(self, path):
@@ -54,13 +53,13 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
         if self.use_acks and message['previous_intent'] in self.ackDB:
-            if "yes" in message['user_intent']:
-                ack = random.choice(self.ackDB[message['previous_intent']]['yes'])
-            elif "no" in message['user_intent']:
-                ack = random.choice(self.ackDB[message['previous_intent']]['no'])
+            if "yes" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['yes']:
+                ack = self.pick_ack(message['previous_intent'], 'yes')
+            elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
+                ack = self.pick_ack(message['previous_intent'], 'no')
             else:
                 if self.ackDB[message['previous_intent']]['default']:
-                    ack = random.choice(self.ackDB[message['previous_intent']]['default'])
+                    ack = self.pick_ack(message['previous_intent'], 'default')
                 else:
                     ack = ""
         else:
@@ -68,14 +67,20 @@ class NLG(wbc.WhiteBoardClient):
         final_sentence = self.replace(ack + " " + sentence)
         self.publish(final_sentence)
 
-        # Todo Add acks more smartly
-        # Todo Choose basic intent without #entity when empty
-
-
         # Todo Add explanations
 
+    def pick_ack(self, previous_intent, valence):
+        potential_options = []
+        for option in self.ackDB[previous_intent][valence]:
+            if "#entity" in option:
+                if self.user_intent['entity']:
+                    potential_options.append(option)
+            else:
+                potential_options.append(option)
+        print(potential_options)
+        return random.choice(potential_options)
+
     def replace(self, sentence):
-        #  Todo Replace adjency pair (#entity)
         if "#title" in sentence:
             # movListString = ""
             # for mov in self.moviesList:

@@ -62,7 +62,6 @@ class DM(wbc.WhiteBoardClient):
         if self.from_NLU and self.from_SA:
 
 
-        # Todo Save and Load User Model
             # Store entities (actors,directors, genres) in the user frame
             if self.store_pref and "inform" in self.from_NLU['intent']:
                 if '+' in self.from_NLU['polarity']:
