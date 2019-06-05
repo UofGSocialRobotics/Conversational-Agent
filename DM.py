@@ -29,7 +29,8 @@ class DM(wbc.WhiteBoardClient):
     def load_model(self, path):
         with open(path) as f:
             for line in f:
-                line_input = line.split(",")
+                line_input = line.replace('\n', '')
+                line_input = line_input.split(",")
                 node = DMNode(line_input[0], line_input[1], line_input[2])
                 for i in range(3, len(line_input)):
                     if "-" in line_input[i]:
@@ -64,20 +65,19 @@ class DM(wbc.WhiteBoardClient):
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif "request" not in self.from_NLU['intent']:
+                elif any(s in self.from_NLU['intent'] for s in ('request', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
             if "inform(movie)" in next_state:
                 self.movie['title'] = self.recommend()
-                # Todo get movie info
                 self.set_movie_info(self.movie['title'])
 
             prev_state = self.currState
             self.currState = next_state
+            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state)
             self.from_NLU = None
             self.from_SA = None
-            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state)
             self.publish(new_msg)
 
     def msg_to_json(self, intention, movie, user_intent, previous_intent):

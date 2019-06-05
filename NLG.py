@@ -16,11 +16,11 @@ class NLG(wbc.WhiteBoardClient):
         self.user_intent = None
         self.movie = None
 
-        self.use_acks = False
+        self.use_acks = True
 
         self.load_sentence_model(config.NLG_SENTENCE_DB)
         # Todo add basic acks
-        # self.load_ack_model(config.NLG_ACK_DB)
+        self.load_ack_model(config.NLG_ACK_DB)
 
     def load_sentence_model(self, path):
         with open(path) as f:
@@ -34,33 +34,44 @@ class NLG(wbc.WhiteBoardClient):
     def load_ack_model(self, path):
         with open(path) as f:
             for line in f:
-                line_input = line.split(",")
+                line_input = line.replace("\n", '')
+                line_input = line_input.split(",")
+
                 if self.ackDB.get(line_input[0]) is not None:
-                    if self.ackDB[line_input[0]][line_input[3]]:
-                        self.ackDB[line_input[0]][line_input[3]].append(line_input[2])
+                    if self.ackDB[line_input[0]][line_input[4]]:
+                        self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
                     else:
-                        self.ackDB[line_input[0]][line_input[3]] = (line_input[2])
+                        self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
                 else:
-                    self.ackDB[line_input[0]][line_input[3]] = (line_input[2])
+                    self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
+                    print(self.ackDB)
+                    self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
+                    print(self.ackDB)
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
+        print(message['intent'])
         sentence = random.choice(self.sentenceDB[message['intent']])
         self.movie = message['movie']
         self.user_intent = message['user_intent']
-        if self.use_acks:
-            if "yes" in msg['user_intent']:
+        if self.use_acks and message['previous_intent'] in self.ackDB:
+            if "yes" in message['user_intent']:
                 ack = random.choice(self.ackDB[message['previous_intent']]['yes'])
-            elif "no" in msg['user_intent']:
+            elif "no" in message['user_intent']:
                 ack = random.choice(self.ackDB[message['previous_intent']]['no'])
             else:
-                ack = random.choice(self.ackDB[message['previous_intent']][''])
+                if self.ackDB[message['previous_intent']]['default']:
+                    ack = random.choice(self.ackDB[message['previous_intent']]['default'])
+                else:
+                    ack = ""
         else:
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
         self.publish(final_sentence)
 
         # Todo Add acks more smartly
+        # Todo Choose basic intent without #entity when empty
+
 
         # Todo Add explanations
 
@@ -87,7 +98,7 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 sentence = "Sorry, I'm not sure about this movie's genres..."
         if "#entity" in sentence:
-            sentence = sentence.replace("#genres", self.user_intent['entity'])
+            sentence = sentence.replace("#entity", self.user_intent['entity'])
         return sentence
 
 
