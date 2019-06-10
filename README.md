@@ -9,6 +9,10 @@ To install python packages, run:
 pip install paho-mqtt
 pip install nltk
 pip install simple-websocket-server
+pip install stanfordnlp
+pip install spacy
+python -m spacy download en
+pip install fuzzywuzzy
 # pip install google-cloud-language
 ```
 
@@ -16,6 +20,9 @@ Run in your python environment:
 ```python
 import nltk
 nltk.download('vader_lexicon')
+nltk.download('punkt')
+import stanfordnlp
+stanfordnlp.download('en')
 ```
 
 ## Server options
@@ -37,6 +44,32 @@ USING = WEBSOCKETS
 ```shell
 python main.py
 ```
+
+## Debug
+
+If you get the following error message:
+```shell
+Traceback (most recent call last):
+  File "dum_NLU.py", line 6, in <module>
+    import stanfordnlp
+  File "/Users/lucileca/Desktop/Conversational_Agent/server_side/venv/lib/python3.7/site-packages/stanfordnlp/__init__.py", line 1, in <module>
+    from stanfordnlp.pipeline.core import Pipeline
+  File "/Users/lucileca/Desktop/Conversational_Agent/server_side/venv/lib/python3.7/site-packages/stanfordnlp/pipeline/core.py", line 7, in <module>
+    import torch
+  File "/Users/lucileca/Desktop/Conversational_Agent/server_side/venv/lib/python3.7/site-packages/torch/__init__.py", line 79, in <module>
+    from torch._C import *
+ImportError: dlopen(/Users/lucileca/Desktop/Conversational_Agent/server_side/venv/lib/python3.7/site-packages/torch/_C.cpython-37m-darwin.so, 9): Library not loaded: /usr/local/opt/libomp/lib/libomp.dylib
+  Referenced from: /Users/lucileca/Desktop/Conversational_Agent/server_side/venv/lib/python3.7/site-packages/torch/lib/libshm.dylib
+  Reason: image not found
+```
+you can try:
+```shell
+pip uninstall torch -y
+pip uninstall pytorch -y
+pip uninstall torchvision -y
+pip install torch==1.0.1 -f https://download.pytorch.org/whl/cpu/stable # CPU-only build
+```
+__NOTE__: Check which build you have on you machin (CUDAXX or CPU only), see https://pytorch.org/get-started/previous-versions/
 
 ## [Developer] Logging module
 
