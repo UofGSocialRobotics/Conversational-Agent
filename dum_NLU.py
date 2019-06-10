@@ -32,6 +32,12 @@ NO = NO_1 + NO_2
 GREETINGS_1 = ["hi", "hey", 'hello', "morning", "afternoon", "evening", "howdy", "d'day", "yo", "greeting", "hiya", "welcome", "hi-ya", "salutation", "hola"]
 # GREETINGS_2 = ["good morning", "good afternoon", 'good evening']
 
+BYE_1 = ["bye", "ciao", "adieu", "farewell", "stop", "end", "adios", "goodbye", "cheerio", "goodby", "good-by", "cheers"]
+BYE_2 = ["see you", "au revoir", "see ya"]
+BYE_3 = ["have a nice day"]
+
+REQUEST_MORE_1 = ["more", "another", "other", "else"]
+
 def preprocess(sentence):
     s = sentence.lower()
     s = s.replace(" don t ", " don't ")
@@ -151,6 +157,31 @@ def is_greeting(document):
         if token.text in GREETINGS_1:
             return True
 
+def is_alreadywatched(sentence):
+    return ("already" in sentence)
+
+def is_requestmore(document):
+    for token in document:
+        if token.text in REQUEST_MORE_1:
+            return True
+
+def is_goodbye(document, sentence):
+    for token in document:
+        if token.text in BYE_1:
+            return True
+    if len(sentence) > 1:
+        bigrams = nltk.bigrams(sentence.split())
+        for bg in bigrams:
+            bg_text = ' '.join(bg)
+            if bg_text in BYE_2:
+                return True
+    if len(sentence) > 3:
+        fourgrams = nltk.ngrams(sentence.split(), 4)
+        for fg in fourgrams:
+            fg_text = ' '.join(fg)
+            if fg_text in BYE_3:
+                return True
+    return False
 
 def is_yes_no(document, sentence):
     sentence = flatten_sentence(sentence)
@@ -292,7 +323,13 @@ def rule_based_nlu(utterance,spacy_nlp):
     if f:
         return f
     else:
-        if is_askActor(document):
+        if is_alreadywatched( utterance):
+            f = "alreadyWatched"
+        elif is_goodbye(document, utterance):
+            f = "goodbye"
+        elif is_requestmore(document):
+            f = "request_more"
+        elif is_askActor(document):
             f = "askActor"
         elif is_askDirector(document):
             f = "askDirector"
@@ -305,7 +342,9 @@ def rule_based_nlu(utterance,spacy_nlp):
         if f == None:
             f = is_yes_no(document, utterance)
         if f == None and is_greeting(document):
-            f =  "greet"
+            f = "greet"
+        # if f == None and is_requestmore(document):
+        #     f = "request_more"
         if f == None:
             f = "IDK"
         return f
@@ -387,21 +426,28 @@ class NLU(wbc.WhiteBoardClient):
 
 if __name__ == "__main__":
 
-    # Ask genre, director, actor
-    dataset = parse_dataset.parse_dataset("resources/datasets/scenario10.dataset")
     # Ask plot
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario1.dataset")
-    # yes/no
-    dataset += parse_dataset.parse_dataset("resources/datasets/scenario9.dataset")
-    # inform genre
-    dataset += parse_dataset.parse_dataset("resources/datasets/scenario7.dataset")
     # inform actor
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario2.dataset")
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario6.dataset")
-    # inform director
-    dataset += parse_dataset.parse_dataset("resources/datasets/scenario8.dataset")
     # greet / yes / no
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario3.dataset")
+    # goodbye
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario4.dataset")
+    # request more
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario5.dataset")
+    # inform genre
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario7.dataset")
+    # inform director
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario8.dataset")
+    # yes/no
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario9.dataset")
+    # Ask genre, director, actor
+    dataset = parse_dataset.parse_dataset("resources/datasets/scenario10.dataset")
+    # already watched
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario12.dataset")
+
 
     evaluate(dataset, "wrong")
 
