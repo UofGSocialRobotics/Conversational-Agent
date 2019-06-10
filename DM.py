@@ -61,7 +61,6 @@ class DM(wbc.WhiteBoardClient):
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
 
-
             # Store entities (actors,directors, genres) in the user frame
             if self.store_pref and "inform" in self.from_NLU['intent']:
                 if '+' in self.from_NLU['polarity']:
@@ -78,9 +77,9 @@ class DM(wbc.WhiteBoardClient):
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
-                if "yes" in self.from_NLU['intent']:
+                if "yes" in self.user_action['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif any(s in self.from_NLU['intent'] for s in ('request', 'no')):
+                elif any(s in self.user_action['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
