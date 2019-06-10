@@ -29,6 +29,9 @@ NO_2 = ["uh uh", "no way"]
 NO_3 = ["by no means", "on no account", "not at all"]
 NO = NO_1 + NO_2
 
+GREETINGS_1 = ["hi", "hey", 'hello', "morning", "afternoon", "evening", "howdy", "d'day", "yo", "greeting", "hiya", "welcome", "hi-ya", "salutation", "hola"]
+# GREETINGS_2 = ["good morning", "good afternoon", 'good evening']
+
 def preprocess(sentence):
     s = sentence.lower()
     s = s.replace(" don t ", " don't ")
@@ -142,6 +145,12 @@ def flatten_sentence(sentence):
     s = sentence.translate(str.maketrans('','',string.punctuation))
     s = re.sub(' +', ' ', s)
     return s.lower()
+
+def is_greeting(document):
+    for token in document:
+        if token.text in GREETINGS_1:
+            return True
+
 
 def is_yes_no(document, sentence):
     sentence = flatten_sentence(sentence)
@@ -295,6 +304,8 @@ def rule_based_nlu(utterance,spacy_nlp):
             f = is_inform_genre(document)
         if f == None:
             f = is_yes_no(document, utterance)
+        if f == None and is_greeting(document):
+            f =  "greet"
         if f == None:
             f = "IDK"
         return f
@@ -385,9 +396,12 @@ if __name__ == "__main__":
     # inform genre
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario7.dataset")
     # inform actor
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario2.dataset")
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario6.dataset")
     # inform director
     dataset += parse_dataset.parse_dataset("resources/datasets/scenario8.dataset")
+    # greet / yes / no
+    dataset += parse_dataset.parse_dataset("resources/datasets/scenario3.dataset")
 
     evaluate(dataset, "wrong")
 
