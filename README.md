@@ -14,7 +14,6 @@ pip install spacy
 pip install textblob
 python -m spacy download en
 pip install fuzzywuzzy
-pip install pyyaml
 # pip install google-cloud-language
 ```
 
