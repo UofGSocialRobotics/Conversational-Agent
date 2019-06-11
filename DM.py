@@ -92,7 +92,7 @@ class DM(wbc.WhiteBoardClient):
                 next_state = "greet_back"
 
             # saves the user model at the end of the interaction
-            if next_state == 'bye':
+            if next_state == 'bye' and config.SAVE_USER_MODEL:
                 self.save_user_model()
 
             prev_state = self.currState
@@ -198,6 +198,7 @@ class DM(wbc.WhiteBoardClient):
 
     def set_movie_info(self, movie_name):
         movie_name = movie_name.replace(" ", "%20")
+        movie_name = movie_name.replace("é", "e")
         omdbURL = config.OMDB_SEARCH_MOVIE_INFO + movie_name + "&r=json" + "&apikey=" + config.OMDB_KEY
         data = urllib.request.urlopen(omdbURL)
         result = data.read()

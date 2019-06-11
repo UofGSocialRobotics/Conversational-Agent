@@ -99,3 +99,8 @@ MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
 OMDB_SEARCH_MOVIE_INFO = "http://www.omdbapi.com/?t="
 OMDB_KEY = "be72fd68"
 HIGH_QUALITY_POSTER = True
+
+####################################################################################################
+##                                          Other config                                          ##
+####################################################################################################
+SAVE_USER_MODEL = False
