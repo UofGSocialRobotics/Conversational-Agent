@@ -77,9 +77,9 @@ class DM(wbc.WhiteBoardClient):
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
-                if "yes" in self.user_action['intent']:
+                if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif any(s in self.user_action['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
+                elif any(s in self.from_NLU['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
