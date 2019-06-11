@@ -1,49 +1,17 @@
 from ca_logging import log
+import whiteboard_client as wbc
+import helper_functions as helper
 import nltk
 import stanfordnlp
 # stanfordnlp.download('en')
 from textblob import TextBlob
 import spacy
+import json
 import parser
 import string
 import re
 import argparse
 import helper_functions as helper
-
-# VOC = dict()
-#
-# VOC['genre'] = ["action", "adventre", "comedy", "crime", "drama", "fantasy", "historical", "fiction", "horror", "mystery", "polotical",
-# "romance", "saga", "satire", "animation", "western", "musical", "superhero", "bibliography", "documentary", "family", "romantic comedy", "war"]
-# VOC["genre_scifi"] = ["sci-fi", "scifi", "fiction"]
-#
-# VOC["yes"] = dict()
-# VOC["yes"]["yes_words"] = dict()
-# VOC["yes"]["yes_words"]["yes_1word"] = ["yes", "yep", "yup", "ok", "okay", "yeah", "okeydokey", "yea", "affirmative", "ja", "ya", "aye", "yea", "okey-dokey", "yea", "righto",]
-# #  you bet
-# VOC["yes"]["yes_words"]["yes_adj"] = ["great", "cool", "good", "right", "all right", "correct", "sure", "agreed", "fine", "alright", "well", "granted", "true", "likely"]
-# VOC["yes"]["yes_words"]["yes_advb"] = ["definitely", "absolutely", "certainly", "naturally", "totally", "exactly", "precisely", "gladly", "probably", "indeed"]
-# VOC["yes"]["yes_words"]["yes_2words"] = ["no problem", "why not", "you bet"]
-# VOC["yes"]["yes_words"]["yes_superlative"] = ["amazing", "awesome", "booyah", "excellent", "fab", "fabulous", "fantastic", "great", "hooray", "incredible", "splendid", "super", "terrific", "tremendous", "whoopee", "wonderful"]
-# # YES = YES_1 + YES_2 + YES_3 + YES_4 + YES_5
-# VOC["yes"]["yes_vb"] = ["guess", "think", "like", "love", "agree", "will", "would"]
-#
-# VOC["no"] = dict()
-# VOC["no"]["no_1word"] = ["no", "nope", "nop", "nah", "neh", "nay", "never", "not", "nix", "uh-uh", "nixy", "nixey", "negative", "none", "nothing", "noway", "noways", "hardly", "enough", "disagree", "wrong"]
-# VOC["no"]["no_2words"] = ["uh uh", "no way"]
-# VOC["no"]["no_3words"] = ["by no means", "on no account", "not at all"]
-# # NO = NO_1 + NO_2
-#
-# VOC["greetings"] = ["hi", "hey", 'hello', "morning", "afternoon", "evening", "howdy", "d'day", "yo", "greeting", "hiya", "welcome", "hi-ya", "salutation", "hola"]
-# # GREETINGS_2 = ["good morning", "good afternoon", 'good evening']
-#
-# VOC["bye"] = dict()
-# VOC["bye"]["bye_1word"] = ["bye", "ciao", "adieu", "farewell", "stop", "end", "adios", "goodbye", "cheerio", "goodby", "good-by", "cheers"]
-# VOC["bye"]["bye_2words"] = ["see you", "au revoir", "see ya"]
-# VOC["bye"]["bye_4words"] = ["have a nice day"]
-#
-# VOC["request_more"] = ["more", "another", "other", "else"]
-#
-# helper.write_json('resources/nlu/voc.json', VOC)
 
 
 ####################################################################################################
@@ -459,7 +427,6 @@ def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
     utterance = preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
-    # f = "IDK"
     f = is_inform_cast(capitalized_document, cast_dicts)
     if f:
         return f
@@ -487,6 +454,25 @@ def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
         if f == None:
             f = "IDK"
         return f
+
+
+def format_formula(formula):
+    intent, entity, entitytype, polarity = "", "", "", ""
+    if "ask" in formula or formula in ["greet", "yes", "no", "goodbye", "request_more", "alreadyWatched", "IDK"]:
+        intent = formula
+    elif "inform" in formula:
+        if "cast" in formula:
+            intent = "inform"
+            entitytype = "cast"
+            entity = formula.split()[2][:-1]
+            polarity = "+"
+        elif "genre" in formula:
+            intent = "inform"
+            entitytype = "genre"
+            entity = formula.split()[2][:-1]
+            polarity = "+"
+
+    return intent, entity, entitytype, polarity
 
 ####################################################################################################
 ##                                      Evaluate NLU performance                                  ##
@@ -526,10 +512,42 @@ def test_nlu():
         if utterance == 'q':
             q = True
         else:
-            print(rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts))
-            # print("tedt")
+            formula = rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts)
+            print(formula)
+            intent, entity, entitytype, polarity = format_formula(formula)
+            print(intent, entity, entitytype, polarity)
 
 
+####################################################################################################
+##                                     rule-based NLU Module                                      ##
+####################################################################################################
+
+class RuleBasedNLU(wbc.WhiteBoardClient):
+    def __init__(self, subscribes, publishes, clientid):
+        subscribes = helper.append_c_to_elts(subscribes, clientid)
+        publishes = publishes + clientid
+        wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
+        self.voc = parser.parse_voc()
+        self.spacy_nlp = spacy.load("en")
+        self.cast_dicts = parser.get_all_cast()
+
+    def treat_message(self, msg, topic):
+        msg_lower = msg.lower()
+
+        formula = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
+        intent, entity, entitytype, polarity = format_formula(formula=formula)
+
+        new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
+        self.publish(new_msg)
+
+    def msg_to_json(self, intent, entity, entity_type, polarity):
+        frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}
+        json_msg = json.dumps(frame)
+        return json_msg
+
+####################################################################################################
+##                                     Run as stand-alone                                         ##
+####################################################################################################
 
 if __name__ == "__main__":
 

@@ -59,7 +59,8 @@ def get_all_cast(actorfile="resources/nlu/actor2id.lexicon", directorfile="resou
         lastname = l_splited_underscore[-1][:-1]
         x = firstnamelastname.split(" ")
         lastnamefirstname = " ".join(reversed(x))
-        id = l_splited_dash[-1][:-1]
+        # id = l_splited_dash[-1][:-1]
+        id = l_splited_dash[0]
         if len(firstnamelastname) > 3 and id != "meagan_good":
             firstnamelastname2id[firstnamelastname] = id
             lastname2id[lastname] = id
