@@ -1,7 +1,7 @@
 from ca_logging import log
 import paho.mqtt.client as paho
 import json
-import yaml
+#import yaml
 
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:

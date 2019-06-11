@@ -7,7 +7,7 @@ import stanfordnlp
 from textblob import TextBlob
 import spacy
 import json
-import parser
+import dataparser
 import string
 import re
 import argparse
@@ -390,9 +390,9 @@ def compare_syntax_analysis(sentence):
     # print("No dependency parser with textblob")
     #
 
-    cast_dicts = parser.get_all_cast()
+    cast_dicts = dataparser.get_all_cast()
 
-    spacy_nlp = spacy.load("en")
+    spacy_nlp = spacy.load("en_core_web_sm")
     document = spacy_nlp(sentence)
     print("With spacy")
     for token in document:
@@ -479,9 +479,9 @@ def format_formula(formula):
 ####################################################################################################
 
 def evaluate(dataset, to_print='all'):
-    spacy_nlp = spacy.load("en")
-    voc = parser.parse_voc()
-    cast_dicts = parser.get_all_cast()
+    spacy_nlp = spacy.load("en_core_web_sm")
+    voc = dataparser.parse_voc()
+    cast_dicts = dataparser.get_all_cast()
     got_right = 0
     for utterance, formula in dataset:
         f = rule_based_nlu(utterance, spacy_nlp, voc=voc, cast_dicts=cast_dicts)
@@ -504,9 +504,9 @@ def evaluate(dataset, to_print='all'):
 
 def test_nlu():
     q= False
-    spacy_nlp = spacy.load("en")
-    voc = parser.parse_voc()
-    cast_dicts = parser.get_all_cast()
+    spacy_nlp = spacy.load("en_core_web_sm")
+    voc = dataparser.parse_voc()
+    cast_dicts = dataparser.get_all_cast()
     while(not q):
         utterance = input("Enter text (q to quit): ")
         if utterance == 'q':
@@ -527,9 +527,9 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
-        self.voc = parser.parse_voc()
-        self.spacy_nlp = spacy.load("en")
-        self.cast_dicts = parser.get_all_cast()
+        self.voc = dataparser.parse_voc()
+        self.spacy_nlp = spacy.load("en_core_web_sm")
+        self.cast_dicts = dataparser.get_all_cast()
 
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
@@ -561,26 +561,26 @@ if __name__ == "__main__":
     if args.eval:
 
         # Ask plot
-        dataset = parser.parse_dataset("resources/datasets/scenario1.dataset")
+        dataset = dataparser.parse_dataset("resources/datasets/scenario1.dataset")
         # inform actor
-        dataset += parser.parse_dataset("resources/datasets/scenario2.dataset")
-        dataset += parser.parse_dataset("resources/datasets/scenario6.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario2.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario6.dataset")
         # greet / yes / no
-        dataset += parser.parse_dataset("resources/datasets/scenario3.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario3.dataset")
         # goodbye
-        dataset += parser.parse_dataset("resources/datasets/scenario4.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario4.dataset")
         # request more
-        dataset += parser.parse_dataset("resources/datasets/scenario5.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario5.dataset")
         # inform genre
-        dataset += parser.parse_dataset("resources/datasets/scenario7.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario7.dataset")
         # inform director
-        dataset += parser.parse_dataset("resources/datasets/scenario8.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario8.dataset")
         # yes/no
-        dataset += parser.parse_dataset("resources/datasets/scenario9.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario9.dataset")
         # Ask genre, director, actor
-        dataset += parser.parse_dataset("resources/datasets/scenario10.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario10.dataset")
         # already watched
-        dataset += parser.parse_dataset("resources/datasets/scenario12.dataset")
+        dataset += dataparser.parse_dataset("resources/datasets/scenario12.dataset")
 
 
         evaluate(dataset, "wrong")
