@@ -203,6 +203,7 @@ class DM(wbc.WhiteBoardClient):
         self.movie['plot'] = movie_info.get("Plot")
         self.movie['actors'] = movie_info.get("Actors")
         self.movie['genres'] = movie_info.get("Genre")
+        self.movie['poster'] = movie_info.get("Poster")
 
 
 # A node corresponds to a specific state of the dialogue. It contains:
