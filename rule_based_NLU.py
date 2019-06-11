@@ -464,7 +464,7 @@ def format_formula(formula):
         if "cast" in formula:
             intent = "inform"
             entitytype = "cast"
-            entity = formula.split()[2][:-1]
+            entity = ' '.join(formula.split()[2:])[:-1]
             polarity = "+"
         elif "genre" in formula:
             intent = "inform"
