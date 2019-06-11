@@ -11,6 +11,7 @@ pip install nltk
 pip install simple-websocket-server
 pip install stanfordnlp
 pip install spacy
+pip install textblob
 python -m spacy download en
 pip install fuzzywuzzy
 pip install pyyaml

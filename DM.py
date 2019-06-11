@@ -77,9 +77,9 @@ class DM(wbc.WhiteBoardClient):
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
-                if "yes" in self.user_action['intent']:
+                if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif any(s in self.user_action['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
+                elif any(s in self.from_NLU['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
@@ -111,6 +111,8 @@ class DM(wbc.WhiteBoardClient):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
+                if config.HIGH_QUALITY_POSTER:
+                    self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
     def queryMoviesList(self):
@@ -203,6 +205,8 @@ class DM(wbc.WhiteBoardClient):
         self.movie['plot'] = movie_info.get("Plot")
         self.movie['actors'] = movie_info.get("Actors")
         self.movie['genres'] = movie_info.get("Genre")
+        if config.HIGH_QUALITY_POSTER is False:
+            self.movie['poster'] = movie_info.get("Poster")
 
 
 # A node corresponds to a specific state of the dialogue. It contains:
