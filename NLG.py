@@ -65,9 +65,15 @@ class NLG(wbc.WhiteBoardClient):
         else:
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
-        self.publish(final_sentence)
+        msg_to_send = self.msg_to_json(final_sentence, self.movie['poster'])
+        self.publish(msg_to_send)
 
         # Todo Add explanations
+
+    def msg_to_json(self, sentence, movie_poster):
+        frame = {'sentence': sentence, 'movie_poster': movie_poster}
+        json_msg = json.dumps(frame)
+        return json_msg
 
     def pick_ack(self, previous_intent, valence):
         potential_options = []
