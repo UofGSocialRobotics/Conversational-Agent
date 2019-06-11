@@ -111,7 +111,8 @@ class DM(wbc.WhiteBoardClient):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
-                self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
+                if config.HIGH_QUALITY_POSTER:
+                    self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
     def queryMoviesList(self):
@@ -204,7 +205,8 @@ class DM(wbc.WhiteBoardClient):
         self.movie['plot'] = movie_info.get("Plot")
         self.movie['actors'] = movie_info.get("Actors")
         self.movie['genres'] = movie_info.get("Genre")
-        #self.movie['poster'] = movie_info.get("Poster")
+        if config.HIGH_QUALITY_POSTER is False:
+            self.movie['poster'] = movie_info.get("Poster")
 
 
 # A node corresponds to a specific state of the dialogue. It contains:
