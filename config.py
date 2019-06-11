@@ -14,7 +14,7 @@ ADDRESS = "mqtt.eclipse.org" #"iot.eclipse.org"
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 30
+CONNECTION_TIMEOUT = 60 * 2
 
 
 ####################################################################################################
@@ -56,8 +56,10 @@ MSG_CONFIRM_CONNECTION = "Connection confirmed"
 ####################################################################################################
 
 ## NLU
-import dum_NLU
-NLU = dum_NLU.NLU
+# import dum_NLU
+# NLU = dum_NLU.NLU
+import rule_based_NLU
+NLU = rule_based_NLU.RuleBasedNLU
 NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 

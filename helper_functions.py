@@ -1,5 +1,17 @@
 from ca_logging import log
 import paho.mqtt.client as paho
+import json
+import yaml
+
+def write_json(file_name,dictionary):
+    with open(file_name, 'w') as fp:
+        json.dump(dictionary, fp, indent=4)
+    print('Wrote in '+file_name)
+
+def write_yaml(file_name,dictionary):
+    with open(file_name, 'w') as outfile:
+        yaml.dump(dictionary, outfile, default_flow_style=False)
+    print('Wrote in '+file_name)
 
 def print_message(name,action,msg_txt,topic):
     log.info("%s: %-10s message: TOPIC = %-20s | CONTENT = %s" % (name,action,topic,msg_txt))

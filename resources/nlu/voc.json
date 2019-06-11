@@ -1,0 +1,195 @@
+{
+    "genres": [
+        "action",
+        "adventre",
+        "comedy",
+        "crime",
+        "drama",
+        "fantasy",
+        "historical",
+        "fiction",
+        "horror",
+        "mystery",
+        "polotical",
+        "romance",
+        "saga",
+        "satire",
+        "animation",
+        "western",
+        "musical",
+        "superhero",
+        "bibliography",
+        "documentary",
+        "family",
+        "romantic comedy",
+        "war"
+    ],
+    "genre_scifi": [
+        "sci-fi",
+        "scifi",
+        "fiction"
+    ],
+    "yes": {
+        "yes_words": {
+            "yes_1word": [
+                "yes",
+                "yep",
+                "yup",
+                "ok",
+                "okay",
+                "yeah",
+                "okeydokey",
+                "yea",
+                "affirmative",
+                "ja",
+                "ya",
+                "aye",
+                "yea",
+                "okey-dokey",
+                "yea",
+                "righto"
+            ],
+            "yes_adj": [
+                "great",
+                "cool",
+                "good",
+                "right",
+                "all right",
+                "correct",
+                "sure",
+                "agreed",
+                "fine",
+                "alright",
+                "well",
+                "granted",
+                "true",
+                "likely"
+            ],
+            "yes_advb": [
+                "definitely",
+                "absolutely",
+                "certainly",
+                "naturally",
+                "totally",
+                "exactly",
+                "precisely",
+                "gladly",
+                "probably",
+                "indeed"
+            ],
+            "yes_2words": [
+                "no problem",
+                "why not",
+                "you bet"
+            ],
+            "yes_superlative": [
+                "amazing",
+                "awesome",
+                "booyah",
+                "excellent",
+                "fab",
+                "fabulous",
+                "fantastic",
+                "great",
+                "hooray",
+                "incredible",
+                "splendid",
+                "super",
+                "terrific",
+                "tremendous",
+                "whoopee",
+                "wonderful"
+            ]
+        },
+        "yes_vb": [
+            "guess",
+            "think",
+            "like",
+            "love",
+            "agree",
+            "will",
+            "would"
+        ]
+    },
+    "no": {
+        "no_1word": [
+            "no",
+            "nope",
+            "nop",
+            "nah",
+            "neh",
+            "nay",
+            "never",
+            "not",
+            "nix",
+            "uh-uh",
+            "nixy",
+            "nixey",
+            "negative",
+            "none",
+            "nothing",
+            "noway",
+            "noways",
+            "hardly",
+            "enough",
+            "disagree",
+            "wrong"
+        ],
+        "no_2words": [
+            "uh uh",
+            "no way"
+        ],
+        "no_3words": [
+            "by no means",
+            "on no account",
+            "not at all"
+        ]
+    },
+    "greetings": [
+        "hi",
+        "hey",
+        "hello",
+        "morning",
+        "afternoon",
+        "evening",
+        "howdy",
+        "d'day",
+        "yo",
+        "greeting",
+        "hiya",
+        "welcome",
+        "hi-ya",
+        "salutation",
+        "hola"
+    ],
+    "bye": {
+        "bye_1word": [
+            "bye",
+            "ciao",
+            "adieu",
+            "farewell",
+            "stop",
+            "end",
+            "adios",
+            "goodbye",
+            "cheerio",
+            "goodby",
+            "good-by",
+            "cheers"
+        ],
+        "bye_2words": [
+            "see you",
+            "au revoir",
+            "see ya"
+        ],
+        "bye_4words": [
+            "have a nice day"
+        ]
+    },
+    "request_more": [
+        "more",
+        "another",
+        "other",
+        "else"
+    ]
+}

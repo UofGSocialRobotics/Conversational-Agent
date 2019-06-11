@@ -81,3 +81,12 @@ If you want to add specific logs, use
 from ca_logging import log
 ``` 
 Then `log` has 5 methods: `debug(message)`, `info(message)`, `warning(message)`, `error(message)` and `critical(message)`. Chose the appropriate one. When using `debug(message)`, the log will be visible only in the console and not written in the log file. 
+
+# NLU
+
+You can run the rule-based NLU module as a stand-alone for debug / test / evaluation.
+
+Usage is:
+```shell
+ptyhon rule_based_NLU.py [-h] [--eval] [--test] [--debug DEBUG]
+```
