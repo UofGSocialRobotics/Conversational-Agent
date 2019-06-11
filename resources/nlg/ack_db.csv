@@ -51,11 +51,11 @@ inform(movie),,PR,Your standards are definitely higher than mine!,no
 inform(movie),SD,NONE,Oh no!,no
 inform(movie),,VSN,So this movie was not good enough for you?,no
 request(feedback),,NONE,Thanks.,default
-request(another),,NONE,Okay. It was nice talking to you.,no
-request(another),,NONE,Okay. Hold on one second please.,yes
-request(another),,SD,Okay. I'll think of another recommendation for you.,yes
-request(another),,PR,I'll try to find a better recommendation for a great person like you.,yes
-request(another),,VSN,I know. I'm pretty good at my job.,yes
+request_more,,NONE,Okay. It was nice talking to you.,no
+request_more,,NONE,Okay. Hold on one second please.,yes
+request_more,,SD,Okay. I'll think of another recommendation for you.,yes
+request_more,,PR,I'll try to find a better recommendation for a great person like you.,yes
+request_more,,VSN,I know. I'm pretty good at my job.,yes
 inform(plot),,NONE,I knew you'd like it.,yes
 inform(actor),,NONE,One second while I look this up.,no
 inform(actor),,SD,I can do better!,no

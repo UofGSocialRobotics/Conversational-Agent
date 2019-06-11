@@ -54,6 +54,7 @@ class DM(wbc.WhiteBoardClient):
 
     def treat_message(self, msg, topic):
 
+        self.movie['poster'] = ""
         if "SA" in topic:
             self.from_SA = msg
         elif "NLU" in topic:
@@ -79,7 +80,7 @@ class DM(wbc.WhiteBoardClient):
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif any(s in self.from_NLU['intent'] for s in ('request(another)', 'inform(watched)', 'no')):
+                elif any(s in self.from_NLU['intent'] for s in ('request_more', 'inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
@@ -142,17 +143,19 @@ class DM(wbc.WhiteBoardClient):
         if movies_with_genres_list:
             if movies_with_cast_list:
                 if len(movies_with_genres_list) > len(movies_with_cast_list):
+                    print("shorter genres")
                     smallest_list = movies_with_cast_list
                     biggest_list = movies_with_genres_list
                 else:
+                    print("shorter cast")
                     smallest_list = movies_with_genres_list
                     biggest_list = movies_with_cast_list
 
                 j = 0
                 movies_blended_list = []
                 for i in range(len(smallest_list)):
-                    movies_blended_list.append(smallest_list[i])
                     movies_blended_list.append(biggest_list[i])
+                    movies_blended_list.append(smallest_list[i])
                     j = i
 
                 for k in range(j, len(biggest_list)):
