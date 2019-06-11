@@ -111,6 +111,7 @@ class DM(wbc.WhiteBoardClient):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
+                self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
     def queryMoviesList(self):
