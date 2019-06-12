@@ -25,20 +25,27 @@ class NLU(wbc.WhiteBoardClient):
         if "tom cruise" in msg_lower or "love" in msg_lower:
             user_intention = 'inform'
             user_entity = 'tom cruise'
-            entity_type = 'cast'
+            entity_type = 'actor'
             entity_polarity = "+"
         elif "yes" in msg_lower:
             user_intention = 'yes'
         elif "no" in msg_lower:
             user_intention = 'no'
         elif "more" in msg_lower:
-            user_intention = 'request_more'
+            user_intention = 'request'
+            entity_type = 'more'
         elif "plot" in msg_lower:
-            user_intention = 'askPlot'
+            user_intention = 'request'
+            entity_type = 'plot'
         elif "actor" in msg_lower:
-            user_intention = 'askActor'
+            user_intention = 'request'
+            entity_type = 'actor'
         elif "genre" in msg_lower:
-            user_intention = 'askGenre'
+            user_intention = 'request'
+            entity_type = 'genre'
+        elif "director" in msg_lower:
+            user_intention = 'request'
+            entity_type = 'director'
         new_msg = self.msg_to_json(user_intention, user_entity, entity_type, entity_polarity)
         self.publish(new_msg)
 
