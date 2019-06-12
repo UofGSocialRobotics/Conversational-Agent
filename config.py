@@ -4,8 +4,8 @@
 
 BROKER = "broker"
 WEBSOCKETS = "websokects"
-USING = BROKER
-# USING = WEBSOCKETS
+# USING = BROKER
+USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##
@@ -14,7 +14,7 @@ ADDRESS = "mqtt.eclipse.org" #"iot.eclipse.org"
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 60 * 2
+CONNECTION_TIMEOUT = 60 * 10
 
 
 ####################################################################################################

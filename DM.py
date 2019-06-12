@@ -53,7 +53,7 @@ class DM(wbc.WhiteBoardClient):
                 self.user_model = json.load(json_file)
 
     def treat_message(self, msg, topic):
-
+        self.movie['poster'] = None
         if "SA" in topic:
             self.from_SA = msg
         elif "NLU" in topic:
