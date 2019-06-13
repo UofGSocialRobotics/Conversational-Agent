@@ -35,6 +35,34 @@ def parse_dataset(fname):
 
     return dataset
 
+
+def load_dataset():
+
+    # Ask plot
+    dataset = parse_dataset("resources/datasets/scenario1.dataset")
+    # inform actor
+    dataset += parse_dataset("resources/datasets/scenario2.dataset")
+    dataset += parse_dataset("resources/datasets/scenario6.dataset")
+    # greet / yes / no
+    dataset += parse_dataset("resources/datasets/scenario3.dataset")
+    # goodbye
+    dataset += parse_dataset("resources/datasets/scenario4.dataset")
+    # request more
+    dataset += parse_dataset("resources/datasets/scenario5.dataset")
+    # inform genre
+    dataset += parse_dataset("resources/datasets/scenario7.dataset")
+    # inform director
+    dataset += parse_dataset("resources/datasets/scenario8.dataset")
+    # yes/no
+    dataset += parse_dataset("resources/datasets/scenario9.dataset")
+    # Ask genre, director, actor
+    dataset += parse_dataset("resources/datasets/scenario10.dataset")
+    # already watched
+    dataset += parse_dataset("resources/datasets/scenario12.dataset")
+
+    return dataset
+
+
 def get_all_cast(actorfile="resources/nlu/actor2id.lexicon", directorfile="resources/nlu/director2id.lexicon"):
     '''
     Parses files of cast members (actors and directors) --> builds a DB of actors and directors
