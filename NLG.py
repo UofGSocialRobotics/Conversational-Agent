@@ -42,19 +42,6 @@ class NLG(wbc.WhiteBoardClient):
                     self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'default': default_cs_dict}
                 self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
 
-        # with open(path) as f:
-        #     for line in f:
-        #         line_input = line.replace("\n", '')
-        #         line_input = line_input.split(",")
-        #         if self.ackDB.get(line_input[0]) is not None:
-        #             if self.ackDB[line_input[0]][line_input[4]]:
-        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-        #             else:
-        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-        #         else:
-        #             self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
-        #             self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-
     def treat_message(self, msg, topic):
         message = json.loads(msg)
         if self.sentenceDB[message['intent']][message['cs']]:

@@ -17,3 +17,4 @@ inform(actor),inform(movie),TRUE,request(plot)-inform(plot),request(genre)-infor
 inform(genre),inform(movie),TRUE,request(plot)-inform(plot),request(actor)-inform(actor),yes-request(more),no-request(why),request(genre)-inform(genre)
 request(why),request(more),TRUE,,
 request(opinion),request(more),TRUE,,
+bye,greeting,TRUE,,

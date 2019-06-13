@@ -56,10 +56,10 @@ MSG_CONFIRM_CONNECTION = "Connection confirmed"
 ####################################################################################################
 
 ## NLU
-import dum_NLU
-NLU = dum_NLU.NLU
-#import rule_based_NLU
-#NLU = rule_based_NLU.RuleBasedNLU
+#import dum_NLU
+#NLU = dum_NLU.NLU
+import rule_based_NLU
+NLU = rule_based_NLU.RuleBasedNLU
 NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
