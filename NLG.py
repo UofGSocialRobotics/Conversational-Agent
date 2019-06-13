@@ -26,40 +26,53 @@ class NLG(wbc.WhiteBoardClient):
         with open(path) as f:
             for line in f:
                 line_input = line.split(",")
-                if self.sentenceDB.get(line_input[0]) is not None:
-                    self.sentenceDB.get(line_input[0]).append(line_input[2])
-                else:
-                    self.sentenceDB[line_input[0]] = [line_input[2]]
+                if self.sentenceDB.get(line_input[0]) is None:
+                    self.sentenceDB[line_input[0]] = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                self.sentenceDB[line_input[0]][line_input[1]].append(line_input[2])
 
     def load_ack_model(self, path):
         with open(path) as f:
             for line in f:
-                line_input = line.replace("\n", '')
-                line_input = line_input.split(",")
+                line = line.replace("\n", "")
+                line_input = line.split(",")
+                if self.ackDB.get(line_input[0]) is None:
+                    yes_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    no_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    default_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'default': default_cs_dict}
+                self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
 
-                if self.ackDB.get(line_input[0]) is not None:
-                    if self.ackDB[line_input[0]][line_input[4]]:
-                        self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-                    else:
-                        self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-                else:
-                    self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
-                    self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
+        # with open(path) as f:
+        #     for line in f:
+        #         line_input = line.replace("\n", '')
+        #         line_input = line_input.split(",")
+        #         if self.ackDB.get(line_input[0]) is not None:
+        #             if self.ackDB[line_input[0]][line_input[4]]:
+        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
+        #             else:
+        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
+        #         else:
+        #             self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
+        #             self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
-        sentence = random.choice(self.sentenceDB[message['intent']])
+        if self.sentenceDB[message['intent']][message['cs']]:
+            sentence = random.choice(self.sentenceDB[message['intent']][message['cs']])
+        else:
+            sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
         self.movie = message['movie']
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
+        ack_cs = self.pick_ack_social_strategy()
         if self.use_acks and message['previous_intent'] in self.ackDB:
             if "yes" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['yes']:
-                ack = self.pick_ack(message['previous_intent'], 'yes')
+                ack = self.pick_ack(message['previous_intent'], 'yes', ack_cs)
             elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
-                ack = self.pick_ack(message['previous_intent'], 'no')
+                ack = self.pick_ack(message['previous_intent'], 'no', ack_cs)
             else:
                 if self.ackDB[message['previous_intent']]['default']:
-                    ack = self.pick_ack(message['previous_intent'], 'default')
+                    ack = self.pick_ack(message['previous_intent'], 'default', ack_cs)
                 else:
                     ack = ""
         else:
@@ -75,16 +88,23 @@ class NLG(wbc.WhiteBoardClient):
         json_msg = json.dumps(frame)
         return json_msg
 
-    def pick_ack(self, previous_intent, valence):
+    def pick_ack_social_strategy(self):
+        #return random.choice(config.CS_LABELS)
+        return "NONE"
+
+    def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
-        for option in self.ackDB[previous_intent][valence]:
+        for option in self.ackDB[previous_intent][valence][cs]:
             if "#entity" in option:
                 if self.user_intent['entity']:
                     potential_options.append(option)
             else:
                 potential_options.append(option)
         print(potential_options)
-        return random.choice(potential_options)
+        if potential_options:
+            return random.choice(potential_options)
+        else:
+            return ""
 
     def replace(self, sentence):
         if "#title" in sentence:

@@ -4,6 +4,7 @@ import urllib.request
 import json
 import config
 from pathlib import Path
+import random
 from ca_logging import log
 
 
@@ -58,6 +59,7 @@ class DM(wbc.WhiteBoardClient):
             self.from_SA = msg
         elif "NLU" in topic:
             self.from_NLU = json.loads(msg)
+            self.from_NLU = self.parse(self.from_NLU)
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
 
@@ -79,7 +81,9 @@ class DM(wbc.WhiteBoardClient):
             if self.currState in ("inform(movie)", "inform(plot)", "inform(actor)", "inform(genre)"):
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_movies'].append(self.movie['title'])
-                elif any(s in self.from_NLU['intent'] for s in ('request_more', 'inform(watched)', 'no')):
+                elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
+                    self.user_model['disliked_movies'].append(self.movie['title'])
+                elif any(s in self.from_NLU['intent'] for s in ('inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             # Get a movie recommendation title
@@ -97,15 +101,21 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state, self.user_model)
+            cs = self.pick_social_strategy(next_state)
+            new_msg = self.msg_to_json(next_state, self.movie, self.from_NLU, prev_state, self.user_model, cs)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, movie, user_intent, previous_intent, user_frame):
-        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame}
+    def msg_to_json(self, intention, movie, user_intent, previous_intent, user_frame, cs):
+        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'cs': cs}
         json_msg = json.dumps(frame)
         return json_msg
+
+    def parse(self, NLU_message):
+        if "request" in NLU_message['intent']:
+            NLU_message['intent'] = NLU_message['intent'] + "(" + NLU_message['entity_type'] + ")"
+        return NLU_message
 
     def recommend(self):
         movies_list = self.queryMoviesList()
@@ -114,6 +124,10 @@ class DM(wbc.WhiteBoardClient):
                 if config.HIGH_QUALITY_POSTER:
                     self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
+
+    def pick_social_strategy(self, task_intent):
+        #return random.choice(config.CS_LABELS)
+        return "NONE"
 
     def queryMoviesList(self):
         # Todo Smart blending to get a recommendation matching with both genre and cast

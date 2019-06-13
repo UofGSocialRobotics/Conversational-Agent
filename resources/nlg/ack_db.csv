@@ -1,28 +1,62 @@
-greeting,,NONE,I'm glad to hear that you are doing well! ,yes
+greeting,QESD,SD,So before this I was a real estate agent. But I think I'll enjoy this job even more.,default
+greeting,,NONE,Nice!,yes
 greeting,,NONE,I'm sorry to hear that.,no
 greeting_back,,NONE,Looking good as always!,default
+introduce,,NONE,That's awesome.,yes
+introduce,,SD,That's awesome. I'm so glad we are on the same page.,yes
+introduce,,HE,I guess that's okay.,no
+introduce,,HE,I guess that's pretty cool that we are alike.,yes
+introduce,,SD,I'm the opposite. I love to watch movies.,no
+introduce,,PR,That's too bad. But I'm sure you still have great tastes in movies.,no
+introduce,,VSN,Bet you don't like movies as much as me though.,yes
+introduce,,PR,That's awesome. I already like you.,yes
+introduce,,NONE,Okay.,default
+introduce,,NONE,Oh no! That's too bad.,no
+inform(opinion_last_movie),,NONE,Alright! Let me find something then.,default
+request(last_movie),,NONE,That's such a great movie.,default
+request(last_movie),,SD,I loved it as well.,default
+request(last_movie),,VSN,Really? You liked that?,default
+request(last_movie),,HE,I suppose it was pretty cool.,default
+request(last_movie),,PR,Great minds think alike.,default
+request(last_movie),,NONE,Oh okay. Nevermind.,no
+request(reason_like),,NONE,That makes complete sense.,default
+request(reason_like),,SD,That's exactly how I felt about the movie too.,default
+request(reason_like),,VSN,That's your idea of a good movie?,default
+request(reason_like),,HE,That's kind of what I was thinking.,default
+request(reason_like),,PR,I love how you think.,default
 request(genre),,SD,That's alright. I also struggle with favorites at times.,no
-request(genre),,NONE,That's lovely! I like #entity too.,default
+request(genre),,NONE,That's interesting.,default
+request(genre),,VSN,#entity. Are you sure?,default
+request(genre),,HE,I guess #entity is a good genre.,default
+request(genre),,SD,Oh! I like #entity too.,default
+request(genre),,PR,That's a great choice.,default
 request(director),,SD,I also like #entity .,default
 request(director),,NONE,That's cool.,default
 request(director),,NONE,Don't worry. I have enough opinions for the both of us.,no
+request(director),HE,NONE,You don't sound so sure.,default
 request(director),,HE,Oh. I've maybe seen some movies by #entity .,default
 request(director),,PR,I like the way you think! #entity is definitely one of the best.,default
 request(director),,VSN,You don't sound so sure. But don't worry. I'm smart enough to still come up with a good recommendation for you.,default
 request(actor),,NONE,I would have sworn you had an opinion about everything!,no
-request(actor),,NONE,I love how you think. #entity is great.,default
-inform(movie),,NONE,I though you had great taste...,yes
+request(actor),,NONE,I see. That makes sense.,default
+request(actor),,HE,#entity is a pretty good actor I guess.,default
+request(actor),,SD,I also like #entity .,default
+request(actor),,PR,I love how you think. #entity is great.,default
+request(actor),,VSN,Why don't you have a preference? That's weird.,no
+request(actor),,VSN,Did you say #entity? I thought you had great taste.,default
+inform(movie),,NONE,I'm so glad you like it.,yes
+inform(movie),,PR,I knew this movie would match your refined tastes.,yes
+inform(movie),,VSN,See! I'm so good at this.,yes
 inform(movie),,PR,Your standards are definitely higher than mine!,no
 inform(movie),SD,NONE,Oh no!,no
 inform(movie),,VSN,So this movie was not good enough for you?,no
 request(feedback),,NONE,Thanks.,default
-request_more,,NONE,Okay. It was nice talking to you.,no
-request_more,,NONE,Okay. Hold on one second please.,yes
-request_more,,SD,Okay. I'll think of another recommendation for you.,yes
-request_more,,PR,I'll try to find a better recommendation for a great person like you.,yes
-request_more,,VSN,I know. I'm pretty good at my job.,yes
+request(more),,NONE,Okay. It was nice talking to you.,no
+request(more),,NONE,Okay. Hold on one second please.,yes
+request(more),,SD,Okay. I'll think of another recommendation for you.,yes
+request(more),,PR,I'll try to find a better recommendation for a great person like you.,yes
+request(more),,VSN,I know. I'm pretty good at my job.,yes
 inform(plot),,NONE,I knew you'd like it.,yes
-inform(plot),,NONE,Wow. You're really picky!.,no
 inform(actor),,NONE,One second while I look this up.,no
 inform(actor),,SD,I can do better!,no
 inform(genre),,NONE,I think I can find a better one for you.,no
