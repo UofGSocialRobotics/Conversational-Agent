@@ -3,6 +3,7 @@ import helper_functions as helper
 import json
 import random
 import config
+import numpy
 
 
 class NLG(wbc.WhiteBoardClient):
@@ -64,11 +65,13 @@ class NLG(wbc.WhiteBoardClient):
                     ack = ""
         else:
             ack = ""
+        explanation = ""
+        if "movie" in message['intent']:
+            explanation = self.pick_explanation()
         final_sentence = self.replace(ack + " " + sentence)
         msg_to_send = self.msg_to_json(final_sentence, self.movie['poster'])
         self.publish(msg_to_send)
 
-        # Todo Add explanations
 
     def msg_to_json(self, sentence, movie_poster):
         frame = {'sentence': sentence, 'movie_poster': movie_poster}
@@ -78,6 +81,21 @@ class NLG(wbc.WhiteBoardClient):
     def pick_ack_social_strategy(self):
         #return random.choice(config.CS_LABELS)
         return "NONE"
+
+    # Todo Add explanations Sentence Planning
+    def pick_explanation(self):
+        expl_type = numpy.random.choice(config.EXPLANATION_TYPE_LABELS, p=list(config.EXPLANATION_TYPE_PROBA))
+        if "MF" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.MF_EXPLANATION_LABELS, p=list(config.MF_EXPLANATION_PROBA))
+        elif "TPO" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.TPO_EXPLANATION_LABELS, p=list(config.TPO_EXPLANATION_PROBA))
+        elif "PO" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.PO_EXPLANATION_LABELS, p=list(config.PO_EXPLANATION_PROBA))
+        elif "PE" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.PE_EXPLANATION_LABELS, p=list(config.PE_EXPLANATION_PROBA))
+        else:
+            expl_type = None
+        return expl_type
 
     def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
