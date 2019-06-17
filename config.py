@@ -106,6 +106,10 @@ HIGH_QUALITY_POSTER = True
 ##                                          Other config                                          ##
 ####################################################################################################
 SAVE_USER_MODEL = False
+NLG_USE_ACKS = True
+NLG_USE_ACKS_CS = True
+NLG_USE_CS = True
+NLG_USE_EXPLANATIONS = True
 CS_LABELS = ["SD", "PR", "HE", "VSN", "NONE", 'QESD']
 EXPLANATION_TYPE_LABELS = ["MF", "TPO", "PO", "PE"]
 EXPLANATION_TYPE_PROBA = [.37, .07, .39, .17]
