@@ -56,10 +56,10 @@ MSG_CONFIRM_CONNECTION = "Connection confirmed"
 ####################################################################################################
 
 ## NLU
-import dum_NLU
-NLU = dum_NLU.NLU
-#import rule_based_NLU
-#NLU = rule_based_NLU.RuleBasedNLU
+#import dum_NLU
+#NLU = dum_NLU.NLU
+import rule_based_NLU
+NLU = rule_based_NLU.RuleBasedNLU
 NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
@@ -106,4 +106,18 @@ HIGH_QUALITY_POSTER = True
 ##                                          Other config                                          ##
 ####################################################################################################
 SAVE_USER_MODEL = False
+NLG_USE_ACKS = True
+NLG_USE_ACKS_CS = True
+NLG_USE_CS = True
+NLG_USE_EXPLANATIONS = True
 CS_LABELS = ["SD", "PR", "HE", "VSN", "NONE", 'QESD']
+EXPLANATION_TYPE_LABELS = ["MF", "TPO", "PO", "PE"]
+EXPLANATION_TYPE_PROBA = [.37, .07, .39, .17]
+MF_EXPLANATION_LABELS = ["C", "G", "P", "A", "O"]
+MF_EXPLANATION_PROBA = [.108, .243, .459, .055, .135]
+TPO_EXPLANATION_LABELS = ["B", "S"]
+TPO_EXPLANATION_PROBA = [.571, .429]
+PO_EXPLANATION_LABELS = ["POS", "ANA", "SO"]
+PO_EXPLANATION_PROBA = [.513, .308, .179]
+PE_EXPLANATION_LABELS = ["A", "L", "C"]
+PE_EXPLANATION_PROBA = [.177, .529, .294]

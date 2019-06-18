@@ -3,6 +3,7 @@ import helper_functions as helper
 import json
 import random
 import config
+import numpy
 
 
 class NLG(wbc.WhiteBoardClient):
@@ -16,8 +17,6 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = None
         self.user_intent = None
         self.movie = None
-
-        self.use_acks = True
 
         self.load_sentence_model(config.NLG_SENTENCE_DB)
         self.load_ack_model(config.NLG_ACK_DB)
@@ -42,30 +41,38 @@ class NLG(wbc.WhiteBoardClient):
                     self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'default': default_cs_dict}
                 self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
 
-        # with open(path) as f:
-        #     for line in f:
-        #         line_input = line.replace("\n", '')
-        #         line_input = line_input.split(",")
-        #         if self.ackDB.get(line_input[0]) is not None:
-        #             if self.ackDB[line_input[0]][line_input[4]]:
-        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-        #             else:
-        #                 self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-        #         else:
-        #             self.ackDB[line_input[0]] = {'no': [], 'yes': [], 'default': []}
-        #             self.ackDB[line_input[0]][line_input[4]].append(line_input[3])
-
     def treat_message(self, msg, topic):
         message = json.loads(msg)
-        if self.sentenceDB[message['intent']][message['cs']]:
-            sentence = random.choice(self.sentenceDB[message['intent']][message['cs']])
-        else:
-            sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
         self.movie = message['movie']
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-        ack_cs = self.pick_ack_social_strategy()
-        if self.use_acks and message['previous_intent'] in self.ackDB:
+
+        # Content Planning
+        #
+        # Here we select the different strategies that will be used to deliver the content:
+        # Ack + Ack_CS
+        # Sentence_CS
+        # Explanation
+
+        if "movie" in message['intent'] and config.NLG_USE_EXPLANATIONS:
+            explanation_type = self.pick_explanation_type()
+
+        if config.NLG_USE_ACKS_CS:
+            ack_cs = self.pick_ack_social_strategy()
+
+        if config.NLG_USE_CS:
+            cs = self.pick_social_strategy()
+
+        # Sentence Planning
+        #
+        # Based on the strategies selected during the content planning, we generate the sentence.
+
+        if self.sentenceDB[message['intent']][cs]:
+            sentence = random.choice(self.sentenceDB[message['intent']][cs])
+        else:
+            sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
+
+        if config.NLG_USE_ACKS and message['previous_intent'] in self.ackDB:
             if "yes" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['yes']:
                 ack = self.pick_ack(message['previous_intent'], 'yes', ack_cs)
             elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
@@ -78,10 +85,10 @@ class NLG(wbc.WhiteBoardClient):
         else:
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
+
         msg_to_send = self.msg_to_json(final_sentence, self.movie['poster'])
         self.publish(msg_to_send)
 
-        # Todo Add explanations
 
     def msg_to_json(self, sentence, movie_poster):
         frame = {'sentence': sentence, 'movie_poster': movie_poster}
@@ -91,6 +98,25 @@ class NLG(wbc.WhiteBoardClient):
     def pick_ack_social_strategy(self):
         #return random.choice(config.CS_LABELS)
         return "NONE"
+
+    def pick_social_strategy(self):
+        #return random.choice(config.CS_LABELS)
+        return "NONE"
+
+    # Todo Add explanations Sentence Planning
+    def pick_explanation_type(self):
+        expl_type = numpy.random.choice(config.EXPLANATION_TYPE_LABELS, p=list(config.EXPLANATION_TYPE_PROBA))
+        if "MF" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.MF_EXPLANATION_LABELS, p=list(config.MF_EXPLANATION_PROBA))
+        elif "TPO" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.TPO_EXPLANATION_LABELS, p=list(config.TPO_EXPLANATION_PROBA))
+        elif "PO" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.PO_EXPLANATION_LABELS, p=list(config.PO_EXPLANATION_PROBA))
+        elif "PE" in expl_type:
+            expl_type += "_" + numpy.random.choice(config.PE_EXPLANATION_LABELS, p=list(config.PE_EXPLANATION_PROBA))
+        else:
+            expl_type = None
+        return expl_type
 
     def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
