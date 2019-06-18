@@ -36,9 +36,26 @@ def parse_dataset(fname):
     return dataset
 
 
+def load_chatito_dataset(fname="resources/nlu/chatito_dataset.json"):
+    dataset = list()
+    with open(fname) as f:
+        content = json.load(f)
+    for formula in content.keys():
+        elt_list = content[formula]
+        for i, elt in enumerate(elt_list):
+            utterance = elt[0]["value"]
+            # if i <10:
+            #     print(utterance)
+            dataset.append([utterance, formula])
+
+    return dataset
+
+
+
+
 def load_dataset():
 
-    # Ask plot
+    # Ask genre, director, actor
     dataset = parse_dataset("resources/datasets/scenario1.dataset")
     # inform actor
     dataset += parse_dataset("resources/datasets/scenario2.dataset")
@@ -55,7 +72,7 @@ def load_dataset():
     dataset += parse_dataset("resources/datasets/scenario8.dataset")
     # yes/no
     dataset += parse_dataset("resources/datasets/scenario9.dataset")
-    # Ask genre, director, actor
+    # Ask plot
     dataset += parse_dataset("resources/datasets/scenario10.dataset")
     # already watched
     dataset += parse_dataset("resources/datasets/scenario12.dataset")
@@ -125,4 +142,6 @@ def parse_voc(vocf = "resources/nlu/voc.json"):
 
 if __name__ == "__main__":
     # parse_dataset("resources/datasets/scenario1.dataset")
-    get_all_cast("resources/nlu/actor2id.lexicon","resources/nlu/director2id.lexicon")
+    # get_all_cast("resources/nlu/actor2id.lexicon","resources/nlu/director2id.lexicon")
+    parse_chatito_dataset()
+

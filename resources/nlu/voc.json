@@ -133,7 +133,8 @@
             "hardly",
             "enough",
             "disagree",
-            "wrong"
+            "wrong",
+            "incorrect"
         ],
         "no_2words": [
             "uh uh",
@@ -175,7 +176,12 @@
             "cheerio",
             "goodby",
             "good-by",
-            "cheers"
+            "cheers",
+            "ttyl",
+            "gtg",
+            "chao",
+            "chau",
+            "bybye"
         ],
         "bye_2words": [
             "see you",
@@ -190,6 +196,7 @@
         "more",
         "another",
         "other",
-        "else"
+        "else",
+        "different"
     ]
 }

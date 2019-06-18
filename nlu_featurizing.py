@@ -59,22 +59,22 @@ def get_formula_code(formula):
         v = 4
     elif "greet" in formula:
         v = 7
-    elif "goodbye" in formula:
+    elif "goodbye" in formula or "bye" in formula:
         v = 8
     elif "inform" in formula:
-        if "director" or "actor" in formula:
+        if "director" in formula or "actor" in formula or "cast" in formula.lower():
             v = 9
-        elif "genre" in formula:
+        elif "genre" in formula.lower():
             v = 10
         else:
             print("ERR with formula "+formula)
-    elif "request_more" in formula:
+    elif "more" in formula:
         v = 11
     elif "alreadyWatched" in formula:
         v = 12
-    elif "yes" == formula:
+    elif "yes" == formula or formula == "affirmative":
         v = 5
-    elif "no" == formula:
+    elif "no" == formula or formula == "negative":
         v = 6
     elif "IDK" == formula:
         v = 13
@@ -138,8 +138,11 @@ def featurize(utterance, formula, voc, spacy_nlp, cast_dicts, verbose=False):
 
 
     if verbose:
+        print(label, rule_based_pred)
         print("1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9")
         print(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19)
+        print(formula)
+        print(utterance, formula)
 
     return [label, rule_based_pred, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, utterance, formula]
 
@@ -152,8 +155,11 @@ def create_csv(dataset):
     cast_dicts = dataparser.get_all_cast()
 
     rows_with_label = dict()
+    l, i = len(dataset), 0
 
     for utterance, formula in dataset:
+        i += 1
+        print("Featurizing in progress: %d \r" % ((float(i)/l)*100), end='')
         row = featurize(utterance, formula, voc, spacy_nlp, cast_dicts)
         label = row[0]
         if label in rows_with_label.keys():
@@ -182,8 +188,8 @@ def create_csv(dataset):
         for r in test_rows:
             test_set.append(r)
 
-    fname_train = 'resources/nlu/nlu_dataset_train.csv'
-    fname_test = 'resources/nlu/nlu_dataset_test.csv'
+    fname_train = 'resources/nlu/nlu_chatito_dataset_train.csv'
+    fname_test = 'resources/nlu/nlu_chatito_dataset_test.csv'
 
     with open(fname_train, 'w') as writeFile:
         writer = csv.writer(writeFile)
@@ -222,5 +228,5 @@ if __name__ == "__main__":
     if args.test:
         test_featurizing()
     elif args.featurize:
-        dataset = dataparser.load_dataset()
+        dataset = dataparser.load_chatito_dataset()
         create_csv(dataset)
