@@ -17,7 +17,7 @@ ADDRESS = "mqtt.eclipse.org" #iot.eclipse.org
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 60 * 10
+CONNECTION_TIMEOUT = 60 * 1
 
 
 ####################################################################################################
