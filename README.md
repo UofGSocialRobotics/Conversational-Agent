@@ -13,7 +13,8 @@ pip install stanfordnlp
 pip install spacy
 pip install textblob
 python -m spacy download en
-pip install fuzzywuzzy
+# pip install fuzzywuzzy
+pip install pandas
 # pip install google-cloud-language
 ```
 

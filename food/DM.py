@@ -1,7 +1,7 @@
 import whiteboard_client as wbc
 import helper_functions as helper
 import json
-import config
+import food.food_config as food_config
 from pathlib import Path
 import pandas
 
@@ -29,8 +29,8 @@ class DM(wbc.WhiteBoardClient):
         self.nodes = {}
         self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
                            'liked_movies': [], 'disliked_movies': []}
-        self.load_model(config.DM_MODEL)
-        self.load_user_model(config.USER_MODELS, clientid)
+        self.load_model(food_config.DM_MODEL)
+        self.load_user_model(food_config.USER_MODELS, clientid)
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
     def load_model(self, path):
@@ -45,7 +45,7 @@ class DM(wbc.WhiteBoardClient):
                 self.nodes[node.stateName] = node
 
     def save_user_model(self):
-        file = config.USER_MODELS + self.client_id + ".prefs"
+        file = food_config.USER_MODELS + self.client_id + ".prefs"
         with open(file, 'w') as outfile:
             json.dump(self.user_model, outfile)
 
@@ -79,7 +79,7 @@ class DM(wbc.WhiteBoardClient):
                 next_state = "greet_back"
 
             # saves the user model at the end of the interaction
-            if next_state == 'bye' and config.SAVE_USER_MODEL:
+            if next_state == 'bye' and food_config.SAVE_USER_MODEL:
                 self.save_user_model()
 
             prev_state = self.currState
@@ -100,15 +100,15 @@ class DM(wbc.WhiteBoardClient):
         return NLU_message
 
     def load_food_model(self):
-        self.food_data = pandas.read_csv(config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
+        self.food_data = pandas.read_csv(food_config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
         print(self.food_data)
 
     def recommend(self):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
-                if config.HIGH_QUALITY_POSTER:
-                    self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
+                if food_config.HIGH_QUALITY_POSTER:
+                    self.movie['poster'] = food_config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
 

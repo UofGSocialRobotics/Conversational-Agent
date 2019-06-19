@@ -1,4 +1,7 @@
 
+
+FOOD_MODEL_PATH = "food/resources/dm/food_ratings.csv"
+
 ####################################################################################################
 ##                                          Resources Path                                        ##
 ####################################################################################################
@@ -12,17 +15,6 @@ DIRECTORS_LEXICON = "movies/resources/nlu/director2id.lexicon"
 GENRES_LEXICON = "movies/resources/nlu/genre2id.lexicon"
 
 
-####################################################################################################
-##                                      Movie recommendation config                               ##
-####################################################################################################
-MOVIEDB_KEY = "6e3c2d4a2501c86cd7e0571ada291f55"
-MOVIEDB_SEARCH_MOVIE_ADDRESS = "https://api.themoviedb.org/3/discover/movie?api_key="
-MOVIE_DB_PROPERTY = "&sort_by=popularity.desc"
-MOVIEDB_SEARCH_PERSON_ADDRESS = "https://api.themoviedb.org/3/search/person?api_key="
-MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
-OMDB_SEARCH_MOVIE_INFO = "http://www.omdbapi.com/?t="
-OMDB_KEY = "be72fd68"
-HIGH_QUALITY_POSTER = True
 
 ####################################################################################################
 ##                                          Other config                                          ##
