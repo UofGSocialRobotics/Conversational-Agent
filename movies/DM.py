@@ -4,8 +4,6 @@ import urllib.request
 import json
 import movies.movie_config as movie_config
 from pathlib import Path
-import random
-from ca_logging import log
 
 
 class DM(wbc.WhiteBoardClient):
