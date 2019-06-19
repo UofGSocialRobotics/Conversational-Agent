@@ -4,111 +4,8 @@ import nltk
 import spacy
 import dataparser
 from movies import movie_dataparser
+import nlu_helper_functions as nlu_helper
 
-
-####################################################################################################
-##                                          Preprocesss                                           ##
-####################################################################################################
-
-def preprocess(sentence):
-    s = sentence.lower()
-    s = s.replace(" don t ", " don't ")
-    # s = s.replace("'s", " 's")
-    return s
-
-def flatten_sentence(sentence):
-    '''
-    :param sentence:
-    :return: sentence with no CAPS and no punctuation
-    '''
-    s = sentence.translate(str.maketrans('', '', string.punctuation))
-    s = re.sub(' +', ' ', s)
-    return s.lower()
-
-
-####################################################################################################
-##                                      Helper functions                                          ##
-####################################################################################################
-
-
-def is_verb(token):
-    '''
-    Returns True if token is a verb or aux
-    :param token: spacy document-->token
-    :return: bool
-    '''
-    if "VB" in token.tag_ or token.tag_ == "MD":
-        return True
-    else:
-        return False
-
-
-def find_key_in_dict_with_fuzzy_matching(k,d):
-    '''
-    Uses fuzzy mathcing (TODO) to find a key in a dictionary
-    :param k: key to find
-    :param d: dictionay in which to loo for k
-    :return: d[k] if k in d or False
-    '''
-    for key, id in d.items():
-        if key == k:
-            return id
-    return False
-
-
-def get_NE_Person(capitalized_doc):
-    '''
-    Using Spacy NER to get Persons from document
-    :param capitalized_doc: Takes a document created from a capitalized sentence (i.e. all words have their 1st letter CAP) because spcay NER fails with lowercases.
-    :return: list or persons
-    '''
-    # [print(x) for x in capitalized_doc]
-    verbs = [x.text for x in capitalized_doc if is_verb(x)]
-    if capitalized_doc.ents and len(capitalized_doc.ents) > 0:
-        persons = [X.text for X in capitalized_doc.ents if X.label_ == "PERSON"]
-        persons_cleaned = list()
-        if len(verbs)>0:
-            for p in persons:
-                words = p.split()
-                # print(words)
-                p_cleaned = " ".join([w for w in words if w not in verbs])
-                # actor_cleaned = actor_cleaned.replace("'s", "")
-                persons_cleaned.append(p_cleaned)
-        else:
-            persons_cleaned = persons
-        # print(actors_cleaned)
-        persons_cleaned = [a.lower() for a in persons_cleaned]
-        persons_cleaned = [a.replace("'s", '') for a in persons_cleaned]
-        return persons_cleaned
-
-
-def get_NNs(document):
-    '''
-    Used to get NNs --> try to extract Persons if NER fails.
-    If several words in a row are NNs, create just one entiry out of them
-    :param document: spacy document
-    :return: list of nouns
-    '''
-    NNs = list()
-    i, max = 0, len(document)
-    while i < max:
-        token = document[i]
-        if "NN" in token.tag_:
-            j = i + 1
-            nn = token.text.lower()
-            while j < max:
-                next = document[j]
-                if "NN" in next.tag_:
-                    nn += " " + next.text.lower()
-                    j += 1
-                else :
-                    j += 1
-                    break
-            NNs.append(nn)
-            i = j
-        else:
-            i += 1
-    return NNs
 
 
 def get_cast_id(actor_name, cast_dicts):
@@ -124,16 +21,16 @@ def get_cast_id(actor_name, cast_dicts):
         # print("get_actor_id: was given only one string")
         # print(actor_name)
         # look in dictionary that has only last names as keys
-        return find_key_in_dict_with_fuzzy_matching(actor_name, cast_dicts['lastname2id'])
+        return nlu_helper.find_key_in_dict_with_fuzzy_matching(actor_name, cast_dicts['lastname2id'])
     elif len(actor_name_splited) == 2:
         # print("get_actor_id: was given 2 elements")
         # print(actor_name_splited)
         x1, x2 = ' '.join(actor_name_splited), ' '.join(reversed(actor_name_splited))
-        id = find_key_in_dict_with_fuzzy_matching(x1, cast_dicts['firstnamelastname2id'])
+        id = nlu_helper.find_key_in_dict_with_fuzzy_matching(x1, cast_dicts['firstnamelastname2id'])
         if id:
             return id
         else:
-            return find_key_in_dict_with_fuzzy_matching(x2, cast_dicts['lastnamefirstname2id'])
+            return nlu_helper.find_key_in_dict_with_fuzzy_matching(x2, cast_dicts['lastnamefirstname2id'])
     return False
 
 
@@ -145,10 +42,10 @@ def get_cast(capitalized_doc, cast_dicts):
     :param cast_dicts: dictionaries of cast ids. 3 dictionaires mapping (lastname) / (firtname lastname) / (lastname firstname) to the actor id
     :return: the list of actors / directors in capitalized_doc as ids (that will match ids in lexicon files)
     """
-    names = get_NE_Person(capitalized_doc)
+    names = nlu_helper.get_NE_Person(capitalized_doc)
     # names2ids = parse_dataset.get_all_cast()
     if not names or len(names) == 0:
-        names = get_NNs(capitalized_doc)
+        names = nlu_helper.get_NNs(capitalized_doc)
         # print("got names from NNs")
     if len(names)>0:
         actor_ids = list()
@@ -164,17 +61,6 @@ def get_cast(capitalized_doc, cast_dicts):
 ####################################################################################################
 
 ## ---------------------------------------- Bool functions -------------------------------------- ##
-
-def is_greeting(document, voc_greetings):
-    '''
-    Determines if intent is greeting
-    :param document: spacy document
-    :param voc_greetings: list of greeting words
-    :return: bool
-    '''
-    for token in document:
-        if token.text in voc_greetings:
-            return True
 
 
 def is_alreadywatched(sentence):
@@ -198,32 +84,6 @@ def is_requestmore(document, voc_request_more):
             return True
 
 
-def is_goodbye(document, sentence, voc_bye):
-    '''
-    Determines if intent is goodbye
-    :param document: spacy document
-    :param sentence: string
-    :param voc_bye: dictionary of words used to say bye (see resources/nlu/voc.json)
-    :return: bool
-    '''
-    for token in document:
-        if token.text in voc_bye["bye_1word"]:
-            return True
-    if len(sentence) > 1:
-        bigrams = nltk.bigrams(sentence.split())
-        for bg in bigrams:
-            bg_text = ' '.join(bg)
-            if bg_text in voc_bye["bye_2words"]:
-                return True
-    if len(sentence) > 3:
-        fourgrams = nltk.ngrams(sentence.split(), 4)
-        for fg in fourgrams:
-            fg_text = ' '.join(fg)
-            if fg_text in voc_bye["bye_4words"]:
-                return True
-    return False
-
-
 def is_askGenre(document, voc_genres):
     """
     Determines if intent is ask_genre
@@ -233,7 +93,7 @@ def is_askGenre(document, voc_genres):
     :return: bool
     """
     first_word = document[0]
-    if first_word.text == "what" or is_verb(first_word):
+    if first_word.text == "what" or nlu_helper.is_verb(first_word):
         for token in document:
             if token.lemma_ in ["genre", "type", "kind"] or token.lemma_ in voc_genres:
                 return True
@@ -249,7 +109,7 @@ def is_askPerson(document, prep, key_words):
     """
     first_word = document[0]
     # print(first_word.tag_)
-    if first_word.tag_ == "WDT" or first_word.tag_ == "WP" or is_verb(first_word):
+    if first_word.tag_ == "WDT" or first_word.tag_ == "WP" or nlu_helper.is_verb(first_word):
         for token in document:
             if token.text in prep and token.dep_ == "prep":
                 return True
@@ -284,7 +144,7 @@ def is_askPlot(document):
     :return: bool
     """
     first_word = document[0]
-    if (first_word.tag_ == "WP" or is_verb(first_word)) and len(document) > 2:
+    if (first_word.tag_ == "WP" or nlu_helper.is_verb(first_word)) and len(document) > 2:
         return True
     for token in document:
         if token.lemma_ in ["happen", "plot", "summary", "plot"]:
@@ -293,47 +153,7 @@ def is_askPlot(document):
 
 ## ---------------------------------------- Non-bool functions ---------------------------------------- ##
 
-def is_yes_no(document, sentence, voc_yes, voc_no):
-    """
-    Determines if intent is yes/no
-    :param document: spacy document
-    :param sentence: string
-    :param voc_yes: dictionary of yes words (see resources/nlu/voc.json)
-    :param voc_no: dictionary of no words (see resources/nlu/voc.json)
-    :return: yes/no/false
-    """
-    sentence = flatten_sentence(sentence)
-    first_word = document[0]
-    if sentence in voc_yes["all_yes_words"]:
-        return "yes"
-    if sentence in voc_no["all_no_words"]:
-        return "no"
-    if first_word.text in voc_no["no_1word"]:
-        return "no"
-    if len(document)>1 and document[1].text in voc_no["no_1word"]:
-        return "no"
-    if len(sentence) > 2:
-        bigrams = nltk.bigrams(sentence.split())
-        for bg in bigrams:
-            bg_text = ' '.join(bg)
-            if bg_text in voc_no["no_2words"]:
-                return "no"
-            elif bg_text in voc_yes["yes_words"]["yes_2words"]:
-                return "yes"
-    if len(sentence) > 3:
-        trigrams = nltk.trigrams(sentence)
-        for tg in trigrams:
-            tg_text = ' '.join(tg)
-            if tg_text in voc_no["no_3words"]:
-                return "no"
-    is_positive = None
-    for token in document:
-        if (token.text in voc_yes["all_yes_words"] or token.text in voc_yes["yes_vb"]) and is_positive == None:
-            is_positive = True
-        elif token.text in voc_no["no_1word"] or (token.tag_ == "RB" and token.dep_ == "neg"):
-            return "no"
-    if is_positive == True:
-        return "yes"
+
 
 def is_inform_genre(document, voc_genres, voc_scifi):
     """
@@ -398,8 +218,8 @@ def compare_syntax_analysis(sentence):
     capitalized_document = spacy_nlp(sentence.title())
     print("Actors:")
     print(capitalized_document.ents)
-    print(get_NNs)
-    print(get_NNs(capitalized_document))
+    print(nlu_helper.get_NNs)
+    print(nlu_helper.get_NNs(capitalized_document))
     print(get_cast(capitalized_document, cast_dicts=cast_dicts))
 
 def compare_sentiment_analysis(sentence):
@@ -416,7 +236,7 @@ def compare_sentiment_analysis(sentence):
 
 def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
 
-    utterance = preprocess(utterance)
+    utterance = nlu_helper.preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
     f = is_inform_cast(capitalized_document, cast_dicts)
@@ -425,7 +245,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
     else:
         if is_alreadywatched(utterance):
             f = "alreadyWatched"
-        elif is_goodbye(document, utterance, voc_bye=voc["bye"]):
+        elif nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"]):
             f = "goodbye"
         elif is_requestmore(document, voc_request_more=voc["request_more"]):
             f = "request_more"
@@ -440,8 +260,8 @@ def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
         else :
             f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
         if f == None:
-            f = is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
-        if f == None and is_greeting(document, voc_greetings=voc["greetings"]):
+            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+        if f == None and nlu_helper.is_greeting(document, voc_greetings=voc["greetings"]):
             f = "greet"
         if f == None:
             f = "IDK"
