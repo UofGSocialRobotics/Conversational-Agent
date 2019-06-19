@@ -1,3 +1,10 @@
+import string
+import re
+import nltk
+
+import spacy
+import dataparser
+from movies import movie_dataparser
 
 ####################################################################################################
 ##                                          Preprocesss                                           ##
@@ -158,7 +165,7 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     :param voc_no: dictionary of no words (see resources/nlu/voc.json)
     :return: yes/no/false
     """
-    sentence = nlu_helper.flatten_sentence(sentence)
+    sentence = flatten_sentence(sentence)
     first_word = document[0]
     if sentence in voc_yes["all_yes_words"]:
         return "yes"
