@@ -52,18 +52,18 @@ class DSManager:
         # and start timer to kill services if no activity
         if client_id not in self.clients_services.keys():
             if config.MSG_CONNECTION in msg_txt:
-                self.subscribe_whiteboard(config.MSG_NLG+client_id)
+                self.subscribe_whiteboard(config.MSG_NLG + client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
                 confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
-                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT+client_id)
+                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT + client_id)
             else: # tell client they were disconnected
                 error_message = "ERROR, you were disconnected. Start session again by refreshing page."
-                self.publish_for_client(error_message, config.MSG_SERVER_OUT+client_id)
+                self.publish_for_client(error_message, config.MSG_SERVER_OUT + client_id)
         else:
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
             if config.MSG_CONNECTION not in msg_txt:
-                topic = config.MSG_SERVER_IN+client_id
+                topic = config.MSG_SERVER_IN + client_id
                 self.publish_whiteboard(msg_txt, topic)
             self.reset_timer(client_id)
 
@@ -121,4 +121,4 @@ class DSManager:
 
     def treat_message_from_module(self, message, topic):
         client_id = topic.split("/")[-1]
-        self.publish_for_client(message, config.MSG_SERVER_OUT+client_id)
+        self.publish_for_client(message, config.MSG_SERVER_OUT + client_id)
