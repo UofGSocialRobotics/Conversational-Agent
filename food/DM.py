@@ -89,8 +89,8 @@ class DM(wbc.WhiteBoardClient):
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, movie, user_intent, previous_intent, user_frame):
-        frame = {'intent': intention, 'movie': movie, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame}
         json_msg = json.dumps(frame)
         return json_msg
 

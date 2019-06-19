@@ -1,19 +1,13 @@
 
-
-FOOD_MODEL_PATH = "food/resources/dm/food_ratings.csv"
-
 ####################################################################################################
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "movies/resources/dm/model.csv"
-USER_MODELS = "movies/resources/user_models/"
-NLG_SENTENCE_DB = "movies/resources/nlg/sentence_db.csv"
-NLG_ACK_DB = "movies/resources/nlg/ack_db.csv"
-ACTORS_LEXICON = "movies/resources/nlu/actor2id.lexicon"
-DIRECTORS_LEXICON = "movies/resources/nlu/director2id.lexicon"
-GENRES_LEXICON = "movies/resources/nlu/genre2id.lexicon"
-
+DM_MODEL = "food/resources/dm/model.csv"
+USER_MODELS = "food/resources/user_models/"
+NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
+NLG_ACK_DB = "food/resources/nlg/ack_db.csv"
+FOOD_MODEL_PATH = "food/resources/dm/food_ratings.csv"
 
 
 ####################################################################################################
