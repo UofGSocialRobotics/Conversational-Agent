@@ -1,11 +1,9 @@
-from ca_logging import log
 import whiteboard_client as wbc
 import helper_functions as helper
 import spacy
 import json
-import dataparser
 import argparse
-import nlu_functions
+from movies import nlu_functions, dataparser
 
 
 ####################################################################################################
@@ -23,6 +21,8 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
 
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
+
+        # Todo Distinguish actors and directors
 
         formula = nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
         intent, entity, entitytype, polarity = nlu_functions.format_formula(formula=formula)

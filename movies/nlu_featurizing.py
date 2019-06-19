@@ -1,7 +1,6 @@
-import nlu_functions
+from movies import nlu_functions, dataparser
 import argparse
 import spacy
-import dataparser
 import csv
 import math
 import random

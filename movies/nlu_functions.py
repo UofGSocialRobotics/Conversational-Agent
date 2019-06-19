@@ -2,7 +2,8 @@ import string
 import re
 import nltk
 import spacy
-import dataparser
+from movies import dataparser
+
 
 ####################################################################################################
 ##                                          Preprocesss                                           ##

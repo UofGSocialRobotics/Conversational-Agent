@@ -80,7 +80,7 @@ def load_dataset():
     return dataset
 
 
-def get_all_cast(actorfile="resources/nlu/actor2id.lexicon", directorfile="resources/nlu/director2id.lexicon"):
+def get_all_cast(actorfile="./movies/resources/nlu/actor2id.lexicon", directorfile="./movies/resources/nlu/director2id.lexicon"):
     '''
     Parses files of cast members (actors and directors) --> builds a DB of actors and directors
     :param actorfile: actor2id.lexicon file
@@ -119,7 +119,7 @@ def get_all_cast(actorfile="resources/nlu/actor2id.lexicon", directorfile="resou
     return cast_dicts
 
 
-def parse_voc(vocf = "resources/nlu/voc.json"):
+def parse_voc(vocf = "./movies/resources/nlu/voc.json"):
     with open(vocf) as json_file:
         data = json.load(json_file)
     all_yes_words = list()

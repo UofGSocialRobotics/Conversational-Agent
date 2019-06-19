@@ -1,5 +1,7 @@
 import movies
 import food
+from movies import NLG, rule_based_NLU, dum_sentiment_analysis
+from food import DM
 
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
@@ -61,15 +63,11 @@ MSG_CONFIRM_CONNECTION = "Connection confirmed"
 ## NLU
 #import dum_NLU
 #NLU = dum_NLU.NLU
-import rule_based_NLU
-NLU = rule_based_NLU.RuleBasedNLU
+NLU = movies.rule_based_NLU.RuleBasedNLU
 NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
 ## DM
-from movies import DM, NLG, dum_sentiment_analysis
-from food import DM
-
 DM = food.DM.DM
 DM_subscribes = [MSG_NLU, MSG_SA]
 DM_publishes = MSG_DM
