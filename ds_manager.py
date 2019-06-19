@@ -86,16 +86,16 @@ class DSManager:
     def create_services(self, client_id):
         self.clients_services[client_id] = dict()
         # create dedicated NLU
-        new_nlu = config.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
+        new_nlu = config.modules.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
         self.clients_services[client_id]["nlu"] = new_nlu
         # create dedicated sentiment analysis
-        new_sa = config.SentimentAnalysis(subscribes=config.SentimentAnalysis_subscribes, publishes=config.SentimentAnalysis_publishes, clientid=client_id)
+        new_sa = config.modules.SentimentAnalysis(subscribes=config.SentimentAnalysis_subscribes, publishes=config.SentimentAnalysis_publishes, clientid=client_id)
         self.clients_services[client_id]["sa"] = new_sa
         # create dedicated DM
-        new_dm = config.DM(subscribes=config.DM_subscribes, publishes=config.DM_publishes, clientid=client_id)
+        new_dm = config.modules.DM(subscribes=config.DM_subscribes, publishes=config.DM_publishes, clientid=client_id)
         self.clients_services[client_id]["dm"] = new_dm
         # create dedicated NLG
-        new_nlg = config.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
+        new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
         self.clients_services[client_id]["nlg"] = new_nlg
 
         # star services in dedicated threads

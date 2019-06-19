@@ -2,7 +2,7 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import urllib.request
 import json
-import config
+import food.food_config as food_config
 from pathlib import Path
 from ca_logging import log
 import pandas
@@ -30,8 +30,8 @@ class DM(wbc.WhiteBoardClient):
         self.nodes = {}
         self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
                            'liked_movies': [], 'disliked_movies': []}
-        self.load_model(config.DM_MODEL)
-        self.load_user_model(config.USER_MODELS, clientid)
+        self.load_model(food_config.DM_MODEL)
+        self.load_user_model(food_config.USER_MODELS, clientid)
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
     def load_model(self, path):
@@ -46,7 +46,7 @@ class DM(wbc.WhiteBoardClient):
                 self.nodes[node.stateName] = node
 
     def save_user_model(self):
-        file = config.USER_MODELS + self.client_id + ".prefs"
+        file = food_config.USER_MODELS + self.client_id + ".prefs"
         with open(file, 'w') as outfile:
             json.dump(self.user_model, outfile)
 
@@ -99,7 +99,7 @@ class DM(wbc.WhiteBoardClient):
                 next_state = "greet_back"
 
             # saves the user model at the end of the interaction
-            if next_state == 'bye' and config.SAVE_USER_MODEL:
+            if next_state == 'bye' and food_config.SAVE_USER_MODEL:
                 self.save_user_model()
 
             prev_state = self.currState
@@ -120,15 +120,15 @@ class DM(wbc.WhiteBoardClient):
         return NLU_message
 
     def load_food_model(self):
-        self.food_data = pandas.read_csv(config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
+        self.food_data = pandas.read_csv(food_config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
         print(self.food_data)
 
     def recommend(self):
         movies_list = self.queryMoviesList()
         for movie in movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
-                if config.HIGH_QUALITY_POSTER:
-                    self.movie['poster'] = config.MOVIEDB_POSTER_PATH + movie['poster_path']
+                if food_config.HIGH_QUALITY_POSTER:
+                    self.movie['poster'] = food_config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
     def queryMoviesList(self):
@@ -136,21 +136,21 @@ class DM(wbc.WhiteBoardClient):
         movies_with_cast_list = []
         movies_with_genres_list = []
         if not self.user_model['liked_genres'] and not self.user_model['liked_cast']:
-            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + config.MOVIE_DB_PROPERTY
+            query_url = food_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + food_config.MOVIEDB_KEY + food_config.MOVIE_DB_PROPERTY
             data = urllib.request.urlopen(query_url)
             result = data.read()
             movies = json.loads(result)
             return movies['results']
         if self.user_model['liked_genres']:
             genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
-            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + config.MOVIE_DB_PROPERTY
+            query_url = food_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + food_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + food_config.MOVIE_DB_PROPERTY
             data = urllib.request.urlopen(query_url)
             result = data.read()
             movies = json.loads(result)
             movies_with_genres_list = movies['results']
         if self.user_model['liked_cast']:
             cast_id = self.get_cast_id(self.user_model['liked_cast'][-1].lower())
-            query_url = config.MOVIEDB_SEARCH_MOVIE_ADDRESS + config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + config.MOVIE_DB_PROPERTY
+            query_url = food_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + food_config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + food_config.MOVIE_DB_PROPERTY
             data = urllib.request.urlopen(query_url)
             result = data.read()
             movies = json.loads(result)
@@ -208,7 +208,7 @@ class DM(wbc.WhiteBoardClient):
 
     def get_cast_id(self, cast_name):
         cast_name = cast_name.replace(" ", "%20")
-        query_url = config.MOVIEDB_SEARCH_PERSON_ADDRESS + config.MOVIEDB_KEY + "&query=" + cast_name
+        query_url = food_config.MOVIEDB_SEARCH_PERSON_ADDRESS + food_config.MOVIEDB_KEY + "&query=" + cast_name
         data = urllib.request.urlopen(query_url)
         result = data.read()
         movies = json.loads(result)
@@ -217,14 +217,14 @@ class DM(wbc.WhiteBoardClient):
     def set_movie_info(self, movie_name):
         movie_name = movie_name.replace(" ", "%20")
         movie_name = movie_name.replace("é", "e")
-        omdbURL = config.OMDB_SEARCH_MOVIE_INFO + movie_name + "&r=json" + "&apikey=" + config.OMDB_KEY
+        omdbURL = food_config.OMDB_SEARCH_MOVIE_INFO + movie_name + "&r=json" + "&apikey=" + food_config.OMDB_KEY
         data = urllib.request.urlopen(omdbURL)
         result = data.read()
         movie_info = json.loads(result)
         self.movie['plot'] = movie_info.get("Plot")
         self.movie['actors'] = movie_info.get("Actors")
         self.movie['genres'] = movie_info.get("Genre")
-        if config.HIGH_QUALITY_POSTER is False:
+        if food_config.HIGH_QUALITY_POSTER is False:
             self.movie['poster'] = movie_info.get("Poster")
 
 

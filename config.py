@@ -1,6 +1,11 @@
 import movies
+from movies import rule_based_NLU as movies_NLU
+from movies import DM as movies_DM
+from movies import NLG as movies_NLG
+from movies import dum_sentiment_analysis as movies_SA
 import food
-
+from food import DM as food_DM
+import ca_logging as logging
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
 ####################################################################################################
@@ -54,30 +59,76 @@ MSG_CONNECTION = "new client connected"
 MSG_CONFIRM_CONNECTION = "Connection confirmed"
 
 
-####################################################################################################
-##                                          Modules                                               ##
-####################################################################################################
-
 ## NLU
-#import dum_NLU
-#NLU = dum_NLU.NLU
-NLU = None
 NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
 ## DM
-DM = None
 DM_subscribes = [MSG_NLU, MSG_SA]
 DM_publishes = MSG_DM
 
 ## NLG
-NLG = None
 NLG_subscribes = [MSG_DM]
 NLG_publishes = MSG_NLG
 
 ## Sentiment analysis
-SentimentAnalysis = None
 SentimentAnalysis_subscribes = [MSG_SERVER_IN]
 SentimentAnalysis_publishes = MSG_SA
+
+####################################################################################################
+##                                          Modules                                               ##
+####################################################################################################
+# NLU = None
+# DM = None
+# NLG = None
+# SentimentAnalysis = None
+
+class Modules:
+    """Singleton class"""
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """
+        :return: the unique whiteboard object
+        """
+        if Modules.__instance == None:
+            Modules()
+        return  Modules.__instance
+
+
+    def __init__(self):
+        """
+        This constructor in virtually private.
+        :param domain:
+        """
+        if Modules.__instance != None:
+            logging.log.error("Singleton Class: contructor should not be called. Use Modules.getInstance()")
+        else:
+            Modules.__instance = self
+            self.NLU = None
+            self.DM = None
+            self.SentimentAnalysis = None
+            self.NLG = None
+
+    def set_domain(self, domain):
+        if domain == "movies":
+            self.NLU = movies_NLU.RuleBasedNLU
+            self.DM = movies_DM.DM
+            self.NLG = movies_NLG.NLG
+            self.SentimentAnalysis = movies_SA.SentimentAnalysis
+            logging.log.info("(config.py) Set domain as movies.")
+        elif domain == "food":
+            self.NLU = movies_NLU.RuleBasedNLU
+            self.DM = food_DM.DM
+            self.NLG = movies_NLG.NLG
+            self.SentimentAnalysis = movies_SA.SentimentAnalysis
+            logging.log.info("(config.py) Set domain as food.")
+        else:
+            logging.log.error("No %s domain" % domain)
+            exit(0)
+
+modules = Modules.getInstance()
+
 
 

@@ -23,17 +23,18 @@ def main():
 if __name__ == '__main__':
 
     argp = argparse.ArgumentParser()
-    argp.add_argument("--food", help="Movie recommandation system", action="store_true")
-    argp.add_argument("--movies", help="Food derommandation system", action="store_true")
+    argp.add_argument("--food", help="Movie recommendation system", action="store_true")
+    argp.add_argument("--movies", help="Food recommendation system", action="store_true")
     # argp.add_argument("--debug", help="Sentence to debug", action="store")
 
     args = argp.parse_args()
 
     if args.movies:
-        import movies.movie_config as movie_config
-        config.NLU = movie_config.NLU
-        config.DM = movie_config.DM
-        config.NLG = movie_config.NLG
-        config.SentimentAnalysis = movie_config.SentimentAnalysis
+        config.modules.set_domain("movies")
         main()
+    elif args.food:
+        config.modules.set_domain("food")
+        main()
+
+
 
