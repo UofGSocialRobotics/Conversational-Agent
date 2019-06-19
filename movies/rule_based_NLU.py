@@ -15,7 +15,7 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
-        self.voc = dataparser.parse_voc()
+        self.voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/movies_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
         self.cast_dicts = dataparser.get_all_cast()
 

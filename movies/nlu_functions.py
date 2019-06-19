@@ -471,7 +471,7 @@ def format_formula(formula):
 
 def evaluate(dataset, to_print='all'):
     spacy_nlp = spacy.load("en_core_web_sm")
-    voc = dataparser.parse_voc()
+    voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
     cast_dicts = dataparser.get_all_cast()
     got_right = 0
     for utterance, formula in dataset:
@@ -496,7 +496,7 @@ def evaluate(dataset, to_print='all'):
 def test_nlu():
     q= False
     spacy_nlp = spacy.load("en_core_web_sm")
-    voc = dataparser.parse_voc()
+    voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
     cast_dicts = dataparser.get_all_cast()
     while(not q):
         utterance = input("Enter text (q to quit): ")

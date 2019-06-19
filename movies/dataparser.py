@@ -1,5 +1,6 @@
 import re
 import json
+import helper_functions as helper
 
 def parse_dataset(fname):
     '''
@@ -119,9 +120,15 @@ def get_all_cast(actorfile="./movies/resources/nlu/actor2id.lexicon", directorfi
     return cast_dicts
 
 
-def parse_voc(vocf = "./movies/resources/nlu/voc.json"):
-    with open(vocf) as json_file:
-        data = json.load(json_file)
+def parse_voc(f_voc_shared = "./shared_resources/nlu/voc.json", f_domain_voc = None):
+    with open(f_voc_shared) as json_file:
+        data1 = json.load(json_file)
+    if f_domain_voc:
+        with open(f_domain_voc) as json_file:
+            data2 = json.load(json_file)
+        data = helper.merge_two_dicts(data1, data2)
+    else:
+        data = data1
     all_yes_words = list()
     # get all yes words in a single list
     for values in data["yes"]["yes_words"].values():
