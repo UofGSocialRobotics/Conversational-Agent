@@ -3,7 +3,8 @@ import helper_functions as helper
 import spacy
 import json
 import argparse
-from movies import nlu_functions, dataparser
+from movies import nlu_functions, movie_dataparser
+import dataparser
 
 
 ####################################################################################################
@@ -17,7 +18,7 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
         self.voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/movies_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
-        self.cast_dicts = dataparser.get_all_cast()
+        self.cast_dicts = movie_dataparser.get_all_cast()
 
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     if args.eval:
 
-        dataset = dataparser.load_dataset()
+        dataset = movie_dataparser.load_dataset()
 
         nlu_functions.evaluate(dataset, "wrong")
 

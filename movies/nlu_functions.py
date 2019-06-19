@@ -2,7 +2,8 @@ import string
 import re
 import nltk
 import spacy
-from movies import dataparser
+import dataparser
+from movies import movie_dataparser
 
 
 ####################################################################################################
@@ -381,7 +382,7 @@ def compare_syntax_analysis(sentence):
     # print("No dependency parser with textblob")
     #
 
-    cast_dicts = dataparser.get_all_cast()
+    cast_dicts = movie_dataparser.get_all_cast()
 
     spacy_nlp = spacy.load("en_core_web_sm")
     document = spacy_nlp(sentence)
@@ -472,7 +473,7 @@ def format_formula(formula):
 def evaluate(dataset, to_print='all'):
     spacy_nlp = spacy.load("en_core_web_sm")
     voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = dataparser.get_all_cast()
+    cast_dicts = movie_dataparser.get_all_cast()
     got_right = 0
     for utterance, formula in dataset:
         f = rule_based_nlu(utterance, spacy_nlp, voc=voc, cast_dicts=cast_dicts)
@@ -497,7 +498,7 @@ def test_nlu():
     q= False
     spacy_nlp = spacy.load("en_core_web_sm")
     voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = dataparser.get_all_cast()
+    cast_dicts = movie_dataparser.get_all_cast()
     while(not q):
         utterance = input("Enter text (q to quit): ")
         if utterance == 'q':

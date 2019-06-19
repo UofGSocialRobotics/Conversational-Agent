@@ -1,9 +1,10 @@
-from movies import nlu_functions, dataparser
+from movies import nlu_functions, movie_dataparser
 import argparse
 import spacy
 import csv
 import math
 import random
+import dataparser
 
 '''
 features
@@ -151,7 +152,7 @@ def create_csv(dataset):
 
     spacy_nlp = spacy.load("en_core_web_sm")
     voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = dataparser.get_all_cast()
+    cast_dicts = movie_dataparser.get_all_cast()
 
     rows_with_label = dict()
     l, i = len(dataset), 0
@@ -206,7 +207,7 @@ def test_featurizing():
     q= False
     spacy_nlp = spacy.load("en_core_web_sm")
     voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = dataparser.get_all_cast()
+    cast_dicts = movie_dataparser.get_all_cast()
     while(not q):
         utterance = input("Enter text (q to quit): ")
         if utterance == 'q':
@@ -227,5 +228,5 @@ if __name__ == "__main__":
     if args.test:
         test_featurizing()
     elif args.featurize:
-        dataset = dataparser.load_chatito_dataset()
+        dataset = movie_dataparser.load_chatito_dataset()
         create_csv(dataset)
