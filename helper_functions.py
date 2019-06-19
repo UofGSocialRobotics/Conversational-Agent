@@ -1,7 +1,6 @@
 from ca_logging import log
-import paho.mqtt.client as paho
 import json
-#import yaml
+import random
 
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:
@@ -18,6 +17,12 @@ def print_message(name,action,msg_txt,topic):
 
 def append_c_to_elts(my_list,c):
     return [elt + c for elt in my_list]
+
+def random_id():
+    s = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM123456789"
+    tmp = ''.join(random.sample(s,len(s)))
+    id = tmp[:10]
+    return id
 
 # def raise_error(client,error_msg,level):
 #     if level == paho.MQTT_LOG_WARNING:

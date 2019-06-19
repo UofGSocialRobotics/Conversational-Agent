@@ -3,6 +3,7 @@ import ds_manager
 import threading
 import traceback
 from ca_logging import log
+import helper_functions as helper
 import config
 
 class SimpleEcho(WebSocket):
@@ -23,7 +24,11 @@ class DSManagerUsingWebsockets(WebSocket, ds_manager.DSManager):
     def handle(self):
         # echo message back to client
         # self.send_message(self.data)
-        self.treat_message_from_client(self.data, "qwerty")
+        # print(self.data)
+        # print(id)
+        if not hasattr(self, 'client_id'):
+            self.client_id = helper.random_id()
+        self.treat_message_from_client(self.data, self.client_id)
 
     def publish_for_client(self, message, topic):
         self.send_message(message)
