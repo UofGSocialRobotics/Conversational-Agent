@@ -1,0 +1,271 @@
+label,rule-based prediction,"""actor""/""director"" in u",voc greetings in u,"""already"" in u",vor request_more in u,voc bye in u,voc genres in u,1st word is a verb,"""what"" is 1st word","""genre"", ""type"", ""kind"" in u",1st word POS tag is WDT,"""in"" or ""on"" in u","""cast"", ""actor"", ""act"", ""star"" in u","""by"" in u","""director"", ""direct"" i u","""happen"", ""plot"", ""summary"" in u",1st word POS tag is WP,len(u)>3,voc yes in u,voc no in u,utterance,formula
+1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what people are in that movie,askActor
+1,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,do you know who acted in that film,askActor
+1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,who was in that,askActor
+1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,who are the main people in that film,askActor
+1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0,which actors starred in this film,askActor
+1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,who starred in that film,askActor
+1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0,which actors were in that film,askActor
+3,3,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,what is the genre,askGenre
+3,3,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,what kind of movie is this?,askGenre
+3,3,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,what type of movie is that,askGenre
+3,3,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,can you tell me the genre,askGenre
+3,4,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,is it an action movie,askGenre
+2,2,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,can you tell me the director,askDirector
+2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,who was the director for that movie,askDirector
+2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,who directed it?,askDirector
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,i think cruise is the best actor ever,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,emma watson,inform (cast emma_ii_watson)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,tom cruise is the best actor ever,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,my favorite director is steven spielberg,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,drama is my favorite,inform (genre drama)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,tom cruise is super talented.,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,comedy,inform (genre comedy)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i prefer jennifer lawrence,inform (cast jennifer_iii_lawrence)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,war,inform (genre war)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess i maybe like tom cruise.,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like nolan for example,inform (cast christopher_i_nolan)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like comedy films,inform (genre comedy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,i usually watch comedy movies,inform (genre comedy)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,yeah i'm a fan of steven spielberg,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,tom hardy,inform (cast tom_i_hardy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love comedy movies,inform (genre comedy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i like action,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i'm a huge fan of steven spielberg,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,comedy is my favorite,inform (genre comedy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,action,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i like drama,inform (genre drama)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like spielberg for example,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,brad pitt,inform (cast brad_pitt)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i like christopher nolan,inform (cast christopher_i_nolan)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i love tom cruise,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess i like tom cruise.,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,i usually watch action movies,inform (genre action)
+9,4,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,"could you please recommend me an action movie, maybe?",inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,tom hanks is my favorite,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i like tom cruise.,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,could you recommend me a movie by steven spielberg maybe,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,drama,inform (genre drama)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i love tom hanks,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,tom hanks is my favorite actor,inform (cast tom_hanks)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like action films,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like nolan,inform (cast christopher_i_nolan)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i think maybe action movies?,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love action movie,inform (genre action)
+9,4,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,could you recommend me an action movie instead?,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,my favorite actor is tom cruise.,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like spielberg,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like jennifer hudson,inform (cast jennifer_i_hudson)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,matt damon,inform (cast matt_damon)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,tom cruise is my favorite actor,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,i think tom cruise is the best actor ever,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i love comedy,inform (genre comedy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,"um, i guess i prefer action.",inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like action.,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love drama movies,inform (genre drama)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess i like action movies.,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,cruise is my favorite actor,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really love jennifer hudson,inform (cast jennifer_i_hudson)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i like steven spielberg's movies,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,cruise is the best actor ever,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like action movie,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,my favorite genre is action.,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like comedy movies,inform (genre comedy)
+9,9,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,could you recommend something by steven spielberg,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,how about something with tom cruise,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't know maybe steven spielberg,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,action is my favorite,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like drama films,inform (genre drama)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,i usually watch drama movies,inform (genre drama)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like tom cruise,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess action and stuff.,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i love action,inform (genre action)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love action movies because i used to watch a lot of them with my family.,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i prefer chris evans,inform (cast chris_v_evans)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,i typically watch action movies.,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,ryan gosling,inform (cast ryan_gosling)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i like steven spielberg,inform (cast steven_spielberg)
+9,11,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,that's a good question. i'm probably more into action movies.,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,tom hanks is the best actor ever,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,maybe tom cruise.,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like jennifer lawrence,inform (cast jennifer_iii_lawrence)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,"um, action, i guess.",inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i prefer tom cruise,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,tom hardy,inform (cast tom_i_hardy)
+9,9,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,will ferrell,inform (cast will_i_ferrell)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,i think hanks is the best actor ever,inform (cast tom_hanks)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like to watch science fiction movies,inform (genre sci-fi)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,nolan is one of my favorite directors,inform (cast christopher_i_nolan)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i like comedy,inform (genre comedy)
+9,9,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,jennifer aniston,inform (cast jennifer_aniston)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,maybe steven spielberg,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i sort of like steven spielberg,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like chris evans,inform (cast chris_v_evans)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,i love drama,inform (genre drama)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love action films,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,spielberg is one of my favorite directors,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,nolan is my favorite director,inform (cast christopher_i_nolan)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like comedy movie,inform (genre comedy)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love action movies,inform (genre action)
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,howdy,greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hi, what do you do?",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hey there,greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hi, nice to meet you too.",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hello,greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hi,greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hi, i'm very excited to talk to you too!",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"um, hi.",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hi, my name is john.",greet
+7,4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,"hey, what happened?",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hi!,greet
+7,9,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hey, how is your day so far?",greet
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yes please,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i'm fine,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i'm great,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,maybe i will like it.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yeah.,yes
+5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"i don't know, sounds good  i guess.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"wow, that's an awesome suggestion. thanks!",yes
+5,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,0,"sounds great, i like watching movies too.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess i could watch that.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yes thanks,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, i've been looking for a good movie.",yes
+5,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yup, that's a good one.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,that looks pretty good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,cool.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yes!,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"definitely, i love watching movies.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, please.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yeah,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i completely agree,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i'm doing alright, just got back from the gym.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,sure,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,everything is fine,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,that's good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yep,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i love movies too!,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i am fine,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,ok,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"wow sara you're so intelligent, i'll definitely watch this movie.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,sure.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"um, i'm doing okay, i guess.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i'm good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,yes i would love that,yes
+5,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hi, i'm doing well.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i'm doing great,yes
+5,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,"i really love watching movies too, especially with my family and friends.",yes
+5,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i'm doing good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,it's going well,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, i love watching films.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,indeed,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, that's a great recommendation.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i guess.,yes
+5,9,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hello, i'm doing good. what about you?",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i think i'll really enjoy that.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,you have such great recommendations sara! i will definitely watch that movie.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, sure.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"wow, that's a great recommendation, thank you very much!",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i'm going well,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i'm doing well, thank you.",yes
+5,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hello, i'm doing well.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"wow, you made a great movie recommendation.",yes
+5,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hi, i guess i'm doing alright.",yes
+5,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hi, i'm doing well.",yes
+5,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,sounds great.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"yes, for sure.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,sure,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,good thanks,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess so.,yes
+5,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,0,seems sort of good.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,that's right,yes
+13,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i had a really good day at work today, because i was promoted, so all in all, i've been feeling pretty good about myself.",IDK
+13,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,oh. that's a great name!,IDK
+13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,how are you,IDK
+13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,oh! what did you do before?,IDK
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't have any favorite.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i guess i don't have one.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,i disagree,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i think i'm good.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,no thanks.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't think i have one.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,no i don't like that,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't think i have any favorite i guess.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't have any.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"nope, not that one.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,"to be honest, i don't really know any movie directors.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i guess i don't really know.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i guess i don't really have a preference.,no
+6,6,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"hey, i'm not doing so well.",no
+6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,thanks i'm good,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,no.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,thanks but no,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,nope,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,wrong,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't remember.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i don't have a preference.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,nope.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"nah, i am not in the mood to watch movies today.",no
+6,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,i'm done,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't think so,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"um, i don't think i have one.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,i don't really know any directors.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't really have a preference i guess.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't enjoy movies.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i guess i don't really have a preference.,no
+6,11,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,no more,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i don't have any favorites.",no
+6,6,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,don't,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't have one.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, thank you.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i'm not sure.,no
+6,6,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,do not,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,i actually don't have a preference for actors.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,this is enough,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't remember.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,probably not,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't have one.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i don't know their names.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't have a favorite.,no
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,end,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,good bye,goodbye
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,see you next time,goodbye
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,have a nice day,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,bye,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,bye!,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,bye,goodbye
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,see you,goodbye
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,stop,goodbye
+11,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,can i have more movie recommendations,request_more
+11,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,do you know anything else,request_more
+11,11,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,how about another,request_more
+11,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,can i have other movie recommendations,request_more
+11,11,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,please recommend me another movie instead.,request_more
+11,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,is there more of them,request_more
+11,11,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i want something else,request_more
+11,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,can you suggest an alternative,request_more
+4,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,can you give me a summary,askPlot
+4,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,can you tell me more,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,0,0,what is the plot of the movie,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't know a lot about that,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what is this about,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what is it about,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,what's that,askPlot
+4,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,0,0,what happens in the movie,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,0,0,what is the plot,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what is the movie about,askPlot
+4,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,tell me what happens,askPlot
+4,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,give plot,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't remember what that movie is about,askPlot
+4,4,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,tell me the plot,askPlot
+4,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,0,0,what happens in that movie,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i've never heard of that movie,askPlot
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i already watched this one,alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i already watched it",alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i watched this one already,alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i already watched this movie,alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,already watched that,alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i've already seen this,alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i already know this movie,alreadyWatched
+12,12,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,"thank you, but i already watched it",alreadyWatched
+12,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i already watched this one",alreadyWatched

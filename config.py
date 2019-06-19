@@ -1,3 +1,6 @@
+import movies
+import food
+
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
 ####################################################################################################
@@ -64,22 +67,20 @@ NLU_subscribes = [MSG_SERVER_IN]
 NLU_publishes = MSG_NLU
 
 ## DM
-import DM
-import dum_DM
-DM = DM.DM
+from movies import DM, NLG, dum_sentiment_analysis
+from food import DM
+
+DM = food.DM.DM
 DM_subscribes = [MSG_NLU, MSG_SA]
 DM_publishes = MSG_DM
 
 ## NLG
-import dum_NLG
-import NLG
-NLG = NLG.NLG
+NLG = movies.NLG.NLG
 NLG_subscribes = [MSG_DM]
 NLG_publishes = MSG_NLG
 
 ## Sentiment analysis
-import dum_sentiment_analysis
-SentimentAnalysis = dum_sentiment_analysis.SentimentAnalysis
+SentimentAnalysis = movies.dum_sentiment_analysis.SentimentAnalysis
 SentimentAnalysis_subscribes = [MSG_SERVER_IN]
 SentimentAnalysis_publishes = MSG_SA
 
@@ -88,11 +89,18 @@ SentimentAnalysis_publishes = MSG_SA
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "./resources/dm/Model.csv"
-USER_MODELS = "./resources/user_models/"
-NLG_SENTENCE_DB = "./resources/nlg/sentence_db.csv"
-NLG_ACK_DB = "./resources/nlg/ack_db.csv"
+DM_MODEL = "./movies/resources/dm/Model.csv"
+USER_MODELS = "./movies/resources/user_models/"
+NLG_SENTENCE_DB = "./movies/resources/nlg/sentence_db.csv"
+NLG_ACK_DB = "./movies/resources/nlg/ack_db.csv"
+ACTORS_LEXICON = "./movies/resources/nlu/actor2id.lexicon"
+DIRECTORS_LEXICON = "./movies/resources/nlu/director2id.lexicon"
+GENRES_LEXICON = "./movies/resources/nlu/genre2id.lexicon"
 
+
+####################################################################################################
+##                                      Movie recommendation config                               ##
+####################################################################################################
 MOVIEDB_KEY = "6e3c2d4a2501c86cd7e0571ada291f55"
 MOVIEDB_SEARCH_MOVIE_ADDRESS = "https://api.themoviedb.org/3/discover/movie?api_key="
 MOVIE_DB_PROPERTY = "&sort_by=popularity.desc"
@@ -121,3 +129,18 @@ PO_EXPLANATION_LABELS = ["POS", "ANA", "SO"]
 PO_EXPLANATION_PROBA = [.513, .308, .179]
 PE_EXPLANATION_LABELS = ["A", "L", "C"]
 PE_EXPLANATION_PROBA = [.177, .529, .294]
+
+
+
+
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
+##########                                      FOOD PROJECT                            #############
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
+
+FOOD_MODEL_PATH = "./food/resources/dm/food_ratings.csv"

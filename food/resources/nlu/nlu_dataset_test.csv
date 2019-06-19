@@ -1,0 +1,77 @@
+label,rule-based prediction,"""actor""/""director"" in u",voc greetings in u,"""already"" in u",vor request_more in u,voc bye in u,voc genres in u,1st word is a verb,"""what"" is 1st word","""genre"", ""type"", ""kind"" in u",1st word POS tag is WDT,"""in"" or ""on"" in u","""cast"", ""actor"", ""act"", ""star"" in u","""by"" in u","""director"", ""direct"" i u","""happen"", ""plot"", ""summary"" in u",1st word POS tag is WP,len(u)>3,voc yes in u,voc no in u,utterance,formula
+1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,who are the actors in that movie,askActor
+1,11,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,tell me more about the actors in the movie,askActor
+3,3,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,what kind of film is it?,askGenre
+3,4,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,is that movie a comedy,askGenre
+2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,who is the movie by,askDirector
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,i think tom hanks is the best actor ever,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,ryan gosling,inform (cast ryan_gosling)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,science fiction,inform (genre sci-fi)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i love jennifer hudson,inform (cast jennifer_i_hudson)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,jennifer lawrence,inform (cast jennifer_iii_lawrence)
+9,9,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,hanks is the best actor ever,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,how about something with tom hanks,inform (cast tom_hanks)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,steven spielberg is one of my favorite directors,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i like action movies,inform (genre action)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,bryan cranston,inform (cast bryan_cranston)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,steven spielberg is my favorite director,inform (cast steven_spielberg)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,crime,inform (genre crime)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,christopher nolan is my favorite director,inform (cast christopher_i_nolan)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i prefer jennifer hudson,inform (cast jennifer_i_hudson)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"um, maybe tom cruise.",inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,i kind of like tom cruise.,inform (cast tom_cruise)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love comedy films,inform (genre comedy)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like tom cruise,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i really like ben affleck.,inform (cast ben_affleck)
+9,9,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,i love comedy movie,inform (genre comedy)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,tom cruise,inform (cast tom_cruise)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,steven spielberg's alright,inform (cast steven_spielberg)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,christopher nolan is one of my favorite directors,inform (cast christopher_i_nolan)
+9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,spielberg is my favorite director,inform (cast steven_spielberg)
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hey,greet
+7,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hey, it's great to meet you too.",greet
+7,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"um, hi i guess.",greet
+7,7,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,"hi sarah, my name is florian.",greet
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yes,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i'm doing well,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i am good,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,great,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i'm alright, i guess.",yes
+5,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,of course!,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"that's a good recommendation , i think i will enjoy it.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yup,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i'm fine, i guess.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,definitely.,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,yes!,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i love movies too.,yes
+5,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"hey, i'm alright, i guess.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,"i'm doing well, you seem nice.",yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,i agree,yes
+5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,i guess i'll give it a chance.,yes
+13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,my name is katie.,IDK
+13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,my name is space.,IDK
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, sorry.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, thanks.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, i'm not in the mood.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i don't want a movie recommendation right now.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"no, thanks.",no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,no,no
+6,6,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,i don't have a favorite genre.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,that's enough,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i'm not interested.,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,it's enough,no
+6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,"honestly, i don't know.",no
+8,8,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,see you later,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,good bye,goodbye
+8,8,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,goodbye,goodbye
+11,11,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,"could you please recommend me another movie, maybe?",request_more
+11,12,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i already watched that,request_more
+11,11,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,any other suggestions,request_more
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what's it about,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,oh i haven't seen that movie,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i've never heard of that,askPlot
+4,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,i'm not familiar with that,askPlot
+4,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,what was that anyway,askPlot
+12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i've seen that one,alreadyWatched
+12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i know this movie,alreadyWatched
+12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,i have watched that movie,alreadyWatched
