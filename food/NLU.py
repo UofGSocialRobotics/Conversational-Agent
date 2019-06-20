@@ -2,8 +2,9 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import spacy
 import json
-from movies import movies_nlu_functions, movie_dataparser
+# from movies import movies_nlu_functions, movie_dataparser
 import nlu_helper_functions as nlu_helper
+import food.food_dataparser as food_dataparser
 
 
 def inform_food(document, food_list):
@@ -49,6 +50,19 @@ def inform_alone(document, voc_no, voc_alone, voc_not_alone):
         return ("inform", "alone", False, None)
 
 
+def inform_diet(document, voc_no, voc_diet):
+    diet, negation = False, False
+    for token in document:
+        if token.lemma_ in voc_diet:
+            diet = True
+        elif nlu_helper.is_negation(token, voc_no):
+            negation = True
+    if diet:
+        if negation:
+            return ("inform", "diet", False, None)
+        else:
+            return ("inform", "diet", True, None)
+
 
 def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
 
@@ -60,6 +74,8 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
         f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"])
     if not f:
         f = inform_alone(document, voc_no=voc["no"], voc_alone=voc["alone"], voc_not_alone=voc["not_alone"])
+    if not f:
+        f = inform_diet(document, voc_no=voc["no"], voc_diet=voc["diet"])
     if not f:
         f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
     if not f:
@@ -83,13 +99,14 @@ class NLU(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
         self.voc = movie_dataparser.parse_voc()
         self.spacy_nlp = spacy.load("en_core_web_sm")
+        self.food_list = food_dataparser.get_food_names()
 
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
 
         # Todo Distinguish actors and directors
 
-        formula = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc)
+        formula = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
         intent, entity, entitytype, polarity = movies_nlu_functions.format_formula(formula=formula)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)

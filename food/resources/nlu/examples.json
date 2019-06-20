@@ -70,5 +70,21 @@
 	[
 		"i love tomatoes",
 		["inform", "food", "tomatoes", "+"]
+	],
+	[
+		"i am on a diet",
+		["inform", "diet", true, null]
+	],
+	[
+		"i am watching my weight",
+		["inform", "diet", true, null]
+	],
+	[
+		"i am not on a diet",
+		["inform", "diet", false, null]
+	],
+	[
+		"yeah i m trying to get slimer",
+		["inform", "diet", true, null]
 	]
 ]

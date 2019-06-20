@@ -27,5 +27,15 @@
         "team",
         "friend",
         "company"
+    ],
+    "diet": [
+        "diet",
+        "weight",
+        "slim",
+        "slimer",
+        "thin",
+        "thiner",
+        "fast",
+        "regime"
     ]
 }
