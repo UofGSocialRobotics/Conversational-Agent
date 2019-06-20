@@ -16,11 +16,10 @@ class NLG(wbc.WhiteBoardClient):
 
         self.user_model = None
         self.user_intent = None
-        self.movie = None
+        self.food = None
 
         self.load_sentence_model(food_config.NLG_SENTENCE_DB)
         self.load_ack_model(food_config.NLG_ACK_DB)
-        print(self.sentenceDB)
 
     def load_sentence_model(self, path):
         with open(path) as f:
@@ -46,6 +45,7 @@ class NLG(wbc.WhiteBoardClient):
         message = json.loads(msg)
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
+        self.food = message['food']
 
         # Content Planning
         #
@@ -54,8 +54,6 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-        if "movie" in message['intent'] and movie_config.NLG_USE_EXPLANATIONS:
-            explanation_type = self.pick_explanation_type()
 
         if food_config.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
@@ -103,21 +101,6 @@ class NLG(wbc.WhiteBoardClient):
         #return random.choice(food_config.CS_LABELS)
         return "NONE"
 
-    # Todo Add explanations Sentence Planning
-    def pick_explanation_type(self):
-        expl_type = numpy.random.choice(food_config.EXPLANATION_TYPE_LABELS, p=list(food_config.EXPLANATION_TYPE_PROBA))
-        if "MF" in expl_type:
-            expl_type += "_" + numpy.random.choice(food_config.MF_EXPLANATION_LABELS, p=list(food_config.MF_EXPLANATION_PROBA))
-        elif "TPO" in expl_type:
-            expl_type += "_" + numpy.random.choice(food_config.TPO_EXPLANATION_LABELS, p=list(food_config.TPO_EXPLANATION_PROBA))
-        elif "PO" in expl_type:
-            expl_type += "_" + numpy.random.choice(food_config.PO_EXPLANATION_LABELS, p=list(food_config.PO_EXPLANATION_PROBA))
-        elif "PE" in expl_type:
-            expl_type += "_" + numpy.random.choice(food_config.PE_EXPLANATION_LABELS, p=list(food_config.PE_EXPLANATION_PROBA))
-        else:
-            expl_type = None
-        return expl_type
-
     def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
         for option in self.ackDB[previous_intent][valence][cs]:
@@ -133,11 +116,11 @@ class NLG(wbc.WhiteBoardClient):
             return ""
 
     def replace(self, sentence):
-        if "#title" in sentence:
+        if "#food" in sentence:
             # movListString = ""
             # for mov in self.moviesList:
             #     movListString = movListString + " " + mov
-            sentence = sentence.replace("#title", self.movie['title'])
+            sentence = sentence.replace("#food", self.food)
         if "#plot" in sentence:
             if self.movie['plot']:
                 sentence = sentence.replace("#plot", self.movie['plot'])
