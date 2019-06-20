@@ -5,6 +5,7 @@ import json
 # from movies import movies_nlu_functions, movie_dataparser
 import nlu_helper_functions as nlu_helper
 import food.food_dataparser as food_dataparser
+import dataparser
 
 
 def inform_food(document, food_list):
@@ -83,7 +84,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     if not f:
         f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
     if not f:
-        f = "IDK"
+        f = "IDK", None, None, None
     return f
 
 
@@ -97,7 +98,7 @@ class NLU(wbc.WhiteBoardClient):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
-        self.voc = movie_dataparser.parse_voc()
+        self.voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
         self.food_list = food_dataparser.get_food_names()
 
