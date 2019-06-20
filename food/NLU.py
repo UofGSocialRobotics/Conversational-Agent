@@ -105,8 +105,9 @@ class NLU(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
 
-        formula = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
-        intent, entity, entitytype, polarity = movies_nlu_functions.format_formula(formula=formula)
+        # Todo Distinguish actors and directors
+
+        intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)
