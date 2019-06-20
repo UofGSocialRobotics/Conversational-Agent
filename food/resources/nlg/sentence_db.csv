@@ -10,5 +10,5 @@ bye,NONE,Feel free to let me know if you ever need a movie recommendation. See y
 request(situation),NONE,I'm here to help you find something healthy to eat. Do you plan going out for lunch today?,
 request(hungry),NONE,Are you hungry?,
 request(diet),NONE,Are you on a diet?,
-inform(food),NONE,How about #food?,
+inform(food),NONE, One great food option for #situation would be to eat #mainfood and #secondaryfood. What do you think?,
 bye,PR,I had such a good time recommending movies to you. See you next time!,

@@ -21,6 +21,9 @@ class NLU(wbc.WhiteBoardClient):
             user_intention = 'yes'
         elif "no" in msg_lower:
             user_intention = 'no'
+        if "sweet" in msg_lower:
+            user_intention = 'request'
+            entity_type = 'sweetness'
         new_msg = self.msg_to_json(user_intention, user_entity, entity_type, entity_polarity)
         self.publish(new_msg)
 

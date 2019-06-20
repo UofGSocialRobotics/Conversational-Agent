@@ -25,12 +25,11 @@ class DM(wbc.WhiteBoardClient):
         self.load_food_data()
 
         self.movie = {'title': "", 'year': "", 'plot': "", 'actors': [], 'genres': [], 'poster': ""}
-        self.situation = None
         self.hungry = None
         self.diet = None
+        self.current_food = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
         self.nodes = {}
-        self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
-                           'liked_movies': [], 'disliked_movies': []}
+        self.user_model = {"situation": "", "liked_food": [], 'disliked_food': []}
         self.load_model(food_config.DM_MODEL)
         self.load_user_model(food_config.USER_MODELS, clientid)
 
@@ -58,6 +57,10 @@ class DM(wbc.WhiteBoardClient):
                 self.user_model = json.load(json_file)
 
     def treat_message(self, msg, topic):
+
+        # Todo: Second interaction
+        # Todo: no then request(sweet/bitter/...)
+
         self.movie['poster'] = None
         if "SA" in topic:
             self.from_SA = msg
@@ -71,9 +74,9 @@ class DM(wbc.WhiteBoardClient):
 
             if "situation" in self.currState:
                 if "yes" in self.from_NLU['intent']:
-                    self.situation = "Lunch Out"
+                    self.user_model['situation'] = "Lunch Out"
                 else:
-                    self.situation = "Usual Lunch"
+                    self.user_model['situation'] = "Usual Lunch"
             elif "hungry" in self.currState:
                 if "yes" in self.from_NLU['intent']:
                     self.hungry_weight = 1
@@ -85,10 +88,16 @@ class DM(wbc.WhiteBoardClient):
                 else:
                     self.diet_weight = 0
             if "food" in next_state:
-                recommended_food = self.recommend(self.situation)
+                if "request" in self.from_NLU['intent']:
+                    self.user_model['disliked_food'].append(self.current_food)
+                    recommended_food = self.recommend((self.user_model['situation']), self.from_NLU['entity_type'])
+                    self.current_food = recommended_food
+                else:
+                    recommended_food = self.recommend(self.user_model['situation'], None)
+                    self.current_food = recommended_food
 
             # if the user comes back
-            if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
+            if next_state == 'greeting' and (self.user_model['liked_food']):
                 next_state = "greet_back"
 
             # saves the user model at the end of the interaction
@@ -115,16 +124,44 @@ class DM(wbc.WhiteBoardClient):
     def load_food_data(self):
         self.food_data = pandas.read_csv(food_config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
 
-    def recommend(self, situation):
-        max_food_value = -100
-        best_food = "Blablabla"
+    def recommend(self, situation, additional_request):
+        max_meal_value = -100
+        max_dessert_value = -100
+        max_drink_value = -100
+        max_meat_value = -100
+        max_side_value = -100
+        best_meal = None
+        best_dessert = None
+        best_drink = None
+        best_meat = None
+        best_side = None
         situated_food_matrix = self.get_food_per_situation(situation)
         for index, row in situated_food_matrix.iterrows():
-            current_food_value = row['healthiness'] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
-            if current_food_value > max_food_value:
-                max_food_value = current_food_value
-                best_food = row['food_name']
-        print("La food la plus healthy pour " + situation + " est: " + best_food + " avec une valeur de " + str(max_food_value))
+            if additional_request:
+                current_food_value = row['healthiness'] + row[additional_request] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+            else:
+                current_food_value = row['healthiness'] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+            if 'meal' in row['food_type'] and current_food_value > max_meal_value:
+                if row['food_name'] not in self.current_food['meal']:
+                    max_meal_value = current_food_value
+                    best_meal = row['food_name']
+            elif 'dessert' in row['food_type'] and current_food_value > max_dessert_value:
+                if row['food_name'] not in self.current_food['dessert']:
+                    max_dessert_value = current_food_value
+                    best_dessert = row['food_name']
+            elif 'drink' in row['food_type'] and current_food_value > max_drink_value:
+                if row['food_name'] not in self.current_food['drink']:
+                    max_drink_value = current_food_value
+                    best_drink = row['food_name']
+            elif 'meat' in row['food_type'] and current_food_value > max_meat_value:
+                if row['food_name'] not in self.current_food['meat']:
+                    max_meat_value = current_food_value
+                    best_meat = row['food_name']
+            elif 'side' in row['food_type'] and current_food_value > max_side_value:
+                if row['food_name'] not in self.current_food['side']:
+                    max_side_value = current_food_value
+                    best_side = row['food_name']
+        best_food = {'meal': best_meal, 'dessert': best_dessert, 'drink': best_drink, 'meat': best_meat, 'side': best_side}
         return best_food
 
 

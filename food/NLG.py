@@ -2,6 +2,7 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import json
 import random
+from random import randint
 import food.food_config as food_config
 import numpy
 
@@ -45,7 +46,8 @@ class NLG(wbc.WhiteBoardClient):
         message = json.loads(msg)
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-        self.food = message['food']
+
+        # Todo: Better authoring
 
         # Content Planning
         #
@@ -54,12 +56,14 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-
         if food_config.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
 
         if food_config.NLG_USE_CS:
             cs = self.pick_social_strategy()
+
+        if 'inform(food)' in message['intent']:
+            self.food = self.pick_food(message['food'])
 
         # Sentence Planning
         #
@@ -101,6 +105,18 @@ class NLG(wbc.WhiteBoardClient):
         #return random.choice(food_config.CS_LABELS)
         return "NONE"
 
+    def pick_food(self, food):
+        recommended_food = {'main': "", 'secondary': ""}
+        if randint(0, 1) == 1:
+            recommended_food['main'] = food['meal']
+        else:
+            recommended_food['main'] = food['meat'] + " with " + food['side'] + " as a side"
+        if randint(0, 1) == 1:
+            recommended_food['secondary'] = food['dessert']
+        else:
+            recommended_food['secondary'] = food['drink']
+        return recommended_food
+
     def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
         for option in self.ackDB[previous_intent][valence][cs]:
@@ -116,26 +132,12 @@ class NLG(wbc.WhiteBoardClient):
             return ""
 
     def replace(self, sentence):
-        if "#food" in sentence:
-            # movListString = ""
-            # for mov in self.moviesList:
-            #     movListString = movListString + " " + mov
-            sentence = sentence.replace("#food", self.food)
-        if "#plot" in sentence:
-            if self.movie['plot']:
-                sentence = sentence.replace("#plot", self.movie['plot'])
-            else:
-                sentence = "Sorry, I have no idea what this movie is about..."
-        if "#actors" in sentence:
-            if self.movie['actors']:
-                sentence = sentence.replace("#actors", self.movie['actors'])
-            else:
-                sentence = "Sorry, I don't remember who plays in this one..."
-        if "#genres" in sentence:
-            if self.movie['genres']:
-                sentence = sentence.replace("#genres", self.movie['genres'])
-            else:
-                sentence = "Sorry, I'm not sure about this movie's genres..."
+        if "#mainfood" in sentence:
+            sentence = sentence.replace("#mainfood", self.food['main'])
+        if "#secondaryfood" in sentence:
+            sentence = sentence.replace("#secondaryfood", self.food['secondary'])
+        if "#situation" in sentence:
+            sentence = sentence.replace("#situation", self.user_model['situation'])
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
         if "#last_movie" in sentence:

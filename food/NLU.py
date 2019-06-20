@@ -104,8 +104,6 @@ class NLU(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
 
-        # Todo Distinguish actors and directors
-
         formula = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
         intent, entity, entitytype, polarity = movies_nlu_functions.format_formula(formula=formula)
 
