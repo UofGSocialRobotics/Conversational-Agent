@@ -1,20 +1,21 @@
 import string
 import re
 import nltk
-
 import spacy
-import dataparser
-from movies import movie_dataparser
+import movies.movie_dataparser as movie_dataparser
+import movies.movies_nlu_functions as movies_nlu_functions
 
 ####################################################################################################
 ##                                          Preprocesss                                           ##
 ####################################################################################################
+
 
 def preprocess(sentence):
     s = sentence.lower()
     s = s.replace(" don t ", " don't ")
     # s = s.replace("'s", " 's")
     return s
+
 
 def flatten_sentence(sentence):
     '''
@@ -41,6 +42,10 @@ def is_verb(token):
         return True
     else:
         return False
+
+
+def is_negation(token, voc_no):
+    return (token.lemma_ in voc_no or (token.tag_ == "RB" and token.dep_ == "neg"))
 
 
 def find_key_in_dict_with_fuzzy_matching(k,d):
@@ -125,7 +130,7 @@ def is_greeting(document, voc_greetings):
     '''
     for token in document:
         if token.text in voc_greetings:
-            return True
+            return ("greeting", None, None, None)
 
 
 def is_goodbye(document, sentence, voc_bye):
@@ -136,27 +141,29 @@ def is_goodbye(document, sentence, voc_bye):
     :param voc_bye: dictionary of words used to say bye (see resources/nlu/voc.json)
     :return: bool
     '''
+    goodbye = ("bye", None, None, None)
     for token in document:
         if token.text in voc_bye["bye_1word"]:
-            return True
+            return goodbye
     if len(sentence) > 1:
         bigrams = nltk.bigrams(sentence.split())
         for bg in bigrams:
             bg_text = ' '.join(bg)
             if bg_text in voc_bye["bye_2words"]:
-                return True
+                return goodbye
     if len(sentence) > 3:
         fourgrams = nltk.ngrams(sentence.split(), 4)
         for fg in fourgrams:
             fg_text = ' '.join(fg)
             if fg_text in voc_bye["bye_4words"]:
-                return True
+                return goodbye
     return False
 
 
 ## ---------------------------------------- Non-bool functions ---------------------------------------- ##
 
 def is_yes_no(document, sentence, voc_yes, voc_no):
+    res = {"yes": ("yes", None, None, None), "no": ("no", None, None, None)}
     """
     Determines if intent is yes/no
     :param document: spacy document
@@ -168,32 +175,51 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     sentence = flatten_sentence(sentence)
     first_word = document[0]
     if sentence in voc_yes["all_yes_words"]:
-        return "yes"
+        return res["yes"]
     if sentence in voc_no["all_no_words"]:
-        return "no"
+        return res["no"]
     if first_word.text in voc_no["no_1word"]:
-        return "no"
+        return res["no"]
     if len(document)>1 and document[1].text in voc_no["no_1word"]:
-        return "no"
+        return res["no"]
     if len(sentence) > 2:
         bigrams = nltk.bigrams(sentence.split())
         for bg in bigrams:
             bg_text = ' '.join(bg)
             if bg_text in voc_no["no_2words"]:
-                return "no"
+                return res["no"]
             elif bg_text in voc_yes["yes_words"]["yes_2words"]:
-                return "yes"
+                return res["yes"]
     if len(sentence) > 3:
         trigrams = nltk.trigrams(sentence)
         for tg in trigrams:
             tg_text = ' '.join(tg)
             if tg_text in voc_no["no_3words"]:
-                return "no"
+                return res["no"]
     is_positive = None
     for token in document:
         if (token.text in voc_yes["all_yes_words"] or token.text in voc_yes["yes_vb"]) and is_positive == None:
             is_positive = True
-        elif token.text in voc_no["no_1word"] or (token.tag_ == "RB" and token.dep_ == "neg"):
-            return "no"
+        elif is_negation(token, voc_no=voc_no["all_no_words"]):
+            return res["no"]
     if is_positive == True:
-        return "yes"
+        return res["yes"]
+
+
+def format_formula(formula):
+    intent, entity, entitytype, polarity = "", "", "", ""
+    if "ask" in formula or formula in ["greet", "yes", "no", "goodbye", "request_more", "alreadyWatched", "IDK"]:
+        intent = formula
+    elif "inform" in formula:
+        if "cast" in formula:
+            intent = "inform"
+            entitytype = "cast"
+            entity = ' '.join(formula.split()[2:])[:-1]
+            polarity = "+"
+        elif "genre" in formula:
+            intent = "inform"
+            entitytype = "genre"
+            entity = formula.split()[2][:-1]
+            polarity = "+"
+
+    return intent, entity, entitytype, polarity

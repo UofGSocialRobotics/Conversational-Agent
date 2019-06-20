@@ -1,5 +1,5 @@
 import movies
-from movies import rule_based_NLU as movies_NLU
+from movies import NLU as movies_NLU
 from movies import DM as movies_DM
 from movies import NLG as movies_NLG
 from movies import dum_sentiment_analysis as movies_SA
