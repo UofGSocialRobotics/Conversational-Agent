@@ -5,6 +5,7 @@ import json
 # from movies import movies_nlu_functions, movie_dataparser
 import nlu_helper_functions as nlu_helper
 import food.food_dataparser as food_dataparser
+import dataparser
 
 
 def inform_food(document, food_list):
@@ -83,7 +84,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     if not f:
         f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
     if not f:
-        f = "IDK"
+        f = "IDK", None, None, None
     return f
 
 
@@ -97,7 +98,7 @@ class NLU(wbc.WhiteBoardClient):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
-        self.voc = movie_dataparser.parse_voc()
+        self.voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
         self.food_list = food_dataparser.get_food_names()
 
@@ -106,8 +107,7 @@ class NLU(wbc.WhiteBoardClient):
 
         # Todo Distinguish actors and directors
 
-        formula = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
-        intent, entity, entitytype, polarity = movies_nlu_functions.format_formula(formula=formula)
+        intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)

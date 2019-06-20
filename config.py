@@ -6,7 +6,7 @@ from movies import dum_sentiment_analysis as movies_SA
 import food
 from food import DM as food_DM
 from food import NLG as food_NLG
-from food import dum_NLU as food_NLU
+from food import NLU as food_NLU
 import ca_logging as logging
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
