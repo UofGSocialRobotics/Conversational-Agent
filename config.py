@@ -6,6 +6,7 @@ from movies import dum_sentiment_analysis as movies_SA
 import food
 from food import DM as food_DM
 from food import NLG as food_NLG
+from food import dum_NLU as food_NLU
 import ca_logging as logging
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
@@ -120,7 +121,7 @@ class Modules:
             self.SentimentAnalysis = movies_SA.SentimentAnalysis
             logging.log.info("(config.py) Set domain as movies.")
         elif domain == "food":
-            self.NLU = movies_NLU.RuleBasedNLU
+            self.NLU = food_NLU.NLU
             self.DM = food_DM.DM
             self.NLG = food_NLG.NLG
             self.SentimentAnalysis = movies_SA.SentimentAnalysis
