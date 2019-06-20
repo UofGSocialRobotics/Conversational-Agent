@@ -20,12 +20,14 @@ class DM(wbc.WhiteBoardClient):
 
         self.from_NLU = None
         self.from_SA = None
-        self.food_model = None
+        self.food_data = None
 
-        self.load_food_model()
+        self.load_food_data()
 
         self.movie = {'title': "", 'year': "", 'plot': "", 'actors': [], 'genres': [], 'poster': ""}
         self.situation = None
+        self.hungry = None
+        self.diet = None
         self.nodes = {}
         self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
                            'liked_movies': [], 'disliked_movies': []}
@@ -64,7 +66,7 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
-
+            recommended_food = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if "situation" in self.currState:
@@ -72,7 +74,18 @@ class DM(wbc.WhiteBoardClient):
                     self.situation = "Lunch Out"
                 else:
                     self.situation = "Usual Lunch"
-
+            elif "hungry" in self.currState:
+                if "yes" in self.from_NLU['intent']:
+                    self.hungry_weight = 1
+                else:
+                    self.hungry_weight = 0
+            elif "diet" in self.currState:
+                if "yes" in self.from_NLU['intent']:
+                    self.diet_weight = 1
+                else:
+                    self.diet_weight = 0
+            if "food" in next_state:
+                recommended_food = self.recommend(self.situation)
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
@@ -84,13 +97,13 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recommended_food)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame):
-        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, food):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'food': food}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -99,19 +112,29 @@ class DM(wbc.WhiteBoardClient):
             NLU_message['intent'] = NLU_message['intent'] + "(" + NLU_message['entity_type'] + ")"
         return NLU_message
 
-    def load_food_model(self):
+    def load_food_data(self):
         self.food_data = pandas.read_csv(food_config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
-        print(self.food_data)
 
-    def recommend(self):
-        movies_list = self.queryMoviesList()
-        for movie in movies_list:
-            if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
-                if food_config.HIGH_QUALITY_POSTER:
-                    self.movie['poster'] = food_config.MOVIEDB_POSTER_PATH + movie['poster_path']
-                return movie['title']
+    def recommend(self, situation):
+        max_food_value = -100
+        best_food = "Blablabla"
+        situated_food_matrix = self.get_food_per_situation(situation)
+        for index, row in situated_food_matrix.iterrows():
+            current_food_value = row['healthiness'] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+            if current_food_value > max_food_value:
+                max_food_value = current_food_value
+                best_food = row['food_name']
+        print("La food la plus healthy pour " + situation + " est: " + best_food + " avec une valeur de " + str(max_food_value))
+        return best_food
 
 
+    def get_headers(self, matrix):
+        headers = matrix.keys()
+        return headers
+
+    def get_food_per_situation(self, situation):
+        situated_food_matrix = self.food_data.query("situation_name == '" + situation + "'")
+        return situated_food_matrix
 # A node corresponds to a specific state of the dialogue. It contains:
 # - a state ID (int)
 # - a state name (String)
