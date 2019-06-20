@@ -1,0 +1,31 @@
+{
+    "hungry": [
+        "hungry",
+        "starve",
+        "famish",
+        "hunger",
+        "hunger",
+        "crave"
+    ],
+    "alone": [
+        "alone",
+        "myself",
+        "solo",
+        "unaccompanied",
+        "single",
+        "lone",
+        "lonely",
+        "lonesome",
+        "solitary",
+        "own",
+        "only",
+        "just"
+    ],
+    "not_alone": [
+        "with",
+        "together",
+        "team",
+        "friend",
+        "company"
+    ]
+}

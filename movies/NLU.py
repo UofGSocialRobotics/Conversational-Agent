@@ -3,8 +3,9 @@ import helper_functions as helper
 import spacy
 import json
 import argparse
-from movies import nlu_functions, movie_dataparser
+from movies import movies_nlu_functions, movie_dataparser
 import dataparser
+import nlu_helper_functions as nlu_helper
 
 
 ####################################################################################################
@@ -25,8 +26,8 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
 
         # Todo Distinguish actors and directors
 
-        formula = nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
-        intent, entity, entitytype, polarity = nlu_functions.format_formula(formula=formula)
+        formula = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
+        intent, entity, entitytype, polarity = nlu_helper.format_formula(formula=formula)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)
@@ -36,30 +37,5 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         json_msg = json.dumps(frame)
         return json_msg
 
-####################################################################################################
-##                                     Run as stand-alone                                         ##
-####################################################################################################
 
-if __name__ == "__main__":
-
-    argp = argparse.ArgumentParser()
-    argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
-    argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
-    argp.add_argument("--debug", help="Sentence to debug", action="store")
-
-    args = argp.parse_args()
-
-    if args.eval:
-
-        dataset = movie_dataparser.load_dataset()
-
-        nlu_functions.evaluate(dataset, "wrong")
-
-    elif args.test:
-
-        nlu_functions.test_nlu()
-
-    elif args.debug:
-        print(args.debug)
-        nlu_functions.compare_syntax_analysis(nlu_functions.preprocess(args.debug))
 

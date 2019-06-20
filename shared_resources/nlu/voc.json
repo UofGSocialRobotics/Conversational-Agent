@@ -1,34 +1,4 @@
 {
-    "genres": [
-        "action",
-        "adventre",
-        "comedy",
-        "crime",
-        "drama",
-        "fantasy",
-        "historical",
-        "fiction",
-        "horror",
-        "mystery",
-        "polotical",
-        "romance",
-        "saga",
-        "satire",
-        "animation",
-        "western",
-        "musical",
-        "superhero",
-        "bibliography",
-        "documentary",
-        "family",
-        "romantic comedy",
-        "war"
-    ],
-    "genre_scifi": [
-        "sci-fi",
-        "scifi",
-        "fiction"
-    ],
     "yes": {
         "yes_words": {
             "yes_1word": [
@@ -191,12 +161,5 @@
         "bye_4words": [
             "have a nice day"
         ]
-    },
-    "request_more": [
-        "more",
-        "another",
-        "other",
-        "else",
-        "different"
-    ]
+    }
 }

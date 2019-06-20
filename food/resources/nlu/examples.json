@@ -1,0 +1,74 @@
+[
+	[
+		"I am hungry",
+		["inform", "hungry", true, null]
+	],
+	[
+		"I am starving",
+		["inform", "hungry", true, null]
+	],
+	[
+		"I definitely have an empty stomach",
+		["inform", "hungry", true, null]
+	],
+	[
+		"My stomach is not empty",
+		["inform", "hungry", false, null]
+	],
+	[
+		"I don't feel hungry",
+		["inform", "hungry", false, null]
+	],
+	[
+		"I'm not starving",
+		["inform", "hungry", false, null]
+	],
+	[
+		"i don t have company",
+		["inform", "alone", true, null]
+	],
+	[
+		"I'll lunch with my mom",
+		["inform", "alone", false, null]
+	],
+	[
+		"I have a team lunch",
+		["inform", "alone", false, null]
+	],
+	[
+		"I m on my own",
+		["inform", "alone", true, null]
+	],
+	[
+		"it's just me",
+		["inform", "alone", true, null]
+	],
+	[
+		"I am not alone",
+		["inform", "alone", false, null]
+	],
+	[
+		"I am unaccompanied",
+		["inform", "alone", true, null]
+	],
+	[
+		"I'm lonely",
+		["inform", "alone", true, null]
+	],
+	[
+		"I l have a solo lunch",
+		["inform", "alone", true, null]
+	],
+	[
+		"i am not by myself",
+		["inform", "alone", false, null]
+	],
+	[
+		"I am not alone",
+		["inform", "alone", false, null]
+	],
+	[
+		"i love tomatoes",
+		["inform", "food", "tomatoes", "+"]
+	]
+]

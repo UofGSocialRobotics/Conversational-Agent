@@ -66,7 +66,9 @@ def is_alreadywatched(sentence):
     :param sentence: string
     :return: bool
     '''
-    return ("already" in sentence)
+    if ("already" in sentence):
+        return ("inform", "watched", True, None)
+    return False
 
 
 def is_requestmore(document, voc_request_more):
@@ -78,7 +80,8 @@ def is_requestmore(document, voc_request_more):
     '''
     for token in document:
         if token.text in voc_request_more:
-            return True
+            return ("request", "more", None, None)
+    return False
 
 
 def is_askGenre(document, voc_genres):
@@ -93,7 +96,7 @@ def is_askGenre(document, voc_genres):
     if first_word.text == "what" or nlu_helper.is_verb(first_word):
         for token in document:
             if token.lemma_ in ["genre", "type", "kind"] or token.lemma_ in voc_genres:
-                return True
+                return ("request", "genre", None, None)
     return False
 
 def is_askPerson(document, prep, key_words):
@@ -121,7 +124,9 @@ def is_askActor(document):
     :param document: spacy document
     :return: bool
     """
-    return is_askPerson(document, ["in", "on"], ["actor", "act", "star", "cast"])
+    if is_askPerson(document, ["in", "on"], ["actor", "act", "star", "cast"]):
+        return ("request", "actor", None, None)
+    return False
 
 
 def is_askDirector(document):
@@ -130,7 +135,9 @@ def is_askDirector(document):
     :param document: spacy document
     :return: bool
     """
-    return is_askPerson(document, ["by"], ["director", "direct"])
+    if is_askPerson(document, ["by"], ["director", "direct"]):
+        return ("request", "director", None, None)
+    return False
 
 
 def is_askPlot(document):
@@ -140,12 +147,13 @@ def is_askPlot(document):
     :param document: spacy document
     :return: bool
     """
+    askPlot = ("request", "plot", None, None)
     first_word = document[0]
     if (first_word.tag_ == "WP" or nlu_helper.is_verb(first_word)) and len(document) > 2:
-        return True
+        return askPlot
     for token in document:
         if token.lemma_ in ["happen", "plot", "summary", "plot"]:
-            return True
+            return askPlot
     return False
 
 ## ---------------------------------------- Non-bool functions ---------------------------------------- ##
@@ -165,8 +173,9 @@ def is_inform_genre(document, voc_genres, voc_scifi):
         if token.lemma_ in voc_genres:
             if token.lemma_ in voc_scifi:
                 return ("inform (genre sci-fi)")
-            return ("inform (genre %s)" % token.lemma_)
-
+            # return ("inform (genre %s)" % token.lemma_)
+            return ("inform", "genre", token.lemma_, "+")
+    return  False
 
 def is_inform_cast(capitalized_doc, cast_dicts):
     """
@@ -177,7 +186,49 @@ def is_inform_cast(capitalized_doc, cast_dicts):
     """
     actors = get_cast(capitalized_doc, cast_dicts)
     if actors and actors[0]:
-        return "inform (cast %s)" % actors[0]
+        # return "inform (cast %s)" % actors[0]
+        return ("inform", "cast", actors[0], "+")
+
+####################################################################################################
+##                                Main rule-based NLU function                                    ##
+####################################################################################################
+
+def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
+
+    utterance = nlu_helper.preprocess(utterance)
+    document = spacy_nlp(utterance)
+    capitalized_document = spacy_nlp(utterance.title())
+    f = is_inform_cast(capitalized_document, cast_dicts)
+    if not f:
+        f = is_alreadywatched(utterance)
+        if not f:
+            f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
+            if not f:
+                f = is_requestmore(document, voc_request_more=voc["request_more"])
+                if not f:
+                    f = is_askActor(document)
+                    if not f:
+                        f = is_askDirector(document)
+                        if not f:
+                            f = is_askGenre(document, voc_genres=["genres"])
+                            if not f:
+                                f = is_askPlot(document)
+                                if not f:
+                                    f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
+                                    if not f:
+                                        f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+                                        if not f:
+                                            f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
+                                            if f == None:
+                                                f = ("IDK", None, None, None)
+    return f
+
+
+
+####################################################################################################
+##    /!\ /!\ /!\ /!\ /!\            PROBABLY DON T WORK ANYMORE             /!\ /!\ /!\ /!\ /!\  ##
+####################################################################################################
+
 
 
 ####################################################################################################
@@ -215,73 +266,19 @@ def compare_syntax_analysis(sentence):
     capitalized_document = spacy_nlp(sentence.title())
     print("Actors:")
     print(capitalized_document.ents)
-    print(nlu_helper.get_NNs)
-    print(nlu_helper.get_NNs(capitalized_document))
-    print(get_cast(capitalized_document, cast_dicts=cast_dicts))
+    print(get_NNs)
+    print(get_NNs(capitalized_document))
+    # print(get_cast(capitalized_document, cast_dicts=cast_dicts))
 
-def compare_sentiment_analysis(sentence):
-
-    blob = TextBlob(sentence)
-    print("With textblob")
-    for sentence in blob.sentences:
-        print(sentence.sentiment.polarity)
-
-
-####################################################################################################
-##                                Main rule-based NLU function                                    ##
-####################################################################################################
-
-def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
-
-    utterance = nlu_helper.preprocess(utterance)
-    document = spacy_nlp(utterance)
-    capitalized_document = spacy_nlp(utterance.title())
-    f = is_inform_cast(capitalized_document, cast_dicts)
-    if f:
-        return f
-    else:
-        if is_alreadywatched(utterance):
-            f = "alreadyWatched"
-        elif nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"]):
-            f = "goodbye"
-        elif is_requestmore(document, voc_request_more=voc["request_more"]):
-            f = "request_more"
-        elif is_askActor(document):
-            f = "askActor"
-        elif is_askDirector(document):
-            f = "askDirector"
-        elif is_askGenre(document, voc_genres=["genres"]):
-            f = "askGenre"
-        elif is_askPlot(document):
-            f = "askPlot"
-        else :
-            f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
-        if f == None:
-            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
-        if f == None and nlu_helper.is_greeting(document, voc_greetings=voc["greetings"]):
-            f = "greet"
-        if f == None:
-            f = "IDK"
-        return f
+# def compare_sentiment_analysis(sentence):
+#
+#     blob = TextBlob(sentence)
+#     print("With textblob")
+#     for sentence in blob.sentences:
+#         print(sentence.sentiment.polarity)
 
 
-def format_formula(formula):
-    intent, entity, entitytype, polarity = "", "", "", ""
-    if "ask" in formula or formula in ["greet", "yes", "no", "goodbye", "request_more", "alreadyWatched", "IDK"]:
-        intent = formula
-    elif "inform" in formula:
-        if "cast" in formula:
-            intent = "inform"
-            entitytype = "cast"
-            entity = ' '.join(formula.split()[2:])[:-1]
-            polarity = "+"
-        elif "genre" in formula:
-            intent = "inform"
-            entitytype = "genre"
-            entity = formula.split()[2][:-1]
-            polarity = "+"
 
-    return intent, entity, entitytype, polarity
 
 ####################################################################################################
 ##                                      Evaluate NLU performance                                  ##
@@ -325,3 +322,31 @@ def test_nlu():
             print(formula)
             intent, entity, entitytype, polarity = format_formula(formula)
             print(intent, entity, entitytype, polarity)
+
+
+####################################################################################################
+##                                     Run as stand-alone                                         ##
+####################################################################################################
+
+if __name__ == "__main__":
+
+    argp = argparse.ArgumentParser()
+    argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
+    argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
+    argp.add_argument("--debug", help="Sentence to debug", action="store")
+
+    args = argp.parse_args()
+
+    if args.eval:
+
+        dataset = movie_dataparser.load_dataset()
+
+        evaluate(dataset, "wrong")
+
+    elif args.test:
+
+        test_nlu()
+
+    elif args.debug:
+        print(args.debug)
+        compare_syntax_analysis(movies_nlu_functions.preprocess(args.debug))

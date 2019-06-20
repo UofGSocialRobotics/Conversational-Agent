@@ -1,4 +1,4 @@
-from movies import nlu_functions, movie_dataparser
+from movies import movies_nlu_functions, movie_dataparser
 import argparse
 import spacy
 import csv
@@ -84,22 +84,22 @@ def get_formula_code(formula):
 
 def featurize(utterance, formula, voc, spacy_nlp, cast_dicts, verbose=False):
 
-    utterance = nlu_functions.preprocess(utterance)
+    utterance = movies_nlu_functions.preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
 
-    cast_list = nlu_functions.get_cast(capitalized_document, cast_dicts)
+    cast_list = movies_nlu_functions.get_cast(capitalized_document, cast_dicts)
     f1 = 1 if cast_list and len(cast_list)>0 else 0
 
-    f2 = 1 if nlu_functions.is_greeting(document, voc["greetings"]) else 0
+    f2 = 1 if movies_nlu_functions.is_greeting(document, voc["greetings"]) else 0
 
-    f3 = 1 if nlu_functions.is_alreadywatched(utterance) else 0
+    f3 = 1 if movies_nlu_functions.is_alreadywatched(utterance) else 0
 
-    f4 = 1 if nlu_functions.is_requestmore(document, voc["request_more"]) else 0
+    f4 = 1 if movies_nlu_functions.is_requestmore(document, voc["request_more"]) else 0
 
-    f5 = 1 if nlu_functions.is_goodbye(document, utterance, voc["bye"]) else 0
+    f5 = 1 if movies_nlu_functions.is_goodbye(document, utterance, voc["bye"]) else 0
 
-    f7 = 1 if nlu_functions.is_verb(document[0]) else 0
+    f7 = 1 if movies_nlu_functions.is_verb(document[0]) else 0
 
     f8 = 1 if document[0].text == "what" else 0
 
@@ -109,7 +109,7 @@ def featurize(utterance, formula, voc, spacy_nlp, cast_dicts, verbose=False):
 
     f17 = 1 if len(document) > 3 else 0
 
-    yes_no = nlu_functions.is_yes_no(document, utterance, voc["yes"], voc["no"])
+    yes_no = movies_nlu_functions.is_yes_no(document, utterance, voc["yes"], voc["no"])
     f18 = 1 if yes_no == "yes" else 0
     f19 = 1 if yes_no == "no" else 0
 
@@ -131,7 +131,7 @@ def featurize(utterance, formula, voc, spacy_nlp, cast_dicts, verbose=False):
         elif token.lemma_ in ["happen", "plot", "summary", "plot"]:
             f15 = 1
 
-    rule_based_pred_text = nlu_functions.rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts)
+    rule_based_pred_text = movies_nlu_functions.rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts)
     rule_based_pred = get_formula_code(rule_based_pred_text)
 
     label = get_formula_code(formula)
