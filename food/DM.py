@@ -2,6 +2,7 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import json
 import food.food_config as food_config
+from random import randint
 from pathlib import Path
 import pandas
 
@@ -28,6 +29,7 @@ class DM(wbc.WhiteBoardClient):
         self.hungry = None
         self.diet = None
         self.current_food = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
+        self.food_to_save = {'main': "", 'secondary': ""}
         self.nodes = {}
         self.user_model = {"situation": "", "liked_food": [], 'disliked_food': []}
         self.load_model(food_config.DM_MODEL)
@@ -60,6 +62,8 @@ class DM(wbc.WhiteBoardClient):
 
         # Todo: Second interaction
         # Todo: no then request(sweet/bitter/...)
+        # Todo: find recipes matching recommended food: https://www.quora.com/What-are-the-best-recipe-and-diet-APIs
+        # https://www.quora.com/Are-there-any-free-APIs-for-food-recipes
 
         self.movie['poster'] = None
         if "SA" in topic:
@@ -70,13 +74,14 @@ class DM(wbc.WhiteBoardClient):
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
             recommended_food = None
+            food_options = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if "situation" in self.currState:
                 if "yes" in self.from_NLU['intent']:
-                    self.user_model['situation'] = "Lunch Out"
-                else:
                     self.user_model['situation'] = "Usual Lunch"
+                else:
+                    self.user_model['situation'] = "Lunch Out"
             elif "hungry" in self.currState:
                 if "yes" in self.from_NLU['intent']:
                     self.hungry_weight = 1
@@ -90,11 +95,16 @@ class DM(wbc.WhiteBoardClient):
             if "food" in next_state:
                 if "request" in self.from_NLU['intent']:
                     self.user_model['disliked_food'].append(self.current_food)
-                    recommended_food = self.recommend((self.user_model['situation']), self.from_NLU['entity_type'])
-                    self.current_food = recommended_food
+                    food_options, recommended_food = self.recommend((self.user_model['situation']), self.from_NLU['entity_type'])
+                    self.current_food = food_options
+                    self.food_to_save = recommended_food
                 else:
-                    recommended_food = self.recommend(self.user_model['situation'], None)
-                    self.current_food = recommended_food
+                    food_options, recommended_food = self.recommend(self.user_model['situation'], None)
+                    self.current_food = food_options
+                    self.food_to_save = recommended_food
+            if "food" in self.currState:
+                if "yes" in self.from_NLU['intent']:
+                    self.user_model['liked_food'].append(self.food_to_save)
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -106,13 +116,13 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recommended_food)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, food_options, recommended_food)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, food):
-        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'food': food}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, food_options, reco_food):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'food_options': food_options, 'reco_food': reco_food}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -138,7 +148,7 @@ class DM(wbc.WhiteBoardClient):
         situated_food_matrix = self.get_food_per_situation(situation)
         for index, row in situated_food_matrix.iterrows():
             if additional_request:
-                current_food_value = row['healthiness'] + row[additional_request] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+                current_food_value = 1 * row['healthiness'] + row[additional_request] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
             else:
                 current_food_value = row['healthiness'] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
             if 'meal' in row['food_type'] and current_food_value > max_meal_value:
@@ -162,8 +172,20 @@ class DM(wbc.WhiteBoardClient):
                     max_side_value = current_food_value
                     best_side = row['food_name']
         best_food = {'meal': best_meal, 'dessert': best_dessert, 'drink': best_drink, 'meat': best_meat, 'side': best_side}
-        return best_food
+        recommended_food = self.pick_food(best_food)
+        return best_food, recommended_food
 
+    def pick_food(self, food):
+        recommended_food = {'main': "", 'secondary': ""}
+        if randint(0, 1) == 1:
+            recommended_food['main'] = food['meal']
+        else:
+            recommended_food['main'] = food['meat'] + " with " + food['side']
+        if randint(0, 1) == 1:
+            recommended_food['secondary'] = food['dessert']
+        else:
+            recommended_food['secondary'] = food['drink']
+        return recommended_food
 
     def get_headers(self, matrix):
         headers = matrix.keys()

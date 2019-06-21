@@ -13,7 +13,7 @@ FOOD_MODEL_PATH = "food/resources/dm/food_model.csv"
 ####################################################################################################
 ##                                          Other config                                          ##
 ####################################################################################################
-SAVE_USER_MODEL = False
+SAVE_USER_MODEL = True
 NLG_USE_ACKS = True
 NLG_USE_ACKS_CS = True
 NLG_USE_CS = True

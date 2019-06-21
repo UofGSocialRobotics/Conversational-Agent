@@ -2,7 +2,6 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import json
 import random
-from random import randint
 import food.food_config as food_config
 import numpy
 
@@ -62,8 +61,9 @@ class NLG(wbc.WhiteBoardClient):
         if food_config.NLG_USE_CS:
             cs = self.pick_social_strategy()
 
-        if 'inform(food)' in message['intent']:
-            self.food = self.pick_food(message['food'])
+        self.food = message['reco_food']
+        #if 'inform(food)' in message['intent']:
+        #    self.food = self.pick_food(message['food'])
 
         # Sentence Planning
         #
@@ -105,18 +105,6 @@ class NLG(wbc.WhiteBoardClient):
         #return random.choice(food_config.CS_LABELS)
         return "NONE"
 
-    def pick_food(self, food):
-        recommended_food = {'main': "", 'secondary': ""}
-        if randint(0, 1) == 1:
-            recommended_food['main'] = food['meal']
-        else:
-            recommended_food['main'] = food['meat'] + " with " + food['side'] + " as a side"
-        if randint(0, 1) == 1:
-            recommended_food['secondary'] = food['dessert']
-        else:
-            recommended_food['secondary'] = food['drink']
-        return recommended_food
-
     def pick_ack(self, previous_intent, valence, cs):
         potential_options = []
         for option in self.ackDB[previous_intent][valence][cs]:
@@ -140,11 +128,11 @@ class NLG(wbc.WhiteBoardClient):
             sentence = sentence.replace("#situation", self.user_model['situation'])
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
-        if "#last_movie" in sentence:
-            if self.user_model['liked_movies']:
-                sentence = sentence.replace("#last_movie", self.user_model['liked_movies'][-1])
+        if "#last_food" in sentence:
+            if self.user_model['liked_food']:
+                sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])
             else:
-                sentence = "I know you did not accept any of my recommendations last time but did you watch something cool recently?"
+                sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
         return sentence
 
 
