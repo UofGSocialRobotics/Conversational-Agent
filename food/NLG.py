@@ -88,12 +88,16 @@ class NLG(wbc.WhiteBoardClient):
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
 
-        msg_to_send = self.msg_to_json(final_sentence)
+        if message['food_info']:
+            food_to_get_info_from = message['food_info']['hits'][0]
+            msg_to_send = self.msg_to_json(final_sentence, food_to_get_info_from['recipe']['url'], food_to_get_info_from['recipe']['image'])
+        else:
+            msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
 
 
-    def msg_to_json(self, sentence):
-        frame = {'sentence': sentence}
+    def msg_to_json(self, sentence, food_recipe, food_poster):
+        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'movie_poster': food_poster}
         json_msg = json.dumps(frame)
         return json_msg
 

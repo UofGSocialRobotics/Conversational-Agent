@@ -5,6 +5,7 @@ import food.food_config as food_config
 from random import randint
 from pathlib import Path
 import pandas
+import urllib.request
 
 
 class DM(wbc.WhiteBoardClient):
@@ -75,6 +76,7 @@ class DM(wbc.WhiteBoardClient):
         if self.from_NLU and self.from_SA:
             recommended_food = None
             food_options = None
+            food_info = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if "situation" in self.currState:
@@ -95,11 +97,11 @@ class DM(wbc.WhiteBoardClient):
             if "food" in next_state:
                 if "request" in self.from_NLU['intent']:
                     self.user_model['disliked_food'].append(self.current_food)
-                    food_options, recommended_food = self.recommend((self.user_model['situation']), self.from_NLU['entity_type'])
+                    food_options, recommended_food, food_info = self.recommend((self.user_model['situation']), self.from_NLU['entity_type'])
                     self.current_food = food_options
                     self.food_to_save = recommended_food
                 else:
-                    food_options, recommended_food = self.recommend(self.user_model['situation'], None)
+                    food_options, recommended_food, food_info = self.recommend(self.user_model['situation'], None)
                     self.current_food = food_options
                     self.food_to_save = recommended_food
             if "food" in self.currState:
@@ -116,13 +118,13 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, food_options, recommended_food)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, food_options, recommended_food, food_info)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, food_options, reco_food):
-        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'food_options': food_options, 'reco_food': reco_food}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, food_options, reco_food, food_info):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'food_options': food_options, 'reco_food': reco_food, 'food_info': food_info}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -173,7 +175,11 @@ class DM(wbc.WhiteBoardClient):
                     best_side = row['food_name']
         best_food = {'meal': best_meal, 'dessert': best_dessert, 'drink': best_drink, 'meat': best_meat, 'side': best_side}
         recommended_food = self.pick_food(best_food)
-        return best_food, recommended_food
+        edamamURL = food_config.EDAMAM_SEARCH_RECIPE_ADDRESS + "chicken" + food_config.EDAMAM_APP_ID + food_config.EDAMAM_KEY + food_config.EDAMAM_PROPERTY
+        data = urllib.request.urlopen(edamamURL)
+        result = data.read()
+        food_info = json.loads(result)
+        return best_food, recommended_food, food_info
 
     def pick_food(self, food):
         recommended_food = {'main': "", 'secondary': ""}
