@@ -17,6 +17,8 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = None
         self.user_intent = None
         self.food = None
+        self.recipe = None
+        self.situation = None
 
         self.load_sentence_model(food_config.NLG_SENTENCE_DB)
         self.load_ack_model(food_config.NLG_ACK_DB)
@@ -45,7 +47,7 @@ class NLG(wbc.WhiteBoardClient):
         message = json.loads(msg)
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-
+        self.situation = message['situation']
         # Todo: Better authoring
 
         # Content Planning
@@ -62,8 +64,8 @@ class NLG(wbc.WhiteBoardClient):
             cs = self.pick_social_strategy()
 
         self.food = message['reco_food']
-        #if 'inform(food)' in message['intent']:
-        #    self.food = self.pick_food(message['food'])
+        if message['food_info']:
+            self.recipe = message['food_info']['hits'][0]
 
         # Sentence Planning
         #
@@ -89,15 +91,14 @@ class NLG(wbc.WhiteBoardClient):
         final_sentence = self.replace(ack + " " + sentence)
 
         if message['food_info']:
-            food_to_get_info_from = message['food_info']['hits'][0]
-            msg_to_send = self.msg_to_json(final_sentence, food_to_get_info_from['recipe']['url'], food_to_get_info_from['recipe']['image'])
+            msg_to_send = self.msg_to_json(final_sentence, self.recipe['recipe']['url'], self.recipe['recipe']['image'])
         else:
             msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
 
 
     def msg_to_json(self, sentence, food_recipe, food_poster):
-        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'movie_poster': food_poster}
+        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'image': food_poster}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -129,9 +130,11 @@ class NLG(wbc.WhiteBoardClient):
         if "#secondaryfood" in sentence:
             sentence = sentence.replace("#secondaryfood", self.food['secondary'])
         if "#situation" in sentence:
-            sentence = sentence.replace("#situation", self.user_model['situation'])
+            sentence = sentence.replace("#situation", self.situation)
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
+        if "#recipe" in sentence:
+            sentence = sentence.replace("#recipe", self.recipe['recipe']['label'])
         if "#last_food" in sentence:
             if self.user_model['liked_food']:
                 sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])

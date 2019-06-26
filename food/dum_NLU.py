@@ -19,9 +19,9 @@ class NLU(wbc.WhiteBoardClient):
 
         # Todo make sure dum_nlu works (yes/no does not seem to work)
 
-        if "yes" or "out" or "hungry" or "good" in msg_lower:
+        if "yes" in msg_lower or "out" in msg_lower or "hungry" in msg_lower or "good" in msg_lower:
             user_intention = 'yes'
-        elif "no" or "not" or "home" in msg_lower:
+        elif "no" in msg_lower or "home" in msg_lower:
             user_intention = 'no'
         if "sweet" in msg_lower:
             user_intention = 'request'
@@ -35,6 +35,11 @@ class NLU(wbc.WhiteBoardClient):
         if "friends" in msg_lower:
             user_intention = 'request'
             entity_type = 'connectedness'
+        if "chicken" in msg_lower:
+            user_intention = 'inform'
+            user_entity = 'chicken'
+            entity_type = 'food'
+            entity_polarity = '-'
         new_msg = self.msg_to_json(user_intention, user_entity, entity_type, entity_polarity)
         self.publish(new_msg)
 
