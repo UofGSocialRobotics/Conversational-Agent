@@ -64,8 +64,8 @@ class NLG(wbc.WhiteBoardClient):
             cs = self.pick_social_strategy()
 
         self.food = message['reco_food']
-        if message['food_info']:
-            self.recipe = message['food_info']['hits'][0]
+        if message['recipe']:
+            self.recipe = message['recipe']
 
         # Sentence Planning
         #
@@ -90,7 +90,7 @@ class NLG(wbc.WhiteBoardClient):
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
 
-        if message['food_info']:
+        if message['recipe']:
             msg_to_send = self.msg_to_json(final_sentence, self.recipe['recipe']['url'], self.recipe['recipe']['image'])
         else:
             msg_to_send = self.msg_to_json(final_sentence, None, None)

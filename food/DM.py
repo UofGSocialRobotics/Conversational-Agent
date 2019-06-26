@@ -28,7 +28,7 @@ class DM(wbc.WhiteBoardClient):
 
         self.hungry = None
         self.diet = None
-        self.current_recipe = None
+        self.current_recipe_list = None
         self.current_food_options = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
         self.nodes = {}
         self.situation = ""
@@ -63,8 +63,6 @@ class DM(wbc.WhiteBoardClient):
 
         # Todo: Second interaction
         # Todo: no then request(sweet/bitter/...)
-        # Todo: find recipes matching recommended food: https://www.quora.com/What-are-the-best-recipe-and-diet-APIs
-        # https://www.quora.com/Are-there-any-free-APIs-for-food-recipes
 
         if "SA" in topic:
             self.from_SA = msg
@@ -76,6 +74,7 @@ class DM(wbc.WhiteBoardClient):
             recommended_food = None
             food_options = None
             food_recipe_list = None
+            recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
             if "situation" in self.currState:
@@ -94,15 +93,16 @@ class DM(wbc.WhiteBoardClient):
                 else:
                     self.diet_weight = 0
             if "food" in next_state:
-                if "request" in self.from_NLU['intent']:
-                    food_options, recommended_food, food_recipe_list = self.recommend(self.from_NLU['entity_type'])
-                    self.current_recipe = food_recipe_list['hits'][0]
+                if "request" in self.from_NLU['intent'] and "more" not in self.from_NLU['entity_type']:
+                    food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU['entity_type'])
+                elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
+                    self.current_recipe_list.pop(0)
                 else:
-                    food_options, recommended_food, food_recipe_list = self.recommend(None)
-                    self.current_recipe = food_recipe_list['hits'][0]
+                    food_options, recommended_food, self.current_recipe_list = self.recommend(None)
+                recipe = self.current_recipe_list[0]
             if "food" in self.currState:
                 if "yes" in self.from_NLU['intent']:
-                    self.user_model['liked_recipe'].append(self.current_recipe)
+                    self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -114,13 +114,13 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, self.situation, recommended_food, food_recipe_list)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, self.situation, recommended_food, recipe)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, situation, reco_food, food_info):
-        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'situation': situation, 'reco_food': reco_food, 'food_info': food_info}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, situation, reco_food, recipe):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'situation': situation, 'reco_food': reco_food, 'recipe': recipe}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -192,7 +192,8 @@ class DM(wbc.WhiteBoardClient):
             edamamURL = food_config.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + food_config.EDAMAM_APP_ID + food_config.EDAMAM_KEY + food_config.EDAMAM_PROPERTY
         data = urllib.request.urlopen(edamamURL)
         result = data.read()
-        recipe_list = json.loads(result)
+        json_recipe_list = json.loads(result)
+        recipe_list = json_recipe_list['hits']
         return recipe_list
 
     def get_headers(self, matrix):
