@@ -41,6 +41,10 @@ class NLU(wbc.WhiteBoardClient):
             user_entity = 'chicken'
             entity_type = 'food'
             entity_polarity = '-'
+        if "vegan" in msg_lower:
+            user_intention = 'inform'
+            user_entity = 'vegan'
+            entity_type = 'diet'
         new_msg = self.msg_to_json(user_intention, user_entity, entity_type, entity_polarity)
         self.publish(new_msg)
 

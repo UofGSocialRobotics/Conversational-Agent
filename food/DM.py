@@ -32,7 +32,7 @@ class DM(wbc.WhiteBoardClient):
         self.current_food_options = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
         self.nodes = {}
         self.situation = ""
-        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [] }
+        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special-diet': []}
         self.load_model(food_config.DM_MODEL)
         self.load_user_model(food_config.USER_MODELS, clientid)
 
@@ -103,6 +103,16 @@ class DM(wbc.WhiteBoardClient):
             if "food" in self.currState:
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
+
+            # Todo: Add vegan thingy in the requests
+            if "inform" in self.from_NLU['intent']:
+                if "diet" in self.from_NLU['entity_type']:
+                    food_config.EDAMAM_ADDITIONAL_DIET = "&health=" + self.from_NLU['entity']
+                if "food" in self.from_NLU['entity_type']:
+                    if "+" in self.from_NLU['polarity']:
+                        self.user_model['liked_food'].append(self.from_NLU['entity'])
+                    else:
+                        self.user_model['disliked_food'].append(self.from_NLU['entity'])
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
