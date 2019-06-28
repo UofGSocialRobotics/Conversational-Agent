@@ -196,10 +196,9 @@ class DM(wbc.WhiteBoardClient):
         if "with" in recommended_food['main']:
             request_food = recommended_food['main'].replace(" with ", "%20and%20")
             request_food = request_food.replace("side ", "")
-            edamamURL = food_config.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + food_config.EDAMAM_APP_ID + food_config.EDAMAM_KEY + food_config.EDAMAM_PROPERTY
         else:
             request_food = recommended_food['main'].replace(" dish", "")
-            edamamURL = food_config.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + food_config.EDAMAM_APP_ID + food_config.EDAMAM_KEY + food_config.EDAMAM_PROPERTY
+        edamamURL = food_config.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + food_config.EDAMAM_APP_ID + food_config.EDAMAM_KEY + food_config.EDAMAM_PROPERTY + food_config.EDAMAM_ADDITIONAL_DIET
         data = urllib.request.urlopen(edamamURL)
         result = data.read()
         json_recipe_list = json.loads(result)
