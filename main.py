@@ -35,6 +35,7 @@ if __name__ == '__main__':
     elif args.food:
         config.modules.set_domain("food")
         main()
-
+    else:
+        argp.print_help()
 
 
