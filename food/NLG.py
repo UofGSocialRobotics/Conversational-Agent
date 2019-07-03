@@ -17,6 +17,8 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = None
         self.user_intent = None
         self.food = None
+        self.recipe = None
+        self.situation = None
 
         self.load_sentence_model(food_config.NLG_SENTENCE_DB)
         self.load_ack_model(food_config.NLG_ACK_DB)
@@ -45,7 +47,8 @@ class NLG(wbc.WhiteBoardClient):
         message = json.loads(msg)
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-        self.food = message['food']
+        self.situation = message['situation']
+        # Todo: Better authoring
 
         # Content Planning
         #
@@ -54,12 +57,15 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-
         if food_config.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
 
         if food_config.NLG_USE_CS:
             cs = self.pick_social_strategy()
+
+        self.food = message['reco_food']
+        if message['recipe']:
+            self.recipe = message['recipe']
 
         # Sentence Planning
         #
@@ -84,12 +90,15 @@ class NLG(wbc.WhiteBoardClient):
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
 
-        msg_to_send = self.msg_to_json(final_sentence)
+        if message['recipe']:
+            msg_to_send = self.msg_to_json(final_sentence, self.recipe['recipe']['url'], self.recipe['recipe']['image'])
+        else:
+            msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
 
 
-    def msg_to_json(self, sentence):
-        frame = {'sentence': sentence}
+    def msg_to_json(self, sentence, food_recipe, food_poster):
+        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'image': food_poster}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -116,33 +125,21 @@ class NLG(wbc.WhiteBoardClient):
             return ""
 
     def replace(self, sentence):
-        if "#food" in sentence:
-            # movListString = ""
-            # for mov in self.moviesList:
-            #     movListString = movListString + " " + mov
-            sentence = sentence.replace("#food", self.food)
-        if "#plot" in sentence:
-            if self.movie['plot']:
-                sentence = sentence.replace("#plot", self.movie['plot'])
-            else:
-                sentence = "Sorry, I have no idea what this movie is about..."
-        if "#actors" in sentence:
-            if self.movie['actors']:
-                sentence = sentence.replace("#actors", self.movie['actors'])
-            else:
-                sentence = "Sorry, I don't remember who plays in this one..."
-        if "#genres" in sentence:
-            if self.movie['genres']:
-                sentence = sentence.replace("#genres", self.movie['genres'])
-            else:
-                sentence = "Sorry, I'm not sure about this movie's genres..."
+        if "#mainfood" in sentence:
+            sentence = sentence.replace("#mainfood", self.food['main'])
+        if "#secondaryfood" in sentence:
+            sentence = sentence.replace("#secondaryfood", self.food['secondary'])
+        if "#situation" in sentence:
+            sentence = sentence.replace("#situation", self.situation)
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
-        if "#last_movie" in sentence:
-            if self.user_model['liked_movies']:
-                sentence = sentence.replace("#last_movie", self.user_model['liked_movies'][-1])
+        if "#recipe" in sentence:
+            sentence = sentence.replace("#recipe", self.recipe['recipe']['label'])
+        if "#last_food" in sentence:
+            if self.user_model['liked_food']:
+                sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])
             else:
-                sentence = "I know you did not accept any of my recommendations last time but did you watch something cool recently?"
+                sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
         return sentence
 
 

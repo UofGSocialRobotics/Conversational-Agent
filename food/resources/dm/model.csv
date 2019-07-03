@@ -3,7 +3,7 @@ greeting,request(situation),TRUE,,
 request(situation),request(hungry),TRUE,,
 request(hungry),request(diet),TRUE,,
 request(diet),inform(food),TRUE,,
-inform(food),bye,TRUE,,
+inform(food),bye,TRUE,request(sweetness)-inform(food),request(bitterness)-inform(food),request(sourness)-inform(food),request(connectedness)-inform(food),yes-inform(food),request(more)-inform(food),inform(diet)-inform(food)
 greet_back,request_back(last_movie),TRUE,,
 request_back(last_movie),inform(opinion_last_movie),FALSE,,
 inform(opinion_last_movie),inform(movie),TRUE,,
