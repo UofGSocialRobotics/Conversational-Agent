@@ -1,6 +1,8 @@
 from ca_logging import log
 import config
 import argparse
+import threading
+import gui
 
 def main():
     log.info("Starting system")
@@ -17,7 +19,12 @@ def main():
         log.warning("Wrong server config")
         exit(0)
 
-    server.start_service()
+    server_thread = threading.Thread(target=server.start_service, name="server_thread")
+    # server.start_service()
+    server_thread.start()
+
+    return server_thread, server
+
 
 
 if __name__ == '__main__':
@@ -31,11 +38,14 @@ if __name__ == '__main__':
 
     if args.movies:
         config.modules.set_domain("movies")
-        main()
     elif args.food:
         config.modules.set_domain("food")
-        main()
     else:
         argp.print_help()
+        exit(0)
 
+    server_thread, server = main()
+
+    main_gui = gui.GUI(server, server_thread)
+    main_gui.start_gui()
 
