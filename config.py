@@ -14,8 +14,8 @@ import ca_logging as logging
 
 BROKER = "broker"
 WEBSOCKETS = "websokects"
-# USING = BROKER
-USING = WEBSOCKETS
+USING = BROKER
+# USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##
