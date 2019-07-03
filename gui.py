@@ -1,5 +1,7 @@
 import tkinter as tk
 from ca_logging import log
+import time
+import threading
 
 
 class GUI(tk.Tk):
@@ -34,6 +36,7 @@ class GUI(tk.Tk):
         log.info("Thread %s joined, server shut down." % thread_name)
         log.info("Closing GUI.")
         self.destroy()
+        exit(0)
 
     def start_gui(self):
         self.title("CORA server")

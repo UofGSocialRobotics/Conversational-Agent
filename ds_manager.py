@@ -108,6 +108,8 @@ class DSManager:
             c.stop_service()
             del c
         del self.clients_services[client_id]
+        if client_id in self.timer_threads.keys():
+                self.timer_threads[client_id].cancel()
 
     def stop_all_services(self):
         for client_id, service_dict in self.clients_services.items():
@@ -115,7 +117,7 @@ class DSManager:
                 service.stop_service()
             if client_id in self.timer_threads.keys():
                 self.timer_threads[client_id].cancel()
-            time.sleep(1)
+            time.sleep(0.1)
             log.debug("in stop_all_services, thread(s) left:")
             log.debug(threading.enumerate())
 
