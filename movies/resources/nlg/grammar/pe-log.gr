@@ -1,0 +1,35 @@
+# @author Vivian Tsai
+# Grammar (PE-LOG)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	Subj VP
+1	S	Subj VP Place
+1	S	I VP PP
+1	S	I VP Place PP
+1	VP	Adv Verb it
+1	VP	Verb it
+
+# Vocabulary.
+1	Subj	I
+1	Subj	My friends and I
+1	Subj	My programmers and I
+1	Subj	My best friend Oscar and I
+
+1	Adv	recently
+1	Adv	just
+
+1	Verb	watched
+1	Verb	saw
+
+1	Place	at home
+1	Place	at the movie theater
+1	Place	at the Waterfront
+1	Place	in theaters
+
+1	PP	with my friends
+1	PP	with my programmers
+1	PP	with my best friend Oscar
+1	PP	by myself

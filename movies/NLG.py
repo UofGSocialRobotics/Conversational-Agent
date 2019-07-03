@@ -54,8 +54,9 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-        if "movie" in message['intent'] and movie_config.NLG_USE_EXPLANATIONS:
-            explanation_type = self.pick_explanation_type()
+        #if "movie" in message['intent'] and movie_config.NLG_USE_EXPLANATIONS:
+        explanation_type = self.pick_explanation_type()
+        explanation = SentenceBuilder(movie_config.GRAMMAR_PATH + "po-pos.gr")
 
         if movie_config.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
@@ -161,6 +162,23 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 sentence = "I know you did not accept any of my recommendations last time but did you watch something cool recently?"
         return sentence
+
+
+class SentenceBuilder:
+    def __init__(self, filename):
+        self.grammar_dict = {}
+        self.build_dict(filename)
+        print(self.grammar_dict)
+
+    def build_dict(self, filename):
+        with open(filename) as f:
+            for line in f:
+                if not line.startswith("#") and not line.startswith("\n"):
+                    line_input = line.split("\t", 2)
+                    print(line_input)
+                    if self.grammar_dict.get(line_input[1]) is None:
+                        self.grammar_dict[line_input[1]] = []
+                    self.grammar_dict[line_input[1]].append(line_input[2])
 
 
 if __name__ == "__main__":

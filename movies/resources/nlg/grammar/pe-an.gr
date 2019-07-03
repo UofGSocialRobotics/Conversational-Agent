@@ -1,0 +1,21 @@
+# @author Vivian Tsai
+# Grammar (PE-AN)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+2	S	Subj laughed through the whole movie
+1	S	Subj had such a Adj time watching it
+1	S	Subj laughed even during the serious parts
+1	S	Subj wanted to see it again after watching it
+
+# Vocabulary.
+1	Subj	I
+1	Subj	My friends and I
+1	Subj	My programmers and I
+1	Subj	Everyone I know
+
+1	Adj	great
+1	Adj	fun
+1	Adj	fantastic

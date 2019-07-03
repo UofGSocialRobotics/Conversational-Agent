@@ -10,7 +10,7 @@ NLG_ACK_DB = "movies/resources/nlg/ack_db.csv"
 ACTORS_LEXICON = "movies/resources/nlu/actor2id.lexicon"
 DIRECTORS_LEXICON = "movies/resources/nlu/director2id.lexicon"
 GENRES_LEXICON = "movies/resources/nlu/genre2id.lexicon"
-
+GRAMMAR_PATH = "movies/resources/nlg/grammar/"
 
 ####################################################################################################
 ##                                      Movie recommendation config                               ##

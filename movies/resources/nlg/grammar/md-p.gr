@@ -1,0 +1,13 @@
+# @author Vivian Tsai
+# Grammar (MD-P)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	The plot is: Plot
+1	S	Here's the basic plot: Plot
+1	S	Here is the plot: Plot
+
+# Vocabulary.
+1	Plot	#plot

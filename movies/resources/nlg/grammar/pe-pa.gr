@@ -1,0 +1,24 @@
+# @author Vivian Tsai
+# Grammar (PE-PA)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+2	S	It had a AdjM message
+2	S	They did a Adj job with it
+1	S	The characters VP
+#.5	S	It's about time they released another Mission Impossible movie
+
+# Vocabulary.
+2	VP	worked well together
+1	VP	were Adj
+1	VP	had a AdjM relationship
+
+.5	Adj	great
+1	Adj	remarkable
+1	Adj	wonderful
+
+1	AdjM	thoughtful
+1	AdjM	deep
+1	AdjM	compelling

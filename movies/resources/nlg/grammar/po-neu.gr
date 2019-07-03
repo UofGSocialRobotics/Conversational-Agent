@@ -1,0 +1,15 @@
+# @author Vivian Tsai
+# Grammar (PO-NEU)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	It was AP
+1	S	I thought it was AP
+1	AP	Adj
+
+# Vocabulary.
+1	Adj	pretty okay
+1	Adj	fine
+1	Adj	okay

@@ -1,0 +1,7 @@
+# @author Vivian Tsai
+# Grammar (IN)
+
+# Full sentence rules.
+1	ROOT	Have you seen it before?
+1	ROOT	Have you heard of it?
+1	ROOT	Are you familiar with it?

@@ -1,0 +1,26 @@
+# @author Vivian Tsai
+# Grammar (PO-NEG)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	It wasn't AP
+1	S	I didn't think it was AP
+1	S	I didn't Verb it
+1	S	I didn't really Verb it 
+1	S	I wasn't Int impressed
+1	S	I wasn't Int impressed by it
+1	AP	Int Adj
+1	AP	Adj
+
+# Vocabulary.
+1	Verb	enjoy
+1	Verb	like
+
+1	Int	that
+1	Int	too
+
+1	Adj	interesting
+1	Adj	good
+1	Adj	enjoyable	
