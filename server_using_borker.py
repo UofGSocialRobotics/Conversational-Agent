@@ -32,11 +32,12 @@ class ServerUsingBroker(paho.Client, ds_manager.DSManager):
             self.quit()
 
     # @overrides(ds_manager.DSManager)
-    def quit(self):
+    def quit(self, gui_quit=False):
         self.stop_all_services()
         self.disconnect()
         log.info("------------ QUIT ------------")
-        exit(0)
+        if not gui_quit:
+            exit(0)
 
     ####################################################################################################
     ##                                Methods related to distant broker                               ##

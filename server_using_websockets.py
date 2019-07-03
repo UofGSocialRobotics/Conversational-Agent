@@ -54,4 +54,7 @@ class ServerUsingWebSockets:
             traceback.print_exc()
             exit(0)
 
-
+    def quit(self, gui_quit=False):
+        log.info("------------ QUIT ------------")
+        if not gui_quit:
+            exit(0)
