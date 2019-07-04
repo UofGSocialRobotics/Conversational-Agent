@@ -8,9 +8,9 @@ def main():
     log.info("Starting system")
 
     if config.USING == config.BROKER:
-        import server_using_borker
+        import server_using_broker
         log.info("Will use broker")
-        server = server_using_borker.ServerUsingBroker()
+        server = server_using_broker.ServerUsingBroker()
     elif config.USING == config.WEBSOCKETS:
         log.info("Will use websockets")
         import server_using_websockets

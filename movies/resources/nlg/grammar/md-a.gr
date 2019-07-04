@@ -1,0 +1,27 @@
+# @author Vivian Tsai
+# Grammar (MD-A)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	Actor is one of the leading actors
+1	S	Actors are in NP
+1	S	NP Verb Actor
+1	S	NP Verb Actors
+1	NP	Det Noun
+1	NP	it
+
+# Vocabulary.
+1	Det	the
+
+1	Noun	movie
+1	Noun	film
+
+1	Verb	features
+1	Verb	stars
+1	Verb	has
+
+1	Actor	#actor
+
+1	Actors	#actors

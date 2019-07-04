@@ -1,0 +1,36 @@
+# @author Vivian Tsai
+# Grammar (TPE)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	NP VP
+2	S	NP VP and said it was AP
+2	NP	My Noun
+1	NP	Florian
+2	NP	Shruti
+1	VP	Verb it PP
+1	VP	Verb it
+1	AP	Int Adj
+1	AP	Adj
+
+# Vocabulary.
+1	Verb	watched
+1	Verb	saw
+
+1	Noun	friend
+1	Noun	programmers
+
+1	PP	in theaters
+1	PP	at home
+1	PP	at the Waterfront
+1	PP	at the movie theater
+
+1	Int	very
+1	Int	really
+1	Int	extremely
+
+1	Adj	interesting
+1	Adj	good
+1	Adj	enjoyable	

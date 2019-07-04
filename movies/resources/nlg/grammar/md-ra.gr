@@ -1,0 +1,27 @@
+# @author Vivian Tsai
+# Grammar (MD-RA)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	It's NP
+4	S	It's NP PP
+1	NP	Det Rank Noun
+
+# Vocabulary.
+5	Det	the
+1	Det	a
+
+1	Rank	top
+1	Rank	number one
+1	Rank	best-ranked
+
+1	Noun	movie
+1	Noun	film	
+
+1	PP	of the summer
+1	PP	for this summer
+1	PP	of the year
+1	PP	this movie season
+1	PP	this summer

@@ -1,0 +1,26 @@
+# @author Vivian Tsai
+# Grammar (MD-R)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	I heard Review
+1	S	Review
+1	Review	RP PP
+1	Review	RP
+1	RP	it got AP reviews
+1	RP	it was rated Int high 
+1	AP	Int Adj
+1	AP	Adj
+
+# Vocabulary.
+1	PP	on Rotten Tomatoes
+1	PP	by critics
+
+1	Int	pretty
+1	Int	fairly
+
+1	Adj	good
+1	Adj	great
+1	Adj	fantastic

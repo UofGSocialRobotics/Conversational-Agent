@@ -14,9 +14,9 @@ import amt_info
 ####################################################################################################
 
 BROKER = "broker"
-WEBSOCKETS = "websokects"
-USING = BROKER
-# USING = WEBSOCKETS
+WEBSOCKETS = "websockets"
+# USING = BROKER
+USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##

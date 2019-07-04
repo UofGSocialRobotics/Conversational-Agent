@@ -1,0 +1,11 @@
+# @author Vivian Tsai
+# Grammar (PE-CO)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+#1	S	It has a Mission Impossible vibe to it
+#1	S	It was better than the previous Mission Impossible movies
+#1	S	It reminds me of the previous Mission Impossible movies
+1	S	It reminds me of my favorite movies

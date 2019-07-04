@@ -1,0 +1,32 @@
+# @author Vivian Tsai
+# Grammar (PO-SO)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+1	S	NegS but PosS
+1	NegS	It was pretty bad quality
+1	NegS	It was not a very good movie overall
+1	PosS	I Verb it
+1	PosS	I thought it was PosP
+1	AP	Int Adj
+3	AP	Adj
+
+# Vocabulary.
+1	PosP	definitely worth watching
+1	PosP	a great time
+1	PosP	fairly well done
+
+1	Verb	enjoyed
+1	Verb	liked
+
+1	Noun	friend
+1	Noun	programmers
+
+1	Int	very
+1	Int	really
+1	Int	extremely
+
+1	Adj	interesting
+1	Adj	enjoyable	

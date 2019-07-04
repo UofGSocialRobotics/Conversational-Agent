@@ -1,0 +1,17 @@
+# @author Vivian Tsai
+# Grammar (MD-G)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+3	S	It's an Genre Noun
+1	S	If you like Genre you should watch it
+1	S	I think you would like the Genre
+3	S	It's under the Genre category
+
+# Vocabulary.
+1	Noun	movie
+1	Noun	film
+
+1	Genre	#genre

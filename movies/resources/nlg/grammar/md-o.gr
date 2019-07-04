@@ -1,0 +1,10 @@
+# @author Vivian Tsai
+# Grammar (MD-O)
+
+# Full sentence rules.
+1	ROOT	S .
+
+# Basic grammar rules.
+9	S	It's NP
+1	S	It's actually NP
+1	NP	about #runtime long
