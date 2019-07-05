@@ -3,7 +3,7 @@ import config
 from ca_logging import log
 from whiteboard import whiteboard
 import time
-
+import json
 
 class DSManager:
     """
@@ -53,6 +53,7 @@ class DSManager:
         if client_id not in self.clients_services.keys():
             if config.MSG_CONNECTION in msg_txt:
                 self.subscribe_whiteboard(config.MSG_NLG + client_id)
+                self.subscribe_whiteboard(config.MSG_AMTINFO_OUT + client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
                 confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
@@ -62,7 +63,12 @@ class DSManager:
                 self.publish_for_client(error_message, config.MSG_SERVER_OUT + client_id)
         else:
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
-            if config.MSG_CONNECTION not in msg_txt:
+            if config.MSG_AMTINFO in msg_txt:
+                json_msg = json.loads(msg_txt)
+                print("got amt id")
+                topic = config.MSG_AMTINFO_IN + client_id
+                self.publish_whiteboard(json_msg, topic)
+            elif config.MSG_CONNECTION not in msg_txt:
                 topic = config.MSG_SERVER_IN + client_id
                 self.publish_whiteboard(msg_txt, topic)
             self.reset_timer(client_id)
@@ -97,6 +103,9 @@ class DSManager:
         # create dedicated NLG
         new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
         self.clients_services[client_id]["nlg"] = new_nlg
+        # create dedicated AMT_info module
+        new_amtinfo = config.modules.AMTinfo(subscribes=config.AMTinfo_subscribes, publishes=config.AMTinfo_publishes, clientid=client_id, ack_msg = config.MSG_AMTINFO_ACK)
+        self.clients_services[client_id]["amtinfo"] = new_amtinfo
 
         # star services in dedicated threads
         for key, s in self.clients_services[client_id].items():
