@@ -4,7 +4,7 @@ import json
 import random
 import movies.movie_config as movie_config
 import numpy
-
+import os.path
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, subscribes, publishes, clientid):
@@ -46,7 +46,7 @@ class NLG(wbc.WhiteBoardClient):
         self.movie = message['movie']
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-
+        explanation = ""
         # Content Planning
         #
         # Here we select the different strategies that will be used to deliver the content:
@@ -54,9 +54,11 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-        #if "movie" in message['intent'] and movie_config.NLG_USE_EXPLANATIONS:
-        explanation_type = self.pick_explanation_type()
-        explanation = SentenceBuilder(movie_config.GRAMMAR_PATH + "po-pos.gr")
+        if "movie" in message['intent'] and movie_config.NLG_USE_EXPLANATIONS:
+            explanation_type = self.pick_explanation_type()
+            if os.path.isfile(movie_config.GRAMMAR_PATH + explanation_type.lower() + ".gr"):
+                explanation_builder = SentenceBuilder(movie_config.GRAMMAR_PATH + explanation_type.lower() + ".gr")
+                explanation = explanation_builder.get_sentence()
 
         if movie_config.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
@@ -85,7 +87,7 @@ class NLG(wbc.WhiteBoardClient):
                     ack = ""
         else:
             ack = ""
-        final_sentence = self.replace(ack + " " + sentence)
+        final_sentence = self.replace(ack + " " + sentence + " " + explanation)
 
         msg_to_send = self.msg_to_json(final_sentence, self.movie['poster'])
         self.publish(msg_to_send)
@@ -104,17 +106,16 @@ class NLG(wbc.WhiteBoardClient):
         #return random.choice(movie_config.CS_LABELS)
         return "NONE"
 
-    # Todo Add explanations Sentence Planning
     def pick_explanation_type(self):
         expl_type = numpy.random.choice(movie_config.EXPLANATION_TYPE_LABELS, p=list(movie_config.EXPLANATION_TYPE_PROBA))
         if "MF" in expl_type:
-            expl_type += "_" + numpy.random.choice(movie_config.MF_EXPLANATION_LABELS, p=list(movie_config.MF_EXPLANATION_PROBA))
+            expl_type += "-" + numpy.random.choice(movie_config.MF_EXPLANATION_LABELS, p=list(movie_config.MF_EXPLANATION_PROBA))
         elif "TPO" in expl_type:
-            expl_type += "_" + numpy.random.choice(movie_config.TPO_EXPLANATION_LABELS, p=list(movie_config.TPO_EXPLANATION_PROBA))
+            expl_type += "-" + numpy.random.choice(movie_config.TPO_EXPLANATION_LABELS, p=list(movie_config.TPO_EXPLANATION_PROBA))
         elif "PO" in expl_type:
-            expl_type += "_" + numpy.random.choice(movie_config.PO_EXPLANATION_LABELS, p=list(movie_config.PO_EXPLANATION_PROBA))
+            expl_type += "-" + numpy.random.choice(movie_config.PO_EXPLANATION_LABELS, p=list(movie_config.PO_EXPLANATION_PROBA))
         elif "PE" in expl_type:
-            expl_type += "_" + numpy.random.choice(movie_config.PE_EXPLANATION_LABELS, p=list(movie_config.PE_EXPLANATION_PROBA))
+            expl_type += "-" + numpy.random.choice(movie_config.PE_EXPLANATION_LABELS, p=list(movie_config.PE_EXPLANATION_PROBA))
         else:
             expl_type = None
         return expl_type
@@ -127,7 +128,6 @@ class NLG(wbc.WhiteBoardClient):
                     potential_options.append(option)
             else:
                 potential_options.append(option)
-        print(potential_options)
         if potential_options:
             return random.choice(potential_options)
         else:
@@ -167,18 +167,31 @@ class NLG(wbc.WhiteBoardClient):
 class SentenceBuilder:
     def __init__(self, filename):
         self.grammar_dict = {}
+        self.final_sentence = ""
         self.build_dict(filename)
-        print(self.grammar_dict)
+        self.build_sentence("ROOT")
 
     def build_dict(self, filename):
         with open(filename) as f:
             for line in f:
                 if not line.startswith("#") and not line.startswith("\n"):
                     line_input = line.split("\t", 2)
-                    print(line_input)
                     if self.grammar_dict.get(line_input[1]) is None:
                         self.grammar_dict[line_input[1]] = []
                     self.grammar_dict[line_input[1]].append(line_input[2])
+
+    def build_sentence(self, key):
+        RHS = random.choice(self.grammar_dict[key])
+        words = RHS.split(' ')
+        for word in words:
+            word = word.replace('\n', '')
+            if word in self.grammar_dict.keys():
+                self.build_sentence(word)
+            else:
+                self.final_sentence += " " + word
+
+    def get_sentence(self):
+        return self.final_sentence
 
 
 if __name__ == "__main__":

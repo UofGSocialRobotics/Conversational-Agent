@@ -19,9 +19,6 @@ request(last_movie),HE,I'm really sorry if I'm over-reaching here but would you 
 request(last_movie),SD,I think it's because movies today fail to meet high expectations of people like us. Would you mind telling me what was the last movie you saw that you liked a lot?,1
 request_back(last_movie),NONE,Looking good as usual! So did you eventually watch #last_movie? I hope you liked it as much as I did!
 inform(opinion_last_movie),NONE,I thought the leads had great chemistry and the script was pretty good too! So tell me. Do you want something similar this time?
-bye,SD,I had a great time recommending movies to you. Come back soon!,
-bye,PR,I had so much fun with you! See you next time.,
-bye,NONE,Feel free to let me know if you ever need a movie recommendation. See you!,
 request(reason_like),NONE,What did you like about the film?,
 request(reason_like),PR,I have a feeling you know what makes a good movie. What did you like about this one?,
 request(reason_like),SD,I saw that movie as well. What was your favorite part?,
@@ -60,3 +57,6 @@ inform(plot),NONE,Here is the plot. #plot,
 list(movies),NONE,Here are the movies you liked so far. #movies,
 request(feedback),NONE,One last thing. Can you tell me how I did?,
 bye,PR,I had such a good time recommending movies to you. See you next time!,
+bye,SD,I had a great time recommending movies to you. Come back soon!,
+bye,PR,I had so much fun with you! See you next time.,
+bye,NONE,Feel free to let me know if you ever need a movie recommendation. See you!,
