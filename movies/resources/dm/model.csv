@@ -9,8 +9,8 @@ request(reason_like),request(genre),TRUE,,
 request(genre),request(director),TRUE,,
 request(director),request(actor),TRUE,,
 request(actor),inform(movie),TRUE,,
-inform(movie),request(more),TRUE,request(more)-inform(movie),request(plot)-inform(plot),no-request(why),request(actor)-inform(actor),request(genre)-inform(genre),alreadyWatched-request(opinion)
-request(more),inform(movie),TRUE,no-bye,
+inform(movie),request(more),TRUE,request(more)-inform(movie),request(plot)-inform(plot),no-request(why),request(actor)-inform(actor),request(genre)-inform(genre),alreadyWatched-request(opinion),bye-bye
+request(more),inform(movie),TRUE,no-bye,bye-bye
 request(feedback),bye,TRUE,,
 inform(plot),inform(movie),TRUE,request(actor)-inform(actor),request(genre)-inform(genre),yes-request(more),no-request(why),request(plot)-inform(plot)
 inform(actor),inform(movie),TRUE,request(plot)-inform(plot),request(genre)-inform(genre),yes-request(more),no-request(why),request(actor)-inform(actor)
