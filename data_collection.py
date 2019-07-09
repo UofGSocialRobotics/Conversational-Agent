@@ -53,6 +53,5 @@ class DataCollector(wbc.WhiteBoardClient):
 
     def stop_service(self):
         self.save()
-        self.unsubscribe()
-        self.service_started = False
+        super().stop_service()
 
