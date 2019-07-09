@@ -8,7 +8,7 @@ from food import DM as food_DM
 from food import NLG as food_NLG
 from food import NLU as food_NLU
 import ca_logging as logging
-import amt_info
+import data_collection
 ####################################################################################################
 ##                                Using broker or websockets on localhost                         ##
 ####################################################################################################
@@ -56,10 +56,10 @@ MSG_NLG = MSG_MAIN_TOPIC+"NLG/"
 MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
 
 ## For AMT info module, server publishes on
-MSG_AMTINFO_IN = MSG_MAIN_TOPIC+"AMTinfo_in/"
+MSG_AMTINFO_IN = MSG_MAIN_TOPIC+"DataCollector_in/"
 
 ## For server, AMT info module publishes on
-MSG_AMTINFO_OUT = MSG_MAIN_TOPIC+"AMTinfo_out/"
+MSG_AMTINFO_OUT = MSG_MAIN_TOPIC+"DataCollector_out/"
 
 # Connection message from client:
 MSG_CONNECTION = "client connected"
@@ -90,9 +90,9 @@ NLG_publishes = MSG_NLG
 SentimentAnalysis_subscribes = [MSG_SERVER_IN]
 SentimentAnalysis_publishes = MSG_SA
 
-## AMT_info
-AMTinfo_subscribes = [MSG_AMTINFO_IN]
-AMTinfo_publishes = MSG_AMTINFO_OUT
+## DataCollector
+DataCollector_subscribes = [MSG_AMTINFO_IN]
+DataCollector_publishes = MSG_AMTINFO_OUT
 
 ####################################################################################################
 ##                                          Modules                                               ##
@@ -129,7 +129,7 @@ class Modules:
             self.DM = None
             self.SentimentAnalysis = None
             self.NLG = None
-            self.AMTinfo = amt_info.AMT_info
+            self.DataCollector = data_collection.DataCollector
 
     def set_domain(self, domain):
         if domain == "movies":

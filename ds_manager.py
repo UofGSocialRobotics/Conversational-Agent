@@ -69,7 +69,7 @@ class DSManager:
                 topic = config.MSG_AMTINFO_IN + client_id
                 self.publish_whiteboard(json_msg[config.MSG_AMTINFO], topic)
             elif config.MSG_CONNECTION not in msg_txt:
-                # send to amt_info module to save
+                # send to data_collector module to save
                 topic = config.MSG_AMTINFO_IN + client_id
                 self.publish_whiteboard({config_data_collection.DIALOG: msg_txt}, topic)
                 # distribute to NLU
@@ -114,8 +114,8 @@ class DSManager:
         new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
         self.clients_services[client_id]["nlg"] = new_nlg
         # create dedicated AMT_info module
-        new_amtinfo = config.modules.AMTinfo(subscribes=config.AMTinfo_subscribes, publishes=config.AMTinfo_publishes, clientid=client_id, ack_msg = config.MSG_AMTINFO_ACK)
-        self.clients_services[client_id]["amtinfo"] = new_amtinfo
+        new_datacollector = config.modules.DataCollector(subscribes=config.DataCollector_subscribes, publishes=config.DataCollector_publishes, clientid=client_id, ack_msg = config.MSG_AMTINFO_ACK)
+        self.clients_services[client_id]["datacollector"] = new_datacollector
 
         # star services in dedicated threads
         for key, s in self.clients_services[client_id].items():
