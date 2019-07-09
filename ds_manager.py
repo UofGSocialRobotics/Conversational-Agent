@@ -4,6 +4,7 @@ from ca_logging import log
 from whiteboard import whiteboard
 import time
 import json
+import config_data_collection
 
 class DSManager:
     """
@@ -65,12 +66,21 @@ class DSManager:
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
             if config.MSG_AMTINFO in msg_txt:
                 json_msg = json.loads(msg_txt)
-                print("got amt id")
                 topic = config.MSG_AMTINFO_IN + client_id
-                self.publish_whiteboard(json_msg, topic)
+                self.publish_whiteboard(json_msg[config.MSG_AMTINFO], topic)
             elif config.MSG_CONNECTION not in msg_txt:
+                # send to amt_info module to save
+                topic = config.MSG_AMTINFO_IN + client_id
+                self.publish_whiteboard({config_data_collection.DIALOG: msg_txt}, topic)
+                # distribute to NLU
                 topic = config.MSG_SERVER_IN + client_id
                 self.publish_whiteboard(msg_txt, topic)
+            elif config.MSG_CONNECTION in msg_txt:
+                # client reconnected after navigating on the website
+                confirm_connection_message = config.MSG_CONFIRM_CONNECTION
+                self.publish_for_client(confirm_connection_message, config.MSG_SERVER_OUT + client_id)
+            else:
+                log.warning("ds_manager: ERROR do not know what to do with client's message!!!")
             self.reset_timer(client_id)
 
     ####################################################################################################
@@ -111,6 +121,8 @@ class DSManager:
         for key, s in self.clients_services[client_id].items():
             s.start_service()
 
+        self.publish_whiteboard({config_data_collection.CLIENT_ID: client_id}, config.MSG_AMTINFO_IN+client_id)
+
     def stop_services(self, client_id):
         log.info("Shuting down services for client %s" % client_id)
         for c in self.clients_services[client_id].values():
@@ -132,4 +144,12 @@ class DSManager:
 
     def treat_message_from_module(self, message, topic):
         client_id = topic.split("/")[-1]
-        self.publish_for_client(message, config.MSG_SERVER_OUT + client_id)
+        if isinstance(message, dict):
+            message_text = json.dumps(message)
+            # print("we have a dict")
+        else:
+            message_text = message
+        self.publish_for_client(message_text, config.MSG_SERVER_OUT + client_id)
+        # publish conversation for data_collection
+        if config.MSG_NLG in topic:
+            self.publish_whiteboard({"dialog": message["sentence"]}, config.MSG_AMTINFO_IN + client_id)

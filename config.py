@@ -15,8 +15,8 @@ import amt_info
 
 BROKER = "broker"
 WEBSOCKETS = "websockets"
-# USING = BROKER
-USING = WEBSOCKETS
+USING = BROKER
+# USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##
@@ -62,13 +62,13 @@ MSG_AMTINFO_IN = MSG_MAIN_TOPIC+"AMTinfo_in/"
 MSG_AMTINFO_OUT = MSG_MAIN_TOPIC+"AMTinfo_out/"
 
 # Connection message from client:
-MSG_CONNECTION = "new client connected"
+MSG_CONNECTION = "client connected"
 
 # Confirm connection to client:
 MSG_CONFIRM_CONNECTION = "Connection confirmed"
 
 # AMT id message
-MSG_AMTINFO = "amt_id"
+MSG_AMTINFO = "for_data_collection"
 
 # ACK AMT id
 MSG_AMTINFO_ACK = "ACK AMT_INFO"

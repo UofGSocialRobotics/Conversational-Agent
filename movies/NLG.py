@@ -89,14 +89,14 @@ class NLG(wbc.WhiteBoardClient):
             ack = ""
         final_sentence = self.replace(ack + " " + sentence + " " + explanation)
 
-        msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.movie['poster'])
+        msg_to_send = self.msg_to_dict(message['intent'], final_sentence, self.movie['poster'])
         self.publish(msg_to_send)
 
 
-    def msg_to_json(self, intention, sentence, movie_poster):
+    def msg_to_dict(self, intention, sentence, movie_poster):
         frame = {'intent': intention, 'sentence': sentence, 'image': movie_poster}
-        json_msg = json.dumps(frame)
-        return json_msg
+        # json_msg = json.dumps(frame)
+        return frame
 
     def pick_ack_social_strategy(self):
         #return random.choice(movie_config.CS_LABELS)

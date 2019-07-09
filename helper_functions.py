@@ -1,6 +1,7 @@
 from ca_logging import log
 import json
 import random
+import os
 
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:
@@ -42,13 +43,4 @@ def identical(l1, l2):
                 return False
         return True
     return False
-# def raise_error(client,error_msg,level):
-#     if level == paho.MQTT_LOG_WARNING:
-#         print_error_fct = log.warning
-#     elif level == paho.MQTT_LOG_ERR:
-#         print_error_fct = log.error
-#     else :
-#         return
-#     print_error_fct("%s: %s" % (client.name, error_msg))
-#     client.disconnect()
-#     exit(0)
+
