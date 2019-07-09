@@ -23,8 +23,8 @@ class DM(wbc.WhiteBoardClient):
 
         self.movie = {'title': "", 'year': "", 'plot': "", 'actors': [], 'genres': [], 'poster': ""}
         self.nodes = {}
-        self.user_model = {"liked_cast": [], "disliked_cast": [], "liked_genres": [], 'disliked_genres': [],
-                           'liked_movies': [], 'disliked_movies': []}
+        self.user_model = {"liked_cast": [], "disliked_cast": [], 'liked_crew': [], 'disliked_crew': [],
+                           "liked_genres": [], 'disliked_genres': [], 'liked_movies': [], 'disliked_movies': []}
         self.load_model(movie_config.DM_MODEL)
         self.load_user_model(movie_config.USER_MODELS, clientid)
 
@@ -66,11 +66,15 @@ class DM(wbc.WhiteBoardClient):
                 if '+' in self.from_NLU['polarity']:
                     if 'cast' in self.from_NLU['entity_type']:
                         self.user_model["liked_cast"].append(self.from_NLU['entity'])
+                    elif 'crew' in self.from_NLU['entity_type']:
+                        self.user_model["liked_crew"].append(self.from_NLU['entity'])
                     elif 'genre' in self.from_NLU['entity_type']:
                         self.user_model["liked_genres"].append(self.from_NLU['entity'])
                 elif '-' in self.from_NLU['polarity']:
                     if 'cast' in self.from_NLU['entity_type']:
                         self.user_model["disliked_cast"].append(self.from_NLU['entity'])
+                    if 'crew' in self.from_NLU['entity_type']:
+                        self.user_model["disliked_crew"].append(self.from_NLU['entity'])
                     elif 'genre' in self.from_NLU['entity_type']:
                         self.user_model["disliked_genre"].append(self.from_NLU['entity'])
 
@@ -123,37 +127,40 @@ class DM(wbc.WhiteBoardClient):
                 return movie['title']
 
     def queryMoviesList(self):
-        # Todo Smart blending to get a recommendation matching with both genre and cast
+        # Todo Smart blending to get a recommendation matching with both genre and cast and crew
         movies_with_cast_list = []
         movies_with_genres_list = []
-        if not self.user_model['liked_genres'] and not self.user_model['liked_cast']:
+        movies_with_crew_list = []
+
+        if self.user_model['liked_genres']:
+            genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
+        if self.user_model['liked_cast']:
+            cast_id = self.get_person_id(self.user_model['liked_cast'][-1].lower())
+        if self.user_model['liked_crew']:
+            crew_id = self.get_person_id(self.user_model['liked_crew'][-1].lower())
+
+        if not self.user_model['liked_genres'] and not self.user_model['liked_cast'] and not self.user_model['liked_crew']:
             query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + movie_config.MOVIE_DB_PROPERTY
-            data = urllib.request.urlopen(query_url)
-            result = data.read()
-            movies = json.loads(result)
-            return movies['results']
+            return self.get_movie_list(query_url)
         if self.user_model['liked_genres']:
             genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
             query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
-            data = urllib.request.urlopen(query_url)
-            result = data.read()
-            movies = json.loads(result)
-            movies_with_genres_list = movies['results']
+            movies_with_genres_list = self.get_movie_list(query_url)
         if self.user_model['liked_cast']:
-            cast_id = self.get_cast_id(self.user_model['liked_cast'][-1].lower())
-            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
-            data = urllib.request.urlopen(query_url)
-            result = data.read()
-            movies = json.loads(result)
-            movies_with_cast_list = movies['results']
+            cast_id = self.get_person_id(self.user_model['liked_cast'][-1].lower())
+            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
+            movies_with_cast_list = self.get_movie_list(query_url)
+        if self.user_model['liked_crew']:
+            crew_id = self.get_person_id(self.user_model['liked_crew'][-1].lower())
+            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            movies_with_crew_list = self.get_movie_list(query_url)
+
         if movies_with_genres_list:
             if movies_with_cast_list:
                 if len(movies_with_genres_list) > len(movies_with_cast_list):
-                    print("shorter genres")
                     smallest_list = movies_with_cast_list
                     biggest_list = movies_with_genres_list
                 else:
-                    print("shorter cast")
                     smallest_list = movies_with_genres_list
                     biggest_list = movies_with_cast_list
 
@@ -172,6 +179,12 @@ class DM(wbc.WhiteBoardClient):
                 return movies_with_genres_list
         else:
             return movies_with_cast_list
+
+    def get_movie_list(self, query):
+        data = urllib.request.urlopen(query)
+        result = data.read()
+        movies = json.loads(result)
+        return movies['results']
 
     def get_genre_id(self, genre_name):
         return {
@@ -197,13 +210,13 @@ class DM(wbc.WhiteBoardClient):
             'western': 37
         }.get(genre_name, 0)
 
-    def get_cast_id(self, cast_name):
-        cast_name = cast_name.replace(" ", "%20")
-        query_url = movie_config.MOVIEDB_SEARCH_PERSON_ADDRESS + movie_config.MOVIEDB_KEY + "&query=" + cast_name
+    def get_person_id(self, person_name):
+        person_name = person_name.replace(" ", "%20")
+        query_url = movie_config.MOVIEDB_SEARCH_PERSON_ADDRESS + movie_config.MOVIEDB_KEY + "&query=" + person_name
         data = urllib.request.urlopen(query_url)
         result = data.read()
-        movies = json.loads(result)
-        return int(movies['results'][0]['id'])
+        people = json.loads(result)
+        return int(people['results'][0]['id'])
 
     def set_movie_info(self, movie_name):
         movie_name = movie_name.replace(" ", "%20")

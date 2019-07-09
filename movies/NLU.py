@@ -29,13 +29,13 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         # formula = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
         # intent, entity, entitytype, polarity = nlu_helper.format_formula(formula=formula)
 
-        intent, entity, entitytype, polarity  = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
+        intent, entitytype, entity, polarity = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)
 
     def msg_to_json(self, intent, entity, entity_type, polarity):
-        frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}
+        frame = {'intent': intent, 'entity_type': entity_type, 'entity': entity, 'polarity': polarity}
         json_msg = json.dumps(frame)
         return json_msg
 
