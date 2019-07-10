@@ -81,7 +81,7 @@ class ServerUsingBroker(paho.Client, ds_manager.DSManager):
         self.subscribe(topic, qos=2)
 
     # @overrides(ds_manager.DSManager)
-    def publish_for_client(self, message, topic):
+    def publish_for_client(self, message, topic, client_id = None):
         helper.print_message(self.name, "publishing", message, topic)
         # method inherited from Paho client
         (rc, mid) = self.publish(topic, message, qos=2)

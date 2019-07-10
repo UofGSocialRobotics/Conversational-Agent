@@ -5,6 +5,7 @@ from whiteboard import whiteboard
 import time
 import json
 import config_data_collection
+import helper_functions as helper
 
 class DSManager:
     """
@@ -12,19 +13,47 @@ class DSManager:
     For each new client, the server creates new dedicates services (NLU, DM, NLG)
     Server is also in charge to send back messages to specific clients  - using specific channels.
     """
-    def __init__(self):
+    """Singleton class"""
+    __instance = None
 
-        self.name = "Dialog-System-Manager"
-        log.info("%s: init" % self.name)
-        self.clients_services = dict()
-        self.timer_threads = dict()
+    @staticmethod
+    def getInstance():
+        """
+        :return: the unique ClientsIDsStorage object
+        """
+        if DSManager.__instance == None:
+            DSManager()
+        return  DSManager.__instance
+
+
+    def __init__(self):
+        if DSManager.__instance != None:
+            # log.error("Singleton Class: contructor should not be called. Use ClientsIDsStorage.getInstance()")
+            log.debug("Calling constructor of DSManager")
+            print(self.clients_services)
+        else:
+            DSManager.__instance = self
+            self.name = "Dialog-System-Manager"
+            log.info("%s: init" % self.name)
+            self.clients_services = dict()
+            self.timer_threads = dict()
+            self.clients_websockets = dict()
 
 
     ####################################################################################################
     ##                                          General Methods                                       ##
     ####################################################################################################
-    def publish_for_client(self, message, topic):
-        pass
+
+    def publish_for_client(self, message, topic, client_id = None):
+        if config.USING == config.BROKER:
+            log.error("%s: When not using websockets, this method should have been redefined in child class!" % self.name)
+            raise NotImplementedError("%s: When not using websockets, this method should have been redefined in child class!" % self.name)
+        else:
+            if client_id in self.clients_websockets.keys():
+                for ws in self.clients_websockets[client_id]:
+                    ws.publish_for_client(message, topic, client_id)
+            else:
+                log.error("%s, publish_for_client: no websocket for client %s" % (self.name, client_id))
 
     ####################################################################################################
     ##                                Methods related to distant client                               ##
@@ -52,17 +81,19 @@ class DSManager:
         # On first connection, create dedicated NLU/DM/NLG and subscribe to new DM topic
         # and start timer to kill services if no activity
         if client_id not in self.clients_services.keys():
+            log.debug("%s: new client" % self.name)
             if config.MSG_CONNECTION in msg_txt:
                 self.subscribe_whiteboard(config.MSG_NLG + client_id)
                 self.subscribe_whiteboard(config.MSG_AMTINFO_OUT + client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
                 confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
-                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT + client_id)
+                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT + client_id, client_id)
             else: # tell client they were disconnected
                 error_message = "ERROR, you were disconnected. Start session again by refreshing page."
-                self.publish_for_client(error_message, config.MSG_SERVER_OUT + client_id)
+                self.publish_for_client(error_message, config.MSG_SERVER_OUT + client_id, client_id)
         else:
+            log.debug("%s: client already registered" % self.name)
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
             if config.MSG_AMTINFO in msg_txt:
                 json_msg = json.loads(msg_txt)
@@ -78,7 +109,7 @@ class DSManager:
             elif config.MSG_CONNECTION in msg_txt:
                 # client reconnected after navigating on the website
                 confirm_connection_message = config.MSG_CONFIRM_CONNECTION
-                self.publish_for_client(confirm_connection_message, config.MSG_SERVER_OUT + client_id)
+                self.publish_for_client(confirm_connection_message, config.MSG_SERVER_OUT + client_id, client_id)
             else:
                 log.warning("ds_manager: ERROR do not know what to do with client's message!!!")
             self.reset_timer(client_id)
@@ -93,6 +124,7 @@ class DSManager:
         self.treat_message_from_module(message, topic)
 
     def subscribe_whiteboard(self, topic):
+        log.debug("%s subsdribing to %s" %(self.name, topic))
         whiteboard.subscribe(subscriber=self, topic=topic)
 
     ####################################################################################################
@@ -125,10 +157,11 @@ class DSManager:
 
     def stop_services(self, client_id):
         log.info("Shuting down services for client %s" % client_id)
-        for c in self.clients_services[client_id].values():
-            c.stop_service()
-            del c
-        del self.clients_services[client_id]
+        if client_id in self.clients_services.keys():
+            for c in self.clients_services[client_id].values():
+                c.stop_service()
+                del c
+            del self.clients_services[client_id]
         if client_id in self.timer_threads.keys():
                 self.timer_threads[client_id].cancel()
 
@@ -143,13 +176,27 @@ class DSManager:
             log.debug(threading.enumerate())
 
     def treat_message_from_module(self, message, topic):
+        log.debug("%s: entering treat_message_from_module, topic %s" % (self.name, topic))
         client_id = topic.split("/")[-1]
         if isinstance(message, dict):
             message_text = json.dumps(message)
             # print("we have a dict")
         else:
             message_text = message
-        self.publish_for_client(message_text, config.MSG_SERVER_OUT + client_id)
+        log.debug("%s: halfway in treat_message_from_module, topic %s" % (self.name, topic))
+        self.publish_for_client(message_text, config.MSG_SERVER_OUT + client_id, client_id)
         # publish conversation for data_collection
         if config.MSG_NLG in topic:
             self.publish_whiteboard({"dialog": message["sentence"]}, config.MSG_AMTINFO_IN + client_id)
+
+
+    ####################################################################################################
+    ##                                Methods for websocket implementation                            ##
+    ####################################################################################################
+
+    def add_websocket(self, client_id, websocket):
+        if client_id not in self.clients_websockets.keys():
+            self.clients_websockets[client_id] = [websocket]
+        else:
+            self.clients_websockets[client_id].append(websocket)
+            log.warn("%s: adding a websocket for client %s" % (self.name, client_id))

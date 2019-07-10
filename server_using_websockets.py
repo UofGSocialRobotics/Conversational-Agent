@@ -6,6 +6,14 @@ from ca_logging import log
 import helper_functions as helper
 import config
 import time
+import config_data_collection
+import json
+
+def parse_message(json_string):
+    json_msg = json.loads(json_string)
+    client_id, msg_text = json_msg[config_data_collection.CLIENT_ID], json_msg[config_data_collection.MSG_TEXT]
+    return client_id, msg_text
+
 
 class SimpleEcho(WebSocket):
     def handle(self):
@@ -20,32 +28,50 @@ class SimpleEcho(WebSocket):
 
 
 
-class DSManagerUsingWebsockets(WebSocket, ds_manager.DSManager):
+class DSManagerUsingWebsockets(WebSocket):
+    """
+    Major problem with this implementation:
+    One DSManager is created by each websocket. Each DS Manager creates their own services for the SAME client!
+    """
+    # def __init__(self):
+    #     self.ds_manager = None
+    #     self.client_id = None
 
     def handle(self):
-        # echo message back to client
-        # self.send_message(self.data)
-        # print(self.data)
-        # print(id)
-        if not hasattr(self, 'client_id'):
-            self.client_id = helper.random_id()
-        self.treat_message_from_client(self.data, self.client_id)
+        print("DSManagerUsingWebsockets enter handle")
+        client_id, text = parse_message(self.data)
+        print("Parsed json message:")
+        print(client_id, text)
 
-    def publish_for_client(self, message, topic):
+        if not hasattr(self, 'client_id'):
+        # if not self.client_id:
+            self.client_id = client_id
+            self.ds_manager.add_websocket(client_id, self)
+            print("we re now there")
+
+        self.ds_manager.treat_message_from_client(text, client_id)
+        print("DSManagerUsingWebsockets exit handle")
+
+    def publish_for_client(self, message, topic, client_id):
         self.send_message(message)
 
     def connected(self):
         log.info(self.address.__str__() + ' connected')
+        self.ds_manager = ds_manager.DSManager.getInstance()
+        print("here")
         self.send_message(config.MSG_CONFIRM_CONNECTION)
-        ds_manager.DSManager.__init__(self)
+        print("DSManagerUsingWebsockets exit connected")
+        # ds_manager.DSManager.__init__(self)
+
 
     def handle_close(self):
         # traceback.print_exc()
         log.info(self.address + ' closed')
 
     def close(self, status=1000, reason=u''):
-        self.stop_services(self.client_id)
-        # WebSocket.close(self)
+        # self.stop_services(self.client_id)
+        WebSocket.close(self)
+        # pass
 
 
 
