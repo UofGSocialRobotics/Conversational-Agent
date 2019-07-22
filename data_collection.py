@@ -17,6 +17,7 @@ class DataCollector(wbc.WhiteBoardClient):
         self.data = dict()
         self.data[config_data_collection.DIALOG] = list()
         self.ack_msg = ack_msg
+        self.n_q_anwers_msg = 0
         self.saved = False
 
 
@@ -24,6 +25,11 @@ class DataCollector(wbc.WhiteBoardClient):
         key = list(msg.keys())[0]
         if config_data_collection.DIALOG in msg.keys():
             self.data[config_data_collection.DIALOG].append(msg[config_data_collection.DIALOG])
+        elif config_data_collection.ANSWERS in msg.keys():
+            if config_data_collection.ANSWERS in self.data.keys():
+                self.data[config_data_collection.ANSWERS] = {**self.data[config_data_collection.ANSWERS], **msg[config_data_collection.ANSWERS]}
+            else:
+                self.data[config_data_collection.ANSWERS] = msg[config_data_collection.ANSWERS]
         elif key in config_data_collection.ALL:
             self.data[key] = msg[key]
         else:
@@ -34,7 +40,12 @@ class DataCollector(wbc.WhiteBoardClient):
             self.publish(self.ack_msg)
 
         if key == config_data_collection.ANSWERS:
-            self.save()
+            if self.n_q_anwers_msg == 0:
+                self.n_q_anwers_msg += 1
+            elif self.n_q_anwers_msg == 1:
+                self.save()
+            else:
+                log.warn("Received too many answer-to-questionnaire messages (%d) Last ones are not saved." %  self.n_q_anwers_msg)
 
 
     def save(self):
