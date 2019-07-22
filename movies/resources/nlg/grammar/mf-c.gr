@@ -5,9 +5,8 @@
 1	ROOT	S .
 
 # Basic grammar rules.
-1	S	Actor is one of the leading actors
+1	S	Actors are the leading actors
 1	S	Actors are in NP
-1	S	NP Verb Actor
 1	S	NP Verb Actors
 1	NP	Det Noun
 1	NP	it
