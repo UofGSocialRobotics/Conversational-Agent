@@ -198,9 +198,9 @@ def rule_based_nlu(utterance, spacy_nlp, voc, directors_dicts, actors_dicts):
     utterance = nlu_helper.preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
-    f = is_inform_cast(capitalized_document, directors_dicts, director_or_actor="director")
+    f = is_inform_cast(capitalized_document, directors_dicts, director_or_actor="crew")
     if not f:
-        f = is_inform_cast(capitalized_document, actors_dicts, director_or_actor="actor")
+        f = is_inform_cast(capitalized_document, actors_dicts, director_or_actor="cast")
         if not f:
             f = is_alreadywatched(utterance)
             if not f:
