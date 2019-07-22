@@ -81,18 +81,24 @@ def load_dataset():
     return dataset
 
 
-def get_all_cast(actorfile="./movies/resources/nlu/actor2id.lexicon", directorfile="./movies/resources/nlu/director2id.lexicon"):
+def get_all_actors(actorfile="./movies/resources/nlu/actor2id.lexicon"):
+    return get_all_cast(actorfile)
+
+
+
+def get_all_directors(directorfile="./movies/resources/nlu/director2id.lexicon"):
+    return get_all_cast(directorfile)
+
+
+def get_all_cast(file):
     '''
     Parses files of cast members (actors and directors) --> builds a DB of actors and directors
     :param actorfile: actor2id.lexicon file
     :param directorfile: director2id.lexicon file
-    :return:
+    :return: dictionnaires of actors / directors, where the keys are either "firstname lastname", "lastname firstname" of "lastname"
     '''
-    with open(actorfile) as f:
-        content1 = f.readlines()
-    with open(directorfile) as f:
-        content2 = f.readlines()
-    content = content1 + content2
+    with open(file) as f:
+        content = f.readlines()
 
     firstnamelastname2id = dict()
     lastname2id = dict()

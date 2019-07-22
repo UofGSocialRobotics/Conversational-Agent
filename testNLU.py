@@ -13,7 +13,8 @@ def test_nlu(domain):
     spacy_nlp = spacy.load("en_core_web_sm")
     if domain == "movies":
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
-        cast_dicts = movies_dataparser.get_all_cast()
+        directors_dicts = movies_dataparser.get_all_directors()
+        actors_dicts = movies_dataparser.get_all_actors()
     elif domain == "food":
         voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         food_list = food_dataparser.get_food_names()
@@ -23,7 +24,7 @@ def test_nlu(domain):
             q = True
         else:
             if domain == "movies":
-                formula = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts)
+                formula = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
             elif domain == "food":
                 formula = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list)
             print(formula)
@@ -35,7 +36,8 @@ def evaluate(domain, to_print="wrong"):
     spacy_nlp = spacy.load("en_core_web_sm")
     if domain == "movies":
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
-        cast_dicts = movies_dataparser.get_all_cast()
+        directors_dicts = movies_dataparser.get_all_directors()
+        actors_dicts = movies_dataparser.get_all_actors()
         print("ERROR: no dataset")
         exit(0)
     elif domain == "food":
@@ -45,7 +47,7 @@ def evaluate(domain, to_print="wrong"):
     got_right = 0
     for utterance, formula in dataset:
         if domain == "movies":
-            f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, cast_dicts=cast_dicts)
+            f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
         elif domain == "food":
             f = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list)
         identical = helper.identical(f, formula)

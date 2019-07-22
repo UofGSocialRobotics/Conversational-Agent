@@ -19,17 +19,13 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
         self.voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/movies_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
-        self.cast_dicts = movie_dataparser.get_all_cast()
+        self.directors_dicts = movie_dataparser.get_all_directors()
+        self.actors_dicts = movie_dataparser.get_all_actors()
 
     def treat_message(self, msg, topic):
         msg_lower = msg.lower()
 
-        # Todo Distinguish actors and directors
-
-        # formula = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
-        # intent, entity, entitytype, polarity = nlu_helper.format_formula(formula=formula)
-
-        intent, entitytype, entity, polarity = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, cast_dicts=self.cast_dicts)
+        intent, entitytype, entity, polarity = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, directors_dicts=self.directors_dicts, actors_dicts=self.actors_dicts)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)

@@ -2,7 +2,7 @@ import spacy
 import dataparser
 from movies import movie_dataparser
 import nlu_helper_functions as nlu_helper
-
+import argparse
 
 
 def get_cast_id(actor_name, cast_dicts):
@@ -40,7 +40,6 @@ def get_cast(capitalized_doc, cast_dicts):
     :return: the list of actors / directors in capitalized_doc as ids (that will match ids in lexicon files)
     """
     names = nlu_helper.get_NE_Person(capitalized_doc)
-    # names2ids = parse_dataset.get_all_cast()
     if not names or len(names) == 0:
         names = nlu_helper.get_NNs(capitalized_doc)
         # print("got names from NNs")
@@ -177,7 +176,7 @@ def is_inform_genre(document, voc_genres, voc_scifi):
             return ("inform", "genre", token.lemma_, "+")
     return  False
 
-def is_inform_cast(capitalized_doc, cast_dicts):
+def is_inform_cast(capitalized_doc, cast_dicts, director_or_actor):
     """
     Detremines if intent is inform cast
     :param capitalized_doc: spacy document generated from a capitalized sentence
@@ -187,48 +186,44 @@ def is_inform_cast(capitalized_doc, cast_dicts):
     actors = get_cast(capitalized_doc, cast_dicts)
     if actors and actors[0]:
         # return "inform (cast %s)" % actors[0]
-        return ("inform", "cast", actors[0], "+")
+        return ("inform", director_or_actor, actors[0], "+")
+
 
 ####################################################################################################
 ##                                Main rule-based NLU function                                    ##
 ####################################################################################################
 
-def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
+def rule_based_nlu(utterance, spacy_nlp, voc, directors_dicts, actors_dicts):
 
     utterance = nlu_helper.preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
-    f = is_inform_cast(capitalized_document, cast_dicts)
+    f = is_inform_cast(capitalized_document, directors_dicts, director_or_actor="director")
     if not f:
-        f = is_alreadywatched(utterance)
+        f = is_inform_cast(capitalized_document, actors_dicts, director_or_actor="actor")
         if not f:
-            f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
+            f = is_alreadywatched(utterance)
             if not f:
-                f = is_requestmore(document, voc_request_more=voc["request_more"])
+                f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
                 if not f:
-                    f = is_askActor(document)
+                    f = is_requestmore(document, voc_request_more=voc["request_more"])
                     if not f:
-                        f = is_askDirector(document)
+                        f = is_askActor(document)
                         if not f:
-                            f = is_askGenre(document, voc_genres=["genres"])
+                            f = is_askDirector(document)
                             if not f:
-                                f = is_askPlot(document)
+                                f = is_askGenre(document, voc_genres=["genres"])
                                 if not f:
-                                    f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
+                                    f = is_askPlot(document)
                                     if not f:
-                                        f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+                                        f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
                                         if not f:
-                                            f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
-                                            if f == None:
-                                                f = ("IDK", None, None, None)
+                                            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+                                            if not f:
+                                                f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
+                                                if f == None:
+                                                    f = ("IDK", None, None, None)
     return f
-
-
-
-####################################################################################################
-##    /!\ /!\ /!\ /!\ /!\            PROBABLY DON T WORK ANYMORE             /!\ /!\ /!\ /!\ /!\  ##
-####################################################################################################
-
 
 
 ####################################################################################################
@@ -237,20 +232,6 @@ def rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts):
 
 
 def compare_syntax_analysis(sentence):
-    # tokens = nltk.word_tokenize(sentence)
-    # nlp = stanfordnlp.Pipeline()
-    # doc = nlp(sentence)
-    # print("With stanford CoreNLP")
-    # doc.sentences[0].print_dependencies()
-    #
-    # blob = TextBlob(sentence)
-    # print("With textblob")
-    # print(blob.tags)
-    # print(blob.noun_phrases)
-    # print("No dependency parser with textblob")
-    #
-
-    cast_dicts = movie_dataparser.get_all_cast()
 
     spacy_nlp = spacy.load("en_core_web_sm")
     document = spacy_nlp(sentence)
@@ -270,59 +251,6 @@ def compare_syntax_analysis(sentence):
     print(get_NNs(capitalized_document))
     # print(get_cast(capitalized_document, cast_dicts=cast_dicts))
 
-# def compare_sentiment_analysis(sentence):
-#
-#     blob = TextBlob(sentence)
-#     print("With textblob")
-#     for sentence in blob.sentences:
-#         print(sentence.sentiment.polarity)
-
-
-
-
-####################################################################################################
-##                                      Evaluate NLU performance                                  ##
-####################################################################################################
-
-def evaluate(dataset, to_print='all'):
-    spacy_nlp = spacy.load("en_core_web_sm")
-    voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = movie_dataparser.get_all_cast()
-    got_right = 0
-    for utterance, formula in dataset:
-        f = rule_based_nlu(utterance, spacy_nlp, voc=voc, cast_dicts=cast_dicts)
-        if f == formula:
-            got_right += 1
-        if to_print == 'all' or (f != formula and to_print == "wrong"):
-            print(utterance)
-            print(formula)
-            print(f)
-            print()
-    print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / float(len(dataset)), got_right, len(dataset)))
-    if to_print == 'wrong':
-        print("Printed only utterances for which we got it wrong")
-
-
-
-####################################################################################################
-##                                            Test NLU                                            ##
-####################################################################################################
-
-def test_nlu():
-    q= False
-    spacy_nlp = spacy.load("en_core_web_sm")
-    voc = dataparser.parse_voc(f_domain_voc="./movies/resources/nlu/voc.json")
-    cast_dicts = movie_dataparser.get_all_cast()
-    while(not q):
-        utterance = input("Enter text (q to quit): ")
-        if utterance == 'q':
-            q = True
-        else:
-            formula = rule_based_nlu(utterance, spacy_nlp, voc, cast_dicts)
-            print(formula)
-            intent, entity, entitytype, polarity = format_formula(formula)
-            print(intent, entity, entitytype, polarity)
-
 
 ####################################################################################################
 ##                                     Run as stand-alone                                         ##
@@ -330,23 +258,4 @@ def test_nlu():
 
 if __name__ == "__main__":
 
-    argp = argparse.ArgumentParser()
-    argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
-    argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
-    argp.add_argument("--debug", help="Sentence to debug", action="store")
-
-    args = argp.parse_args()
-
-    if args.eval:
-
-        dataset = movie_dataparser.load_dataset()
-
-        evaluate(dataset, "wrong")
-
-    elif args.test:
-
-        test_nlu()
-
-    elif args.debug:
-        print(args.debug)
-        compare_syntax_analysis(movies_nlu_functions.preprocess(args.debug))
+    print("Use testNLU.py")
