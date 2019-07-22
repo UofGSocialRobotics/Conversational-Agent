@@ -4,6 +4,7 @@ import urllib.request
 import json
 import movies.movie_config as movie_config
 from pathlib import Path
+from itertools import zip_longest
 
 
 class DM(wbc.WhiteBoardClient):
@@ -20,6 +21,7 @@ class DM(wbc.WhiteBoardClient):
 
         self.from_NLU = None
         self.from_SA = None
+        self.movies_list = []
 
         self.movie = {'title': "", 'year': "", 'plot': "", 'actors': [], 'genres': [], 'poster': ""}
         self.nodes = {}
@@ -91,7 +93,9 @@ class DM(wbc.WhiteBoardClient):
             # Get a movie recommendation title
             if "inform(movie)" in next_state:
                 self.movie['title'] = self.recommend()
+                print(self.movie['title'])
                 self.set_movie_info(self.movie['title'])
+                print(self.movie['plot'])
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
@@ -119,19 +123,15 @@ class DM(wbc.WhiteBoardClient):
         return NLU_message
 
     def recommend(self):
-        movies_list = self.queryMoviesList()
-        for movie in movies_list:
+        if not self.movies_list:
+            self.movies_list = self.query_blended_movies_list()
+        for movie in self.movies_list:
             if movie['title'] not in self.user_model['liked_movies'] and movie['title'] not in self.user_model['disliked_movies']:
                 if movie_config.HIGH_QUALITY_POSTER:
                     self.movie['poster'] = movie_config.MOVIEDB_POSTER_PATH + movie['poster_path']
                 return movie['title']
 
-    def queryMoviesList(self):
-        # Todo Smart blending to get a recommendation matching with both genre and cast and crew
-        movies_with_cast_list = []
-        movies_with_genres_list = []
-        movies_with_crew_list = []
-
+    def query_blended_movies_list(self):
         if self.user_model['liked_genres']:
             genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
         if self.user_model['liked_cast']:
@@ -139,46 +139,51 @@ class DM(wbc.WhiteBoardClient):
         if self.user_model['liked_crew']:
             crew_id = self.get_person_id(self.user_model['liked_crew'][-1].lower())
 
-        if not self.user_model['liked_genres'] and not self.user_model['liked_cast'] and not self.user_model['liked_crew']:
-            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + movie_config.MOVIE_DB_PROPERTY
-            return self.get_movie_list(query_url)
-        if self.user_model['liked_genres']:
-            genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
-            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
-            movies_with_genres_list = self.get_movie_list(query_url)
-        if self.user_model['liked_cast']:
-            cast_id = self.get_person_id(self.user_model['liked_cast'][-1].lower())
-            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
-            movies_with_cast_list = self.get_movie_list(query_url)
-        if self.user_model['liked_crew']:
-            crew_id = self.get_person_id(self.user_model['liked_crew'][-1].lower())
-            query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
-            movies_with_crew_list = self.get_movie_list(query_url)
+        if self.user_model['liked_genres'] and self.user_model['liked_cast'] and self.user_model['liked_crew']:
+            query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + "&with_people=" + str(cast_id) + "," + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            query3 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
+            query4 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + "," + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            list1 = self.get_movie_list(query1)
+            list2 = self.get_movie_list(query2)
+            list3 = self.get_movie_list(query3)
+            list4 = self.get_movie_list(query4)
+            final_list = [y for x in zip_longest(list1, list2, list3, list4, fillvalue=None) for y in x if y is not None]
+        elif self.user_model['liked_cast'] and self.user_model['liked_crew']:
+            query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_people=" + str(cast_id) + "," + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            list1 = self.get_movie_list(query1)
+            list2 = self.get_movie_list(query2)
+            final_list = [y for x in zip_longest(list1, list2, fillvalue=None) for y in x if y is not None]
+        elif self.user_model['liked_cast'] and self.user_model['liked_genres']:
+            query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
+            query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
+            query3 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
+            final_list = self.get_movie_list(query1)
+            list2 = self.get_movie_list(query2)
+            list3 = self.get_movie_list(query3)
+            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+        elif self.user_model['liked_genres'] and self.user_model['liked_crew']:
+            query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
+            query3 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            final_list = self.get_movie_list(query1)
+            list2 = self.get_movie_list(query2)
+            list3 = self.get_movie_list(query3)
+            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+        elif self.user_model['liked_cast']:
+            query = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
+            final_list = self.get_movie_list(query)
+        elif self.user_model['liked_crew']:
+            query = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
+            final_list = self.get_movie_list(query)
+        elif self.user_model['liked_genres']:
+            query = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
+            final_list = self.get_movie_list(query)
 
-        if movies_with_genres_list:
-            if movies_with_cast_list:
-                if len(movies_with_genres_list) > len(movies_with_cast_list):
-                    smallest_list = movies_with_cast_list
-                    biggest_list = movies_with_genres_list
-                else:
-                    smallest_list = movies_with_genres_list
-                    biggest_list = movies_with_cast_list
-
-                j = 0
-                movies_blended_list = []
-                for i in range(len(smallest_list)):
-                    movies_blended_list.append(biggest_list[i])
-                    movies_blended_list.append(smallest_list[i])
-                    j = i
-
-                for k in range(j, len(biggest_list)):
-                    movies_blended_list.append(biggest_list[k])
-
-                return movies_blended_list
-            else:
-                return movies_with_genres_list
-        else:
-            return movies_with_cast_list
+        query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + movie_config.MOVIE_DB_PROPERTY
+        final_list.append(self.get_movie_list(query_url))
+        return final_list
 
     def get_movie_list(self, query):
         data = urllib.request.urlopen(query)
