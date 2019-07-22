@@ -25,7 +25,7 @@ class WhiteBoardClient:
             whiteboard.unsubscribe(self, topic)
 
     def start_thread(self):
-        t = threading.Thread(target=self.loop_forever)
+        t = threading.Thread(name=self.name, target=self.loop_forever)
         t.start()
 
     def start_service(self):
@@ -43,7 +43,7 @@ class WhiteBoardClient:
         self.treat_message(message,topic)
 
     def treat_message(self, message, topic):
-        log.error("$s: method treat_message should be overwriten in inherited classes!" % name)
+        log.error("$s: method treat_message should be overwriten in inherited classes!" % self.name)
 
     def publish(self, message):
         helper.print_message(self.name, "publishing", message, self.publishes)

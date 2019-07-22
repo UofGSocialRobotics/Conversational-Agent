@@ -6,6 +6,7 @@ import argparse
 from movies import movies_nlu_functions, movie_dataparser
 import dataparser
 import nlu_helper_functions as nlu_helper
+import time
 
 
 ####################################################################################################
@@ -26,7 +27,6 @@ class RuleBasedNLU(wbc.WhiteBoardClient):
         msg_lower = msg.lower()
 
         intent, entitytype, entity, polarity = movies_nlu_functions.rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, directors_dicts=self.directors_dicts, actors_dicts=self.actors_dicts)
-
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
         self.publish(new_msg)
 

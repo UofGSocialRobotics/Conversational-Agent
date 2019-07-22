@@ -61,6 +61,7 @@ class DSManager:
 
     def start_timer(self, client_id):
         timer = threading.Timer(config.CONNECTION_TIMEOUT, function=self.stop_services, args=(client_id,))
+        timer.name = client_id
         timer.start()
         self.timer_threads[client_id] = timer
 
@@ -71,7 +72,14 @@ class DSManager:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
 
+
     def treat_message_from_client(self, msg_txt, client_id):
+        t = threading.Thread(name="msg_client_"+client_id, target=self.thread_treat_message_from_client, args=(msg_txt, client_id))
+        # t.setDaemon(True)
+        t.start()
+
+
+    def thread_treat_message_from_client(self, msg_txt, client_id):
         """
         Creates dedicated services for client on first connection, or just forward the message.
         :param msg: client's message

@@ -38,19 +38,16 @@ class DSManagerUsingWebsockets(WebSocket):
     #     self.client_id = None
 
     def handle(self):
-        print("DSManagerUsingWebsockets enter handle")
         client_id, text = parse_message(self.data)
-        print("Parsed json message:")
         print(client_id, text)
 
         if not hasattr(self, 'client_id'):
         # if not self.client_id:
             self.client_id = client_id
             self.ds_manager.add_websocket(client_id, self)
-            print("we re now there")
+            # print("we re now there")
 
         self.ds_manager.treat_message_from_client(text, client_id)
-        print("DSManagerUsingWebsockets exit handle")
 
     def publish_for_client(self, message, topic, client_id):
         self.send_message(message)
@@ -58,9 +55,7 @@ class DSManagerUsingWebsockets(WebSocket):
     def connected(self):
         log.info(self.address.__str__() + ' connected')
         self.ds_manager = ds_manager.DSManager.getInstance()
-        print("here")
         self.send_message(config.MSG_CONFIRM_CONNECTION)
-        print("DSManagerUsingWebsockets exit connected")
         # ds_manager.DSManager.__init__(self)
 
 
@@ -71,6 +66,7 @@ class DSManagerUsingWebsockets(WebSocket):
     def close(self, status=1000, reason=u''):
         # self.stop_services(self.client_id)
         WebSocket.close(self)
+        self.ds_manager.stop_all_services()
         # pass
 
 
@@ -85,7 +81,7 @@ class ServerUsingWebSockets:
         self.server = WebSocketServer('localhost', 9000, DSManagerUsingWebsockets)
         self.in_service = True
         # t = threading.Thread(target=self.server.serve_forever)
-        t = threading.Thread(target=self.serve_forever)
+        t = threading.Thread(name="server_ws", target=self.serve_forever)
         try:
             t.start()
             log.info("WebSocket Server ready, waiting for connections. Running on localhost:9000.")

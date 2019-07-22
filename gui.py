@@ -28,12 +28,14 @@ class GUI(tk.Tk):
         self.popup.mainloop()
 
     def quit(self):
+        print(threading.enumerate())
         if self.popup:
             self.popup.destroy()
         thread_name = self.server_thread.name
         self.server.quit(gui_quit=True)
         self.server_thread.join()
         log.info("Thread %s joined, server shut down." % thread_name)
+        print(threading.enumerate())
         log.info("Closing GUI.")
         self.destroy()
         exit(0)
