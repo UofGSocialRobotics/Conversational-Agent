@@ -163,7 +163,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query1)
             list2 = self.get_movie_list(query2)
             list3 = self.get_movie_list(query3)
-            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+            final_list.extend([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
         elif self.user_model['liked_genres'] and self.user_model['liked_crew']:
             query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
             query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
@@ -171,7 +171,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query1)
             list2 = self.get_movie_list(query2)
             list3 = self.get_movie_list(query3)
-            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+            final_list.extend([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
         elif self.user_model['liked_cast']:
             query = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
             final_list = self.get_movie_list(query)
@@ -183,7 +183,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query)
 
         query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + movie_config.MOVIE_DB_PROPERTY
-        final_list.append(self.get_movie_list(query_url))
+        final_list.extend(self.get_movie_list(query_url))
         return final_list
 
     def get_movie_list(self, query):
