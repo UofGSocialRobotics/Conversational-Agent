@@ -132,6 +132,7 @@ class DM(wbc.WhiteBoardClient):
                 return movie['title']
 
     def query_blended_movies_list(self):
+        final_list = []
         if self.user_model['liked_genres']:
             genre_id = self.get_genre_id(self.user_model['liked_genres'][-1].lower())
         if self.user_model['liked_cast']:
