@@ -5,13 +5,13 @@
 1	ROOT	S .
 
 # Basic grammar rules.
-3	S	It's an Genre Noun
+3	S	It's a Genre Noun
 1	S	If you like Genre you should watch it
-1	S	I think you would like the Genre
+1	S	I think you would like this Noun if you like Genre
 3	S	It's under the Genre category
 
 # Vocabulary.
 1	Noun	movie
 1	Noun	film
 
-1	Genre	#genre
+1	Genre	#genres
