@@ -15,8 +15,8 @@ import data_collection
 
 BROKER = "broker"
 WEBSOCKETS = "websockets"
-USING = BROKER
-# USING = WEBSOCKETS
+# USING = BROKER
+USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##
