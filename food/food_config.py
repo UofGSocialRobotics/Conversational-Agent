@@ -27,3 +27,9 @@ EDAMAM_PROPERTY = "&from=0&to=5&diet=low-fat"
 EDAMAM_ADDITIONAL_DIET = ""
 MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
 # "https://api.edamam.com/search?q=chicken&app_id=${YOUR_APP_ID}&app_key=${YOUR_APP_KEY}&from=0&to=3&calories=591-722&health=alcohol-free"
+
+
+SPOONACULAR_KEY = "?apiKey=f124c11f97374e4ea23184db8d4f4097"
+SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?query="
+SPOONACULAR_API_RESULTS_NUMBER = "&number=2"
+#https://api.spoonacular.com/recipes/complexSearch?query=pasta&maxFat=25&number=2
