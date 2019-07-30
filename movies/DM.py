@@ -18,6 +18,7 @@ class DM(wbc.WhiteBoardClient):
         self.currState = "start"
         # Do we store the users preferences in a user model?
         self.store_pref = True
+        self.cpt_reco = 0
 
         self.from_NLU = None
         self.from_SA = None
@@ -90,16 +91,24 @@ class DM(wbc.WhiteBoardClient):
                 elif any(s in self.from_NLU['intent'] for s in ('inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
+            if "request(more)" in next_state and movie_config.FORCE_STOP:
+                next_state = "inform(movie)"
+
             # Get a movie recommendation title
+            # If there is a limited number of recos, then say bye.
             if "inform(movie)" in next_state:
-                self.movie['title'] = self.recommend()
-                print(self.movie['title'])
-                self.set_movie_info(self.movie['title'])
-                print(self.movie['plot'])
+                if self.cpt_reco < movie_config.MAX_RECOS or not movie_config.FORCE_STOP:
+                    self.movie['title'] = self.recommend()
+                    print(self.movie['title'])
+                    self.set_movie_info(self.movie['title'])
+                    print(self.movie['plot'])
+                else:
+                    next_state = "bye"
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
                 next_state = "greet_back"
+
 
             # saves the user model at the end of the interaction
             if next_state == 'bye' and movie_config.SAVE_USER_MODEL:
@@ -123,6 +132,7 @@ class DM(wbc.WhiteBoardClient):
         return NLU_message
 
     def recommend(self):
+        self.cpt_reco += 1
         if not self.movies_list:
             self.movies_list = self.query_blended_movies_list()
         for movie in self.movies_list:
