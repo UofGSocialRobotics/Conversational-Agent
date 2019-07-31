@@ -55,12 +55,39 @@ class DataCollector(wbc.WhiteBoardClient):
                 with open(self.file_name, 'r') as infile:
                     content = json.load(infile)
             with open(self.file_name, 'w') as outfile:
-                content.append(self.data)
+                last = content[-1] if len(content) > 0 else None
+                try:
+                    if last and last["client_id"] == self.data["client_id"]:
+                        # self.data = {**last, **self.data} #merge 2 dicts
+                        self.update_data(last, self.data)
+                        content[-1] = self.data
+                    else:
+                        content.append(self.data)
+                except:
+                    log.debug("Error while trying to merge data")
+                    content.append(self.data)
                 data_to_write = json.dumps(content, indent=4)
                 # print(data_to_write)
                 outfile.write(data_to_write)
             self.saved = True
             log.info("%s: data saved for data collection." % self.name)
+
+
+    @staticmethod
+    def update_data(data_old, data_new):
+        for key_new, value_new in data_new:
+            if key_new in data_old.keys():
+                if isinstance(value_new, list):
+                    data_old[key_new] = data_old[key_new] + value_new
+                elif isinstance(value_new, dict):
+                    data_old[key_new] = {**data_old[key_new], **value_new}
+                else:
+                    data_old[key_new] = value_new
+            else:
+                data_old[key_new] = value_new
+        return data_old
+
+
 
 
     def stop_service(self):

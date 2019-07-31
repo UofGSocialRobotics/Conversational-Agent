@@ -66,7 +66,9 @@ class DSManagerUsingWebsockets(WebSocket):
     def close(self, status=1000, reason=u''):
         # self.stop_services(self.client_id)
         WebSocket.close(self)
-        self.ds_manager.stop_all_services()
+        # self.ds_manager.stop_all_services()
+        print("closing websocket for client %s" % self.client_id)
+        self.ds_manager.remove_web_socket(self.client_id, self)
         # pass
 
 
@@ -92,6 +94,8 @@ class ServerUsingWebSockets:
     def quit(self, gui_quit=False):
         self.in_service = False
         time.sleep(0.2)
+        ds_manager_instance = ds_manager.DSManager.getInstance()
+        ds_manager_instance.stop_all_services()
         self.server.close()
         log.info("------------ QUIT ------------")
         if not gui_quit:

@@ -38,6 +38,8 @@ class DSManager:
             self.clients_services = dict()
             self.timer_threads = dict()
             self.clients_websockets = dict()
+            self.ws_timer_threads = dict()
+            self.shut_down = False
 
 
     ####################################################################################################
@@ -67,7 +69,7 @@ class DSManager:
 
     def reset_timer(self, client_id):
         if client_id not in self.timer_threads.keys():
-            log.warn("%s: client %s already stoped!" % self.name)
+            log.warn("%s: client is already stoped!" % self.name)
         else:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
@@ -171,14 +173,20 @@ class DSManager:
                 del c
             del self.clients_services[client_id]
         if client_id in self.timer_threads.keys():
-                self.timer_threads[client_id].cancel()
+            self.timer_threads[client_id].cancel()
 
     def stop_all_services(self):
+        self.shut_down = True
         for client_id, service_dict in self.clients_services.items():
             for service in service_dict.values():
                 service.stop_service()
             if client_id in self.timer_threads.keys():
                 self.timer_threads[client_id].cancel()
+            if client_id in self.ws_timer_threads.keys():
+                # print(self.ws_timer_threads[client_id])
+                for i,timer in enumerate(self.ws_timer_threads[client_id]):
+                    # print(timer)
+                    timer.cancel()
             time.sleep(0.1)
             log.debug("in stop_all_services, thread(s) left:")
             log.debug(threading.enumerate())
@@ -208,3 +216,22 @@ class DSManager:
         else:
             self.clients_websockets[client_id].append(websocket)
             log.warn("%s: adding a websocket for client %s" % (self.name, client_id))
+
+    def remove_web_socket(self, client_id, websoket):
+        if websoket in self.clients_websockets[client_id]:
+            self.clients_websockets[client_id].remove(websoket)
+            log.debug("ds_manager removed websocket for client %s" % client_id)
+        if len(self.clients_websockets[client_id]) == 0:
+            if not self.shut_down:
+                timer = threading.Timer(config.CONNECTION_TIMEOUT, function=self.stop_services, args=(client_id,))
+                timer.name = "ds/ws_" + client_id
+                if client_id not in self.ws_timer_threads.keys():
+                    self.ws_timer_threads[client_id] = list()
+                self.ws_timer_threads[client_id].append(timer)
+                timer.start()
+                # print("just started a new timer. Timer list:")
+                # print(self.ws_timer_threads[client_id])
+                # print("new timer is")
+                # print(timer)
+                # self.stop_services(client_id)
+

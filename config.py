@@ -21,11 +21,11 @@ USING = WEBSOCKETS
 ####################################################################################################
 ##                                        Broker config                                           ##
 ####################################################################################################
-ADDRESS = "iot.eclipse.org" #"mqtt.eclipse.org"
+ADDRESS = "iot.eclipse.org" #mqtt.eclipse.org 
 PORT = 1883
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 60 * 1
+CONNECTION_TIMEOUT = 60 * 10
 
 
 ####################################################################################################
