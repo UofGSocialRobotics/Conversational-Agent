@@ -88,7 +88,7 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model['liked_movies'].append(self.movie['title'])
                 elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
                     self.user_model['disliked_movies'].append(self.movie['title'])
-                elif any(s in self.from_NLU['intent'] for s in ('inform(watched)', 'no')):
+                elif any(s in self.from_NLU['intent'] for s in ('inform(watched)', 'no', 'IDK')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
             if "request(more)" in next_state and movie_config.FORCE_STOP:
