@@ -1,10 +1,7 @@
 import string
 import re
 import nltk
-import spacy
-import movies.movie_dataparser as movie_dataparser
-import movies.movies_nlu_functions as movies_nlu_functions
-
+from fuzzywuzzy import fuzz
 ####################################################################################################
 ##                                          Preprocesss                                           ##
 ####################################################################################################
@@ -55,10 +52,18 @@ def find_key_in_dict_with_fuzzy_matching(k,d):
     :param d: dictionay in which to loo for k
     :return: d[k] if k in d or False
     '''
+    best_score = 85
+    best_id = False
     for key, id in d.items():
         if key == k:
             return id
-    return False
+        else:
+            score = fuzz.token_sort_ratio(key, k)
+            if score > best_score:
+                best_score = score
+                best_id = id
+    # print(best_id,best_score)
+    return best_id
 
 
 def get_NE_Person(capitalized_doc):

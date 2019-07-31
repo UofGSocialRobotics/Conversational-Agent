@@ -3,6 +3,7 @@ import dataparser
 from movies import movie_dataparser
 import nlu_helper_functions as nlu_helper
 import argparse
+import fuzzywuzzy as fuzz
 
 
 def get_cast_id(actor_name, cast_dicts):
@@ -183,10 +184,10 @@ def is_inform_cast(capitalized_doc, cast_dicts, director_or_actor):
     :param cast_dicts: dictionaries of cast ids. 3 dictionaires mapping (lastname) / (firtname lastname) / (lastname firstname) to the actor id
     :return: intent string
     """
-    actors = get_cast(capitalized_doc, cast_dicts)
-    if actors and actors[0]:
+    cast_list = get_cast(capitalized_doc, cast_dicts)
+    if cast_list and cast_list[0]:
         # return "inform (cast %s)" % actors[0]
-        return ("inform", director_or_actor, actors[0], "+")
+        return ("inform", director_or_actor, cast_list[0], "+")
 
 
 ####################################################################################################

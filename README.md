@@ -1,5 +1,9 @@
 # Conversational Agent - Server Side
 
+This is the server side of the CORA (COnversational Rapport-building Agent) project. 
+
+Cora is a virtual agent that interacts with people 
+
 ## Set up
 
 Python 3.7
@@ -8,7 +12,7 @@ To install python packages, run:
 ```shell
 pip install paho-mqtt
 pip install nltk
-pip install simple-websocket-server
+pip install simple-websocket-server #  https://pypi.org/project/SimpleWebSocketServerFork/0.1.1/
 pip install stanfordnlp
 pip install spacy
 pip install textblob
@@ -83,11 +87,4 @@ from ca_logging import log
 ``` 
 Then `log` has 5 methods: `debug(message)`, `info(message)`, `warning(message)`, `error(message)` and `critical(message)`. Chose the appropriate one. When using `debug(message)`, the log will be visible only in the console and not written in the log file. 
 
-# NLU
 
-You can run the rule-based NLU module as a stand-alone for debug / test / evaluation.
-
-Usage is:
-```shell
-ptyhon rule_based_NLU.py [-h] [--eval] [--test] [--debug DEBUG]
-```
