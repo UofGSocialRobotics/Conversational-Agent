@@ -28,6 +28,8 @@ HIGH_QUALITY_POSTER = True
 ##                                          Other config                                          ##
 ####################################################################################################
 SAVE_USER_MODEL = False
+FORCE_STOP = True
+MAX_RECOS = 5
 NLG_USE_ACKS = True
 NLG_USE_ACKS_CS = True
 NLG_USE_CS = True

@@ -18,6 +18,7 @@ class DM(wbc.WhiteBoardClient):
         self.currState = "start"
         # Do we store the users preferences in a user model?
         self.store_pref = True
+        self.cpt_reco = 0
 
         self.from_NLU = None
         self.from_SA = None
@@ -90,16 +91,24 @@ class DM(wbc.WhiteBoardClient):
                 elif any(s in self.from_NLU['intent'] for s in ('inform(watched)', 'no')):
                     self.user_model['disliked_movies'].append(self.movie['title'])
 
+            if "request(more)" in next_state and movie_config.FORCE_STOP:
+                next_state = "inform(movie)"
+
             # Get a movie recommendation title
+            # If there is a limited number of recos, then say bye.
             if "inform(movie)" in next_state:
-                self.movie['title'] = self.recommend()
-                print(self.movie['title'])
-                self.set_movie_info(self.movie['title'])
-                print(self.movie['plot'])
+                if self.cpt_reco < movie_config.MAX_RECOS or not movie_config.FORCE_STOP:
+                    self.movie['title'] = self.recommend()
+                    print(self.movie['title'])
+                    self.set_movie_info(self.movie['title'])
+                    print(self.movie['plot'])
+                else:
+                    next_state = "bye"
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_movies'] or self.user_model['disliked_movies']):
                 next_state = "greet_back"
+
 
             # saves the user model at the end of the interaction
             if next_state == 'bye' and movie_config.SAVE_USER_MODEL:
@@ -123,6 +132,7 @@ class DM(wbc.WhiteBoardClient):
         return NLU_message
 
     def recommend(self):
+        self.cpt_reco += 1
         if not self.movies_list:
             self.movies_list = self.query_blended_movies_list()
         for movie in self.movies_list:
@@ -163,7 +173,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query1)
             list2 = self.get_movie_list(query2)
             list3 = self.get_movie_list(query3)
-            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+            final_list.extend([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
         elif self.user_model['liked_genres'] and self.user_model['liked_crew']:
             query1 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + "&with_crew=" + str(crew_id) + movie_config.MOVIE_DB_PROPERTY
             query2 = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_genres=" + str(genre_id) + movie_config.MOVIE_DB_PROPERTY
@@ -171,7 +181,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query1)
             list2 = self.get_movie_list(query2)
             list3 = self.get_movie_list(query3)
-            final_list.append([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
+            final_list.extend([y for x in zip_longest(list2, list3, fillvalue=None) for y in x if y is not None])
         elif self.user_model['liked_cast']:
             query = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + "&with_cast=" + str(cast_id) + movie_config.MOVIE_DB_PROPERTY
             final_list = self.get_movie_list(query)
@@ -183,7 +193,7 @@ class DM(wbc.WhiteBoardClient):
             final_list = self.get_movie_list(query)
 
         query_url = movie_config.MOVIEDB_SEARCH_MOVIE_ADDRESS + movie_config.MOVIEDB_KEY + movie_config.MOVIE_DB_PROPERTY
-        final_list.append(self.get_movie_list(query_url))
+        final_list.extend(self.get_movie_list(query_url))
         return final_list
 
     def get_movie_list(self, query):

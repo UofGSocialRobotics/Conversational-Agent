@@ -145,7 +145,7 @@ class DM(wbc.WhiteBoardClient):
     def recommend(self, additional_request):
         food_options = self.get_food_options(additional_request)
         recommended_food = self.pick_food(food_options)
-        recipe_list = self.get_recipe_list(recommended_food)
+        recipe_list = self.get_recipe_list_with_edamam(recommended_food)
         return food_options, recommended_food, recipe_list
 
     def get_food_options(self, request):
@@ -192,7 +192,7 @@ class DM(wbc.WhiteBoardClient):
             recommended_food['secondary'] = food['drink']
         return recommended_food
 
-    def get_recipe_list(self, recommended_food):
+    def get_recipe_list_with_edamam(self, recommended_food):
         if "with" in recommended_food['main']:
             request_food = recommended_food['main'].replace(" with ", "%20and%20")
             request_food = request_food.replace("side ", "")
@@ -203,6 +203,22 @@ class DM(wbc.WhiteBoardClient):
         result = data.read()
         json_recipe_list = json.loads(result)
         recipe_list = json_recipe_list['hits']
+        return recipe_list
+
+    def get_recipe_list_with_spoonacular(self, recommended_food):
+        if "with" in recommended_food['main']:
+            request_food = recommended_food['main'].replace(" with ", "%20and%20")
+            request_food = request_food.replace("side ", "")
+        else:
+            request_food = recommended_food['main'].replace(" dish", "")
+        request_food = request_food.replace(" ", "%20")
+        spoonURL = food_config.SPOONACULAR_API_SEARCH + request_food + food_config.SPOONACULAR_KEY + food_config.SPOONACULAR_API_RESULTS_NUMBER
+        print(spoonURL)
+        data = urllib.request.urlopen(spoonURL)
+        result = data.read()
+        json_recipe_list = json.loads(result)
+        recipe_list = json_recipe_list['results']
+        print(recipe_list)
         return recipe_list
 
     def get_headers(self, matrix):
