@@ -50,7 +50,9 @@ class DSManagerUsingWebsockets(WebSocket):
     def connected(self):
         log.info(self.address.__str__() + ' connected')
         self.ds_manager = ds_manager.DSManager.getInstance()
-        self.send_message(config.MSG_CONFIRM_CONNECTION)
+        # self.send_message(config.MSG_CONFIRM_CONNECTION)
+        json_string = self.ds_manager.create_message(content=config.MSG_CONFIRM_CONNECTION, msg_type='info')
+        self.send_message(json_string)
 
 
     def handle_close(self):

@@ -15,8 +15,8 @@ import data_collection
 
 BROKER = "broker"
 WEBSOCKETS = "websockets"
-# USING = BROKER
-USING = WEBSOCKETS
+USING = BROKER
+# USING = WEBSOCKETS
 
 ####################################################################################################
 ##                                        Broker config                                           ##
@@ -72,6 +72,11 @@ MSG_AMTINFO = "for_data_collection"
 
 # ACK AMT id
 MSG_AMTINFO_ACK = "ACK AMT_INFO"
+
+MSG_TYPES_INFO = 'info'
+MSG_TYPES_DIALOG = 'dialog'
+MSG_TYPES_DATACOLLECTION = 'data_collection'
+MSG_TYPES_ACK = 'ack'
 
 
 ## NLU

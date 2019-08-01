@@ -46,6 +46,11 @@ class DSManager:
     ##                                          General Methods                                       ##
     ####################################################################################################
 
+    def create_message(self, content, msg_type):
+        d = {'content': content, 'type':msg_type}
+        json_string = json.dumps(d)
+        return json_string
+
     def publish_for_client(self, message, topic, client_id = None):
         if config.USING == config.BROKER:
             log.error("%s: When not using websockets, this method should have been redefined in child class!" % self.name)
@@ -81,42 +86,47 @@ class DSManager:
         t.start()
 
 
-    def thread_treat_message_from_client(self, msg_txt, client_id):
+    def thread_treat_message_from_client(self, json_string, client_id):
         """
-        Creates dedicated services for client on first connection, or just forward the message.
+        Creates dedicated services for client on first connection, or just forwards the message.
         :param msg: client's message
         """
+
+        json_msg = json.loads(json_string)
+        log.debug(json_msg)
+        content = json_msg['content']
+        msg_type = json_msg['type']
 
 
         # On first connection, create dedicated NLU/DM/NLG and subscribe to new DM topic
         # and start timer to kill services if no activity
         if client_id not in self.clients_services.keys():
             log.debug("%s: new client" % self.name)
-            if config.MSG_CONNECTION in msg_txt:
+            if config.MSG_CONNECTION in content:
                 self.subscribe_whiteboard(config.MSG_NLG + client_id)
                 self.subscribe_whiteboard(config.MSG_AMTINFO_OUT + client_id)
                 self.create_services(client_id)
                 self.start_timer(client_id)
-                confirm_connection_messsage = config.MSG_CONFIRM_CONNECTION
-                self.publish_for_client(confirm_connection_messsage, config.MSG_SERVER_OUT + client_id, client_id)
+                confirm_connection_message = config.MSG_CONFIRM_CONNECTION
+                self.publish_for_client(confirm_connection_message, config.MSG_SERVER_OUT + client_id, client_id)
             else: # tell client they were disconnected
                 error_message = "ERROR, you were disconnected. Start session again by refreshing page."
                 self.publish_for_client(error_message, config.MSG_SERVER_OUT + client_id, client_id)
         else:
             log.debug("%s: client already registered" % self.name)
             # if not a reconnection, forward message by posting on dedicated topic and reset timer
-            if config.MSG_AMTINFO in msg_txt:
-                json_msg = json.loads(msg_txt)
+            if msg_type == config.MSG_TYPES_DATACOLLECTION:
+                # json_msg = json.loads(msg_txt)
                 topic = config.MSG_AMTINFO_IN + client_id
-                self.publish_whiteboard(json_msg[config.MSG_AMTINFO], topic)
-            elif config.MSG_CONNECTION not in msg_txt:
-                # send to data_collector module to save
+                self.publish_whiteboard(content, topic)
+            elif msg_type == config.MSG_TYPES_DIALOG:
+                # DIalog: send to data_collector module to save
                 topic = config.MSG_AMTINFO_IN + client_id
-                self.publish_whiteboard({config_data_collection.DIALOG: msg_txt}, topic)
+                self.publish_whiteboard({config_data_collection.DIALOG: content}, topic)
                 # distribute to NLU
                 topic = config.MSG_SERVER_IN + client_id
-                self.publish_whiteboard(msg_txt, topic)
-            elif config.MSG_CONNECTION in msg_txt:
+                self.publish_whiteboard(content, topic)
+            elif msg_type == config.MSG_TYPES_INFO and config.MSG_CONNECTION in content:
                 # client reconnected after navigating on the website
                 confirm_connection_message = config.MSG_CONFIRM_CONNECTION
                 self.publish_for_client(confirm_connection_message, config.MSG_SERVER_OUT + client_id, client_id)
@@ -156,7 +166,7 @@ class DSManager:
         new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
         self.clients_services[client_id]["nlg"] = new_nlg
         # create dedicated AMT_info module
-        new_datacollector = config.modules.DataCollector(subscribes=config.DataCollector_subscribes, publishes=config.DataCollector_publishes, clientid=client_id, ack_msg = config.MSG_AMTINFO_ACK)
+        new_datacollector = config.modules.DataCollector(subscribes=config.DataCollector_subscribes, publishes=config.DataCollector_publishes, clientid=client_id, ack_msg=config.MSG_AMTINFO_ACK)
         self.clients_services[client_id]["datacollector"] = new_datacollector
 
         # star services in dedicated threads

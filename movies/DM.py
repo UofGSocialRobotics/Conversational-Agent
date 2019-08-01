@@ -5,7 +5,7 @@ import json
 import movies.movie_config as movie_config
 from pathlib import Path
 from itertools import zip_longest
-
+from ca_logging import log
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, subscribes, publishes, clientid):
