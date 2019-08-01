@@ -66,12 +66,7 @@ class ServerUsingBroker(paho.Client, ds_manager.DSManager):
         log.info("%s disconnecting." % self.name)
 
     def connect_distant_broker(self):
-        # self.on_publish = self.on_publish
-        # self.on_subscribe = self.on_subscribe
-        # self.on_message = self.on_message
-        # self.on_log = on_log
         self.connect(config.ADDRESS, config.PORT)
-        # self.loop_start()
         log.info("%s: connexion started"%self.name)
 
     def subscribe_distant_broker(self):

@@ -12,7 +12,7 @@ c_handler.setLevel(logging.DEBUG)
 f_handler.setLevel(logging.INFO)
 
 # Create formatters and add it to handlers
-format_log = '%(levelname)-10s | %(threadName)-10s | %(message)s'
+format_log = '%(levelname)-8s | %(threadName)-19s [%(filename)s:%(lineno)d] %(message)s'
 c_format = logging.Formatter(format_log)
 f_format = logging.Formatter('%(asctime)s |'+format_log)
 c_handler.setFormatter(c_format)

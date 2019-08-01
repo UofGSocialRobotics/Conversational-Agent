@@ -38,7 +38,7 @@ def evaluate(domain, to_print="wrong"):
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
         directors_dicts = movies_dataparser.get_all_directors()
         actors_dicts = movies_dataparser.get_all_actors()
-        print("ERROR: no dataset")
+        log.ERROR("ERROR: no dataset")
         exit(0)
     elif domain == "food":
         voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")

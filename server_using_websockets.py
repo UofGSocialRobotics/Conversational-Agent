@@ -33,19 +33,14 @@ class DSManagerUsingWebsockets(WebSocket):
     Major problem with this implementation:
     One DSManager is created by each websocket. Each DS Manager creates their own services for the SAME client!
     """
-    # def __init__(self):
-    #     self.ds_manager = None
-    #     self.client_id = None
 
     def handle(self):
         client_id, text = parse_message(self.data)
-        print(client_id, text)
+        log.debug("client_id, text: %s, %s" % (client_id, text))
 
         if not hasattr(self, 'client_id'):
-        # if not self.client_id:
             self.client_id = client_id
             self.ds_manager.add_websocket(client_id, self)
-            # print("we re now there")
 
         self.ds_manager.treat_message_from_client(text, client_id)
 
@@ -56,18 +51,14 @@ class DSManagerUsingWebsockets(WebSocket):
         log.info(self.address.__str__() + ' connected')
         self.ds_manager = ds_manager.DSManager.getInstance()
         self.send_message(config.MSG_CONFIRM_CONNECTION)
-        # ds_manager.DSManager.__init__(self)
 
 
     def handle_close(self):
-        # traceback.print_exc()
         log.info(self.address + ' closed')
 
     def close(self, status=1000, reason=u''):
-        # self.stop_services(self.client_id)
         WebSocket.close(self)
-        # self.ds_manager.stop_all_services()
-        print("closing websocket for client %s" % self.client_id)
+        log.debug("closing websocket for client %s" % self.client_id)
         self.ds_manager.remove_web_socket(self.client_id, self)
         # pass
 

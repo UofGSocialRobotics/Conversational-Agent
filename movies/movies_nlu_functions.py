@@ -4,7 +4,7 @@ from movies import movie_dataparser
 import nlu_helper_functions as nlu_helper
 import argparse
 import fuzzywuzzy as fuzz
-
+from ca_logging import log
 
 def get_cast_id(actor_name, cast_dicts):
     '''
@@ -13,16 +13,11 @@ def get_cast_id(actor_name, cast_dicts):
     :param cast_dicts: dictionaries of cast ids. 3 dictionaires mapping (lastname) / (firtname lastname) / (lastname firstname) to the actor id
     :return: the id of the actor if found in the DB
     '''
-    # print(actor_name)
     actor_name_splited = actor_name.split()
     if len(actor_name_splited) == 1:
-        # print("get_actor_id: was given only one string")
-        # print(actor_name)
         # look in dictionary that has only last names as keys
         return nlu_helper.find_key_in_dict_with_fuzzy_matching(actor_name, cast_dicts['lastname2id'])
     elif len(actor_name_splited) == 2:
-        # print("get_actor_id: was given 2 elements")
-        # print(actor_name_splited)
         x1, x2 = ' '.join(actor_name_splited), ' '.join(reversed(actor_name_splited))
         id = nlu_helper.find_key_in_dict_with_fuzzy_matching(x1, cast_dicts['firstnamelastname2id'])
         if id:
@@ -43,13 +38,11 @@ def get_cast(capitalized_doc, cast_dicts):
     names = nlu_helper.get_NE_Person(capitalized_doc)
     if not names or len(names) == 0:
         names = nlu_helper.get_NNs(capitalized_doc)
-        # print("got names from NNs")
     if len(names)>0:
         actor_ids = list()
         for x in names:
             id = get_cast_id(x, cast_dicts)
             actor_ids.append(id)
-        # print(actor_ids)
         return [x for x in actor_ids if x is not False]
 
 
@@ -108,7 +101,6 @@ def is_askPerson(document, prep, key_words):
     :return: bool
     """
     first_word = document[0]
-    # print(first_word.tag_)
     if first_word.tag_ == "WDT" or first_word.tag_ == "WP" or nlu_helper.is_verb(first_word):
         for token in document:
             if token.text in prep and token.dep_ == "prep":
@@ -169,11 +161,9 @@ def is_inform_genre(document, voc_genres, voc_scifi):
     :return: intent string
     """
     for token in document:
-        # print(token.lemma_)
         if token.lemma_ in voc_genres:
             if token.lemma_ in voc_scifi:
                 return ("inform (genre sci-fi)")
-            # return ("inform (genre %s)" % token.lemma_)
             return ("inform", "genre", token.lemma_, "+")
     return  False
 
@@ -239,7 +229,6 @@ def compare_syntax_analysis(sentence):
     print("With spacy")
     for token in document:
         print("{0}/{1} <--{2}-- {3}/{4}".format(token.text, token.tag_, token.dep_, token.head.text, token.head.tag_))
-        # spacy.displacy.serve(doc, style='dep')
 
     print("\nNER with Spacy:")
     if document.ents and len(document.ents) >0:
@@ -250,7 +239,6 @@ def compare_syntax_analysis(sentence):
     print(capitalized_document.ents)
     print(get_NNs)
     print(get_NNs(capitalized_document))
-    # print(get_cast(capitalized_document, cast_dicts=cast_dicts))
 
 
 ####################################################################################################
@@ -259,4 +247,4 @@ def compare_syntax_analysis(sentence):
 
 if __name__ == "__main__":
 
-    print("Use testNLU.py")
+    log.error("Use testNLU.py")

@@ -99,9 +99,9 @@ class DM(wbc.WhiteBoardClient):
             if "inform(movie)" in next_state:
                 if self.cpt_reco < movie_config.MAX_RECOS or not movie_config.FORCE_STOP:
                     self.movie['title'] = self.recommend()
-                    print(self.movie['title'])
+                    log.debug(self.movie['title'])
                     self.set_movie_info(self.movie['title'])
-                    print(self.movie['plot'])
+                    log.debug(self.movie['plot'])
                 else:
                     next_state = "bye"
 

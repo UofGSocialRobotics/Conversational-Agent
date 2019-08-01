@@ -58,7 +58,6 @@ class DataCollector(wbc.WhiteBoardClient):
                 last = content[-1] if len(content) > 0 else None
                 try:
                     if last and last["client_id"] == self.data["client_id"]:
-                        # self.data = {**last, **self.data} #merge 2 dicts
                         self.update_data(last, self.data)
                         content[-1] = self.data
                     else:
@@ -67,7 +66,6 @@ class DataCollector(wbc.WhiteBoardClient):
                     log.debug("Error while trying to merge data")
                     content.append(self.data)
                 data_to_write = json.dumps(content, indent=4)
-                # print(data_to_write)
                 outfile.write(data_to_write)
             self.saved = True
             log.info("%s: data saved for data collection." % self.name)

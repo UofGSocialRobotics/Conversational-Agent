@@ -18,16 +18,10 @@ def parse_dataset(fname):
     for line in content:
         if x % 4 == 1:
             utterance = re.findall('"([^"]*)"', line)[0]
-            # print(utterance)
         if x % 4 == 2:
             s = line.strip()[1:-1]
             s = s.split(' ', 1)[1]
             formula = s[1:-1]
-            # print(formula)
-            # formula = formula.replace("_iii_", "_")
-            # formula = formula.replace("_ii_", "_")
-            # formula = formula.replace("_i_", "_")
-            # formula = formula.replace("_v_", "_")
             formula = formula.replace('"', "")
             formula = formula.replace("inform (actor", "inform (cast")
             formula = formula.replace("inform (director", "inform (cast")

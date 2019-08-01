@@ -215,7 +215,7 @@ class DSManager:
             self.clients_websockets[client_id] = [websocket]
         else:
             self.clients_websockets[client_id].append(websocket)
-            log.warn("%s: adding a websocket for client %s" % (self.name, client_id))
+            log.debug("%s: adding a websocket for client %s" % (self.name, client_id))
 
     def remove_web_socket(self, client_id, websoket):
         if websoket in self.clients_websockets[client_id]:

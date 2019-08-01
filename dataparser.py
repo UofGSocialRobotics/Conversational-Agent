@@ -24,5 +24,4 @@ def parse_voc(f_voc_shared = "./shared_resources/nlu/voc.json", f_domain_voc = N
     for values in data["bye"].values():
         all_bye_words.append(values)
     data["bye"]["all_bye_words"] = all_bye_words
-    # print(data)
     return data

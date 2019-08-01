@@ -6,13 +6,7 @@ import os
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:
         json.dump(dictionary, fp, indent=4)
-    print('Wrote in '+file_name)
-
-
-def write_yaml(file_name,dictionary):
-    with open(file_name, 'w') as outfile:
-        yaml.dump(dictionary, outfile, default_flow_style=False)
-    print('Wrote in '+file_name)
+    log.debug('Wrote in '+file_name)
 
 
 def print_message(name,action,msg_txt,topic):
