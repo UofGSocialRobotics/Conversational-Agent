@@ -114,6 +114,7 @@ class NLG(wbc.WhiteBoardClient):
 
         response = requests.post(query,
                                 files={
+                                    #"source": recipe['sourceUrl'],
                                     "backgroundColor": "#ffffff",
                                     "fontColor": "#333333",
                                     "title": recipe['title'],
@@ -126,7 +127,9 @@ class NLG(wbc.WhiteBoardClient):
                                     "servings": recipe['servings']
                                 })
 
-        return response.text['url']
+        print("\nHere is the recipe: " + response.text)
+        card_json = json.loads(response.text)
+        return card_json['url']
 
 
     def msg_to_json(self, sentence, food_recipe, food_poster):
