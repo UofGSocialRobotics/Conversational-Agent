@@ -3,7 +3,8 @@ import helper_functions as helper
 import json
 import random
 import food.food_config as food_config
-import numpy
+import requests
+from io import BytesIO
 
 
 class NLG(wbc.WhiteBoardClient):
@@ -48,6 +49,7 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
         self.situation = message['situation']
+
         # Todo: Better authoring
 
         # Content Planning
@@ -66,6 +68,7 @@ class NLG(wbc.WhiteBoardClient):
         self.food = message['reco_food']
         if message['recipe']:
             self.recipe = message['recipe']
+            recipe_card = self.create_recipe_card(self.recipe)
 
         # Sentence Planning
         #
@@ -91,10 +94,39 @@ class NLG(wbc.WhiteBoardClient):
         final_sentence = self.replace(ack + " " + sentence)
 
         if message['recipe']:
-            msg_to_send = self.msg_to_json(final_sentence, self.recipe['recipe']['url'], self.recipe['recipe']['image'])
+            msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], recipe_card)
         else:
             msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
+
+    def create_recipe_card(self, recipe):
+        query = food_config.SPOONACULAR_API_VISUALIZE + food_config.SPOONACULAR_KEY
+
+        imageURL = requests.get(recipe['image'])
+
+        steps_string = ''
+        for step in recipe['analyzedInstructions'][0]['steps']:
+            steps_string = steps_string + step['step'] + "\n"
+
+        ingredients_string = ''
+        for ingredient in recipe['missedIngredients']:
+            ingredients_string = ingredients_string + ingredient['originalString'] + "\n"
+
+        response = requests.post(query,
+                                files={
+                                    "backgroundColor": "#ffffff",
+                                    "fontColor": "#333333",
+                                    "title": recipe['title'],
+                                    "backgroundImage": "background1",
+                                    "image": BytesIO(imageURL.content),
+                                    "ingredients": ingredients_string,
+                                    "instructions": steps_string,
+                                    "mask": "potMask",
+                                    "readyInMinutes": recipe['readyInMinutes'],
+                                    "servings": recipe['servings']
+                                })
+
+        return response.text['url']
 
 
     def msg_to_json(self, sentence, food_recipe, food_poster):
@@ -118,7 +150,6 @@ class NLG(wbc.WhiteBoardClient):
                     potential_options.append(option)
             else:
                 potential_options.append(option)
-        print(potential_options)
         if potential_options:
             return random.choice(potential_options)
         else:
@@ -134,7 +165,7 @@ class NLG(wbc.WhiteBoardClient):
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
         if "#recipe" in sentence:
-            sentence = sentence.replace("#recipe", self.recipe['recipe']['label'])
+            sentence = sentence.replace("#recipe", self.recipe['title'])
         if "#last_food" in sentence:
             if self.user_model['liked_food']:
                 sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])
