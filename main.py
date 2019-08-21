@@ -15,6 +15,10 @@ def main():
         log.info("Will use websockets")
         import server_using_websockets
         server = server_using_websockets.ServerUsingWebSockets()
+    elif config.USING == config.FIREBASE:
+        log.info("Will use firebase")
+        import server_using_firebase
+        server = server_using_firebase.ServerUsingFirebase.getInstance()
     else:
         log.warning("Wrong server config")
         exit(0)

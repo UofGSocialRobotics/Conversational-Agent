@@ -15,8 +15,9 @@ import data_collection
 
 BROKER = "broker"
 WEBSOCKETS = "websockets"
+FIREBASE = "firebase"
 # USING = BROKER
-USING = WEBSOCKETS
+USING = FIREBASE
 
 ####################################################################################################
 ##                                        Broker config                                           ##
@@ -29,54 +30,73 @@ CONNECTION_TIMEOUT = 60 * 10
 
 
 ####################################################################################################
+##                                        Broker config                                           ##
+####################################################################################################
+FIREBASE_CONFIG = {
+  "apiKey": "AIzaSyAOUs8A2cS_xeit0eB2_fOrO9rCoGnoTsQ",
+  "authDomain": "coraapp-eba76.firebaseio.com",
+  "databaseURL": "https://coraapp-eba76.firebaseio.com",
+  "storageBucket": "coraapp-eba76.appspot.com"
+}
+
+####################################################################################################
 ##                                           Messages                                             ##
 ####################################################################################################
-## Main topic
-MSG_MAIN_TOPIC = "UoGSR/ca/"
 
 ## Client publishes on
-MSG_CLIENT = MSG_MAIN_TOPIC+"Client/"
+MSG_CLIENT = "Client/"
 
 ## For NLU, Server publishes on
-MSG_SERVER_IN= MSG_MAIN_TOPIC+"Server_in/"
+MSG_SERVER_IN= "Server_in/"
 
 ## For DM, NLU publishes on
-MSG_NLU = MSG_MAIN_TOPIC+"NLU/"
+MSG_NLU = "NLU/"
 
 ## FOR DM, SentimentAnalysis publishes on
-MSG_SA = MSG_MAIN_TOPIC+"SA/"
+MSG_SA = "SA/"
 
 ## For NLG, DM published on
-MSG_DM = MSG_MAIN_TOPIC+"DM/"
+MSG_DM = "DM/"
 
 ## For main server, NLG publishes on
-MSG_NLG = MSG_MAIN_TOPIC+"NLG/"
+MSG_NLG = "NLG/"
 
 ## For client, main server publishes on
-MSG_SERVER_OUT = MSG_MAIN_TOPIC+"Server_out/"
+MSG_SERVER_OUT_DIALOG = "dialog"
+MSG_SERVER_OUT_ACK = "ACK"
 
 ## For AMT info module, server publishes on
-MSG_AMTINFO_IN = MSG_MAIN_TOPIC+"DataCollector_in/"
+MSG_DATACOL_IN = "DataCollector_in/"
 
 ## For server, AMT info module publishes on
-MSG_AMTINFO_OUT = MSG_MAIN_TOPIC+"DataCollector_out/"
+MSG_DATACOL_OUT = "DataCollector_out/"
 
-# Connection message from client:
+# Client to server, message content:
 MSG_CONNECTION = "client connected"
 
-# Confirm connection to client:
-MSG_CONFIRM_CONNECTION = "Connection confirmed"
-
-# AMT id message
-MSG_AMTINFO = "for_data_collection"
-
 # ACK AMT id
-MSG_AMTINFO_ACK = "ACK AMT_INFO"
+MSG_ACK_AMT_INFO = "ack amt info"
+MSG_ACK_CONNECTION = "ack new connection"
 
-MSG_TYPES_INFO = 'info'
-MSG_TYPES_DIALOG = 'dialog'
-MSG_TYPES_DATACOLLECTION = 'data_collection'
-MSG_TYPES_ACK = 'ack'
+# High level keys
+FIREBASE_KEY_USERS = "Users"
+FIREBASE_KEY_SESSIONS = "Sessions"
+
+# Low level keys
+FIREBASE_KEY_DATETIME = "datetime"
+FIREBASE_KEY_CLIENTID = "client_id"
+FIREBASE_KEY_ACKFOR = "for"
+
+
+# Session keys
+# Keys used to write
+FIREBASE_KEY_UTTERANCE = "utterance"
+FIREBASE_KEY_ACK = "ack"
+# Keys used to read
+FIREBASE_KEY_AMTID = "amt_id"
+FIREBASE_KEY_DATACOLLECTION = "data_collection"
+# Keys used to write and read
+FIREBASE_KEY_DIALOG = "dialog"
 
 
 ## NLU
@@ -96,8 +116,8 @@ SentimentAnalysis_subscribes = [MSG_SERVER_IN]
 SentimentAnalysis_publishes = MSG_SA
 
 ## DataCollector
-DataCollector_subscribes = [MSG_AMTINFO_IN]
-DataCollector_publishes = MSG_AMTINFO_OUT
+DataCollector_subscribes = [MSG_DATACOL_IN]
+DataCollector_publishes = MSG_DATACOL_OUT
 
 ####################################################################################################
 ##                                          Modules                                               ##

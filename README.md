@@ -19,6 +19,8 @@ pip install textblob
 python -m spacy download en
 # pip install fuzzywuzzy
 pip install pandas
+pip install requests
+pip intsall python-firebase
 # pip install google-cloud-language
 ```
 

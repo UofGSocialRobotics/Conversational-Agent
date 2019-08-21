@@ -36,8 +36,8 @@ class DataCollector(wbc.WhiteBoardClient):
             log.warning("data collection module : don't know what to do with message!")
 
 
-        if key in config_data_collection.TO_ACK:
-            self.publish(self.ack_msg)
+        # if key in config_data_collection.TO_ACK:
+        #     self.publish(self.ack_msg)
 
         if key == config_data_collection.ANSWERS:
             if self.n_q_anwers_msg == 0:

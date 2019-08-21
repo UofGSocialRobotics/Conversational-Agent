@@ -74,7 +74,7 @@ class DSManager:
 
     def reset_timer(self, client_id):
         if client_id not in self.timer_threads.keys():
-            log.warn("%s: client is already stoped!" % self.name)
+            log.warn("%s: client is already stopped!" % self.name)
         else:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
@@ -244,4 +244,5 @@ class DSManager:
                 # print("new timer is")
                 # print(timer)
                 # self.stop_services(client_id)
+
 
