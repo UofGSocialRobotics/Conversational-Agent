@@ -15,15 +15,6 @@ import pyrebase_multiple_refs
 ####################################################################################################
 
 
-def get_data_and_clientid(message):
-    data = message["data"]
-    if data and isinstance(data, dict) and config.FIREBASE_KEY_CLIENTID in data.keys():
-        client_id = data[config.FIREBASE_KEY_CLIENTID]
-        return data, client_id
-    else:
-        log.debug("server_using_firebase: no data")
-        return None, None
-
 
 def stream_handler_users_ref(message):
     if server.server_started == True:
@@ -31,32 +22,40 @@ def stream_handler_users_ref(message):
         server.new_client(client_id)
 
 
-def stream_handler_datacollection_ref(message):
+def filter_client_id_data(message):
     data = message["data"]
     path = message["path"]
     if data:
         try:
-            print(data)
-            print(path)
-            client_id = data[config.FIREBASE_KEY_CLIENTID]
-            del data[config.FIREBASE_KEY_CLIENTID]
-            print("client id, data")
-            print(client_id, data)
+            if config.FIREBASE_KEY_SOURCE in data.keys() and data[config.FIREBASE_KEY_SOURCE] == config.FIREBASE_VALUE_SOURCE_AGENT:
+                return False, False
+            if config.FIREBASE_KEY_CLIENTID in data.keys():
+                client_id = data[config.FIREBASE_KEY_CLIENTID]
+            else:
+                first_key = next(iter(data))
+                client_id = data[first_key][config.FIREBASE_KEY_CLIENTID]
             if client_id and client_id in server.clients_services:
-                topic = config.MSG_DATACOL_IN + client_id
-                whiteboard.publish(data, topic)
+                server.reset_timer(client_id)
+                return client_id, data
+            else:
+                return False, False
         except KeyError as e:
             log.warn("No client_id key")
-            print("we are un thread")
-            print(threading.currentThread().getName())
+    return False, False
+
+def stream_handler_datacollection_ref(message):
+    client_id, data = filter_client_id_data(message)
+    if client_id:
+        topic = config.MSG_DATACOL_IN + client_id
+        whiteboard.publish(data, topic)
 
 
 def stream_handler_dialog_ref(message):
-    data, client_id = get_data_and_clientid(message)
-    if client_id and client_id in server.clients_services:
+    client_id, data = filter_client_id_data(message)
+    if client_id:
         topic = config.MSG_DATACOL_IN + client_id
         # publish for data collection
-        utterance = data[-1][config.FIREBASE_KEY_UTTERANCE]
+        utterance = data[config.FIREBASE_KEY_TEXT]
         whiteboard.publish({config_data_collection.DIALOG: utterance}, topic)
         # distribute to NLU
         topic = config.MSG_SERVER_IN + client_id
@@ -137,10 +136,9 @@ class ServerUsingFirebase:
             if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK:
                 timestamp = datetime.datetime.now().__str__()
                 if firebase_key == config.FIREBASE_KEY_DIALOG:
-                    # data = {config.FIREBASE_KEY_DATETIME: timestamp}
-                    # data[config.FIREBASE_KEY_UTTERANCE] = message
-                    # ref.child(firebase_key).push(data)
-                    log.warn("NOT IMPLEMENTED YET!!!")
+                    message[config.FIREBASE_KEY_DATETIME] = timestamp
+                    message[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
+                    self.firebase_root_ref.push_at(message, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
                 else:
                     data = dict()
                     data[config.FIREBASE_KEY_ACK] = True
@@ -164,7 +162,7 @@ class ServerUsingFirebase:
 
     def reset_timer(self, client_id):
         if client_id not in self.timer_threads.keys():
-            log.warn("%s: client is already stoped!" % self.name)
+            log.warn("%s: client is already stopped!" % self.name)
         else:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
@@ -208,7 +206,12 @@ class ServerUsingFirebase:
 
     def on_whiteboard_message(self, message, topic):
         client_id = topic.split("/")[-1]
-        self.publish_for_client(message, topic)
+        if config.MSG_DATACOL_OUT in topic:
+            self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
+        elif config.MSG_NLG in topic:
+            self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
+        else:
+            log.critical("Not implemented yet")
 
     def subscribe_whiteboard(self, topic):
         log.debug("%s subsdribing to %s" %(self.name, topic))

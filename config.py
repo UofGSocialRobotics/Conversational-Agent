@@ -90,7 +90,10 @@ FIREBASE_KEY_ACKFOR = "for"
 
 # Session keys
 # Keys used to write
-FIREBASE_KEY_UTTERANCE = "utterance"
+FIREBASE_KEY_TEXT = "text"
+FIREBASE_KEY_SOURCE = "source"
+FIREBASE_VALUE_SOURCE_CLIENT = "client"
+FIREBASE_VALUE_SOURCE_AGENT = "agent"
 FIREBASE_KEY_ACK = "ack"
 # Keys used to read
 FIREBASE_KEY_AMTID = "amt_id"
