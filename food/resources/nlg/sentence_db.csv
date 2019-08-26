@@ -8,8 +8,12 @@ request_back(last_movie),NONE,Looking good as usual! So did you eventually eat #
 inform(opinion_last_movie),NONE,Oh. can you tell me why?
 request(situation),NONE,I'm here to help you find something healthy to eat. So tell me. Where do you plan to have lunch today?,
 request(hungry),NONE,Are you feeling hungry or would you rather have a light lunch?,
-request(diet),NONE,One last question. Are you on a diet?,
+request(diet),NONE,We're almost there. Are you on a specific diet?,
+request(food),NONE,One last question. Is there any food you'd like to use for your dinner tonight? Something already in your kitchen, or that you are willing to buy?,
 inform(food),NONE, One great food option for #situation would be to eat #recipe with #secondaryfood. What do you think?,
 inform(food),NONE, What about #recipe with #secondaryfood? This meal contains #mainfood.,
 inform(food),NONE, For #situation I'd recommend eating #recipe. What do you think?,
 bye,NONE,Enjoy your meal and see you soon!,
+request(healthy),NONE,How important is it that your meal is healthy?,
+request(comfort),NONE,How important is it that your meal is comforting?,
+request(filling),NONE,Are you feeling hungry or would you rather have a light dinner?,

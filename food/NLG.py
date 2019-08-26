@@ -133,7 +133,7 @@ class NLG(wbc.WhiteBoardClient):
 
 
     def msg_to_json(self, sentence, food_recipe, food_poster):
-        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'image': food_poster}
+        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
         json_msg = json.dumps(frame)
         return json_msg
 

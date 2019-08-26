@@ -94,7 +94,7 @@ class NLG(wbc.WhiteBoardClient):
 
 
     def msg_to_dict(self, intention, sentence, movie_poster):
-        frame = {'intent': intention, 'sentence': sentence, 'image': movie_poster}
+        frame = {'intent': intention, 'sentence': sentence, 'movie_poster': movie_poster}
         # json_msg = json.dumps(frame)
         return frame
 
