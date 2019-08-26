@@ -13,6 +13,7 @@ python -m spacy download en
 pip install fuzzywuzzy
 # pip install pandas
 pip install pyrebase #https://github.com/thisbejim/Pyrebase
+pip install cryptography
 ```
 
 ## Start server

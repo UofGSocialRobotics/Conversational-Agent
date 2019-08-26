@@ -23,7 +23,7 @@ FIREBASE_CONFIG = {
     "storageBucket": b'gAAAAABdY8TtKf93x7ZC7gj1nC2dRx1JghGY74-vHqZq0nXc9FH51fJjXDzOvUZKcQRSMteMjIIKshHBz8sx4n_BTlgdTP64LN4tG9-hWwaGBJ5KgLfOlZA=',
 }
 
-with open("resources/encryption_key.json", 'rb') as f:
+with open("shared_resources/encryption_key.json", 'rb') as f:
     key = json.load(f)["encryption_key"]
 print(key)
 f = fernet.Fernet(key.encode())
