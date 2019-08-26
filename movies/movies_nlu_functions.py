@@ -1,9 +1,5 @@
 import spacy
-import dataparser
-from movies import movie_dataparser
 import nlu_helper_functions as nlu_helper
-import argparse
-import fuzzywuzzy as fuzz
 from ca_logging import log
 
 def get_cast_id(actor_name, cast_dicts):

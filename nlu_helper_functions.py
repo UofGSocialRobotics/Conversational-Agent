@@ -47,21 +47,22 @@ def is_negation(token, voc_no):
 
 def find_key_in_dict_with_fuzzy_matching(k,d):
     '''
-    Uses fuzzy mathcing (TODO) to find a key in a dictionary
+    Uses fuzzy mathcing to find a key in a dictionary
     :param k: key to find
     :param d: dictionay in which to loo for k
     :return: d[k] if k in d or False
     '''
     best_score = 85
     best_id = False
-    for key, id in d.items():
-        if key == k:
-            return id
-        else:
-            score = fuzz.token_sort_ratio(key, k)
-            if score > best_score:
-                best_score = score
-                best_id = id
+    if k != 'no thanks' and k!= "thanks":
+        for key, id in d.items():
+            if key == k:
+                return id
+            else:
+                score = fuzz.token_sort_ratio(key, k)
+                if score > best_score:
+                    best_score = score
+                    best_id = id
     # print(best_id,best_score)
     return best_id
 
