@@ -26,7 +26,7 @@ class DataCollector(wbc.WhiteBoardClient):
         if config_data_collection.DIALOG in msg.keys():
             self.data[config_data_collection.DIALOG].append(msg[config_data_collection.DIALOG])
         elif config_data_collection.ANSWERS in msg.keys():
-            if config_data_collection.ANSWERS in self.data.keys():
+            if config_data_collection.ANSWERS in self.data.keys() and not isinstance(self.data[config_data_collection.ANSWERS], bool):
                 self.data[config_data_collection.ANSWERS] = {**self.data[config_data_collection.ANSWERS], **msg[config_data_collection.ANSWERS]}
             else:
                 self.data[config_data_collection.ANSWERS] = msg[config_data_collection.ANSWERS]
