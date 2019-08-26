@@ -10,27 +10,11 @@ Python 3.7
 
 To install python packages, run:
 ```shell
-pip install paho-mqtt
-pip install nltk
-pip install simple-websocket-server #  https://pypi.org/project/SimpleWebSocketServerFork/0.1.1/
-pip install stanfordnlp
 pip install spacy
-pip install textblob
 python -m spacy download en
-# pip install fuzzywuzzy
-pip install pandas
-pip install requests
-pip intsall python-firebase
-# pip install google-cloud-language
-```
-
-Run in your python environment:
-```python
-import nltk
-nltk.download('vader_lexicon')
-nltk.download('punkt')
-import stanfordnlp
-stanfordnlp.download('en')
+pip install fuzzywuzzy
+# pip install pandas
+pip install pyrebase #https://github.com/thisbejim/Pyrebase
 ```
 
 ## Server options

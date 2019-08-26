@@ -1,5 +1,3 @@
-import pyrebase
-import traceback
 import config
 import datetime
 import threading
@@ -43,6 +41,7 @@ def filter_client_id_data(message):
             log.warn("No client_id key")
     return False, False
 
+
 def stream_handler_datacollection_ref(message):
     client_id, data = filter_client_id_data(message)
     if client_id:
@@ -56,10 +55,11 @@ def stream_handler_dialog_ref(message):
         topic = config.MSG_DATACOL_IN + client_id
         # publish for data collection
         utterance = data[config.FIREBASE_KEY_TEXT]
-        whiteboard.publish({config_data_collection.DIALOG: utterance}, topic)
+        whiteboard.publish({config_data_collection.DIALOG: data}, topic)
         # distribute to NLU
         topic = config.MSG_SERVER_IN + client_id
         whiteboard.publish(utterance, topic)
+
 
 def get_path_in_sessions(client_id, key=None):
     if key:
@@ -80,7 +80,6 @@ class ServerUsingFirebase:
         if ServerUsingFirebase.__instance == None:
             ServerUsingFirebase()
         return ServerUsingFirebase.__instance
-
 
     def __init__(self):
         if ServerUsingFirebase.__instance != None:
@@ -139,6 +138,12 @@ class ServerUsingFirebase:
                     message[config.FIREBASE_KEY_DATETIME] = timestamp
                     message[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
                     self.firebase_root_ref.push_at(message, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
+                    # publish for data collection
+                    topic = config.MSG_DATACOL_IN + client_id
+                    for_data_col = dict()
+                    for_data_col[config_data_collection.DIALOG] = message
+                    whiteboard.publish(message=for_data_col, topic=topic)
+
                 else:
                     data = dict()
                     data[config.FIREBASE_KEY_ACK] = True
