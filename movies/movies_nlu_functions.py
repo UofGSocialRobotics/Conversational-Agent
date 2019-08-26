@@ -1,6 +1,7 @@
 import spacy
 import nlu_helper_functions as nlu_helper
 from ca_logging import log
+import nltk
 
 def get_cast_id(actor_name, cast_dicts):
     '''
@@ -148,7 +149,7 @@ def is_askPlot(document):
 
 
 
-def is_inform_genre(document, voc_genres, voc_scifi):
+def is_inform_genre(sentence, document, voc_genres, voc_scifi):
     """
     Determines if intent is inform genre
     :param document: spacy document
@@ -156,12 +157,23 @@ def is_inform_genre(document, voc_genres, voc_scifi):
     :param voc_scifi: list of sci-fi words
     :return: intent string
     """
+    if "sci-fi" in sentence or "science-fiction" in sentence:
+        return ("inform", "genre", "sci-fi", "+")
+
+    if len(sentence) > 1:
+        bigrams = nltk.bigrams(sentence.split())
+        for bg in bigrams:
+            bg_text = ' '.join(bg)
+            if bg_text in voc_scifi:
+                return ("inform", "genre", "sci-fi", "+")
+
     for token in document:
-        if token.lemma_ in voc_genres:
-            if token.lemma_ in voc_scifi:
-                return ("inform (genre sci-fi)")
+        print(token.text)
+        if token.text in voc_scifi:
+            return ("inform", "genre", "sci-fi", "+")
+        if token.text in voc_genres:
             return ("inform", "genre", token.lemma_, "+")
-    return  False
+    return False
 
 def is_inform_cast(capitalized_doc, cast_dicts, director_or_actor):
     """
@@ -203,7 +215,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, directors_dicts, actors_dicts):
                                 if not f:
                                     f = is_askPlot(document)
                                     if not f:
-                                        f = is_inform_genre(document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
+                                        f = is_inform_genre(utterance, document, voc_genres=voc["genres"], voc_scifi=voc["genre_scifi"])
                                         if not f:
                                             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
                                             if not f:
@@ -233,8 +245,6 @@ def compare_syntax_analysis(sentence):
     capitalized_document = spacy_nlp(sentence.title())
     print("Actors:")
     print(capitalized_document.ents)
-    print(get_NNs)
-    print(get_NNs(capitalized_document))
 
 
 ####################################################################################################

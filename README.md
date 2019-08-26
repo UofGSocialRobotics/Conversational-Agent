@@ -10,11 +10,19 @@ To install python packages, run:
 ```shell
 pip install spacy
 python -m spacy download en
+import nltk
 pip install fuzzywuzzy
 # pip install pandas
 pip install pyrebase #https://github.com/thisbejim/Pyrebase
 pip install cryptography
 ```
+
+Run in your python environment:
+```python
+import nltk
+nltk.download('vader_lexicon')
+nltk.download('punkt')
+``` 
 
 ## Start server
 
