@@ -3,25 +3,16 @@ import config
 import argparse
 import threading
 import gui
+import server_using_firebase
 
 def main():
     log.info("Starting system")
 
-    if config.USING == config.BROKER:
-        import server_using_broker
-        log.info("Will use broker")
-        server = server_using_broker.ServerUsingBroker()
-    elif config.USING == config.WEBSOCKETS:
-        log.info("Will use websockets")
-        import server_using_websockets
-        server = server_using_websockets.ServerUsingWebSockets()
-    elif config.USING == config.FIREBASE:
-        log.info("Will use firebase")
-        import server_using_firebase
-        server = server_using_firebase.ServerUsingFirebase.getInstance()
-    else:
-        log.warning("Wrong server config")
-        exit(0)
+
+    log.info("This server is using firebase")
+    import server_using_firebase
+    server = server_using_firebase.ServerUsingFirebase.getInstance()
+
 
     server_thread = threading.Thread(target=server.start_service, name="server_thread")
     # server.start_service()
