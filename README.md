@@ -49,3 +49,12 @@ from ca_logging import log
 Then `log` has 5 methods: `debug(message)`, `info(message)`, `warning(message)`, `error(message)` and `critical(message)`. Chose the appropriate one. When using `debug(message)`, the log will be visible only in the console and not written in the log file. 
 
 **Debug**: please use `log.debug("debug message")` instead of `print("debug message")`!
+
+## [Developer] Quick bug fix
+            if isinstance(fp, (str, bytes, bytearray)):
+                fdata = fp
+            else:
+                try:
+                    fdata = fp.read()
+                except AttributeError:
+                    fdata = fp
