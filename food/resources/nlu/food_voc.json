@@ -7,19 +7,20 @@
         "hunger",
         "crave"
     ],
-    "alone": [
-        "alone",
-        "myself",
-        "solo",
-        "unaccompanied",
-        "single",
-        "lone",
-        "lonely",
-        "lonesome",
-        "solitary",
-        "own",
-        "only",
-        "just"
+    "healthy": [
+        "healthy",
+        "health",
+        "organic"
+    ],
+    "time": [
+        "time",
+        "cool"
+    ],
+    "no_time": [
+        "quick",
+        "hurry",
+        "fast",
+        "busy"
     ],
     "not_alone": [
         "with",
@@ -28,14 +29,17 @@
         "friend",
         "company"
     ],
-    "diet": [
-        "diet",
-        "weight",
-        "slim",
-        "slimer",
-        "thin",
-        "thiner",
-        "fast",
-        "regime"
+    "vegan": [
+        "vegan",
+        "vegetarian",
+        "vegetables",
+        "veggies"
+    ],
+    "no_vegan": [
+        "meat",
+        "animals",
+        "meaty",
+        "beef",
+        "chicken"
     ]
 }

@@ -1,11 +1,12 @@
 start,greeting,FALSE,,
-greeting,request(healthy),TRUE,,
-request(healthy),request(comfort),TRUE,,
-request(comfort),request(filling),TRUE,,
-request(filling),request(time),TRUE,,
+greeting,request(filling),TRUE,,
+request(filling),request(healthy),TRUE,,
+request(healthy),request(diet),TRUE,,
+request(diet),request(time),TRUE,,
 request(time),request(food),TRUE,,
 request(food),inform(food),TRUE,,
-inform(food),bye,TRUE,request(sweetness)-inform(food),request(bitterness)-inform(food),request(sourness)-inform(food),request(connectedness)-inform(food),yes-inform(food),request(more)-inform(food),inform(diet)-inform(food)
+inform(food),bye,TRUE,yes-request(another),request(more)-inform(food),inform(vegan)-inform(food),no-inform(food)
+request(another),inform(food),TRUE,bye-bye,yes-inform(food),no-bye
 greet_back,request_back(last_movie),TRUE,,
 request_back(last_movie),inform(opinion_last_movie),FALSE,,
 inform(opinion_last_movie),inform(movie),TRUE,,

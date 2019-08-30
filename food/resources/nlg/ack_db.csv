@@ -1,13 +1,19 @@
-greeting,QESD,SD,So before this I was a real estate agent. But I think I'll enjoy this job even more.,default
-greeting,,NONE,Nice!,yes
-greeting,,NONE,I'm sorry to hear that.,no
+greeting,,NONE,Lovely! I'm glad to hear that.,yes
+greeting,,NONE,I'm sorry to hear that. I'll try to find something to cheer you up then!,no
+greeting,,NONE,Alright.,default
 greeting_back,,NONE,Looking good as always!,default
 request(situation),,NONE,Sure.,no
 request(situation),,NONE,Alright. Lets find something you can cook.,yes
-request(hungry),,NONE,Okay.,default
-request(hungry),,NONE,Let's get something light then,no
-request(hungry),,NONE,Same here! I'm starving...,yes
-request(diet),,NONE,Let's find some diet food then.,yes
-request(diet),,NONE,Good to know.,no
+request(filling),,NONE,Okay.,default
+request(filling),,NONE,Let's get something light then.,no
+request(filling),,NONE,Same here! I'm starving...,yes
+request(filling),,NONE,Let's get something light then.,not_hungry
+request(filling),,NONE,Same here! I'm starving!,hungry
+request(time),,NONE,Don't worry. I'll find something quick to prepare.,no
+request(time),,NONE,No time constraint. Good to know,yes
+request(time),,NONE,Don't worry. I'll find something quick to prepare.,no_time
+request(time),,NONE,No time constraint. Good to know,time
+request(healthy),,NONE,Nice. I'm sure the both of us will get along well!,yes
+request(healthy),,NONE,Nice. I'm sure the both of us will get along well!,healthy
 inform(food),,NONE,I'm so glad you like my recommendation.,yes
 inform(food),,NONE,Let me find something else.,default

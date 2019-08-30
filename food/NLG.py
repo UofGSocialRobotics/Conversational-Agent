@@ -39,16 +39,23 @@ class NLG(wbc.WhiteBoardClient):
                 line_input = line.split(",")
                 if self.ackDB.get(line_input[0]) is None:
                     yes_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
                     no_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    not_hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    not_healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                    no_time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
                     default_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'default': default_cs_dict}
+                    self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'hungry': hungry_cs_dict, 'not_hungry': not_hungry_cs_dict, 'healthy': healthy_cs_dict, 'not_healthy': not_healthy_cs_dict, 'time': time_cs_dict, 'no_time': no_time_cs_dict, 'default': default_cs_dict}
                 self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
+        recipe_card = None
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
-        self.situation = message['situation']
+        self.situation = self.user_model['situation']
 
         # Todo: Better authoring
 
@@ -84,6 +91,21 @@ class NLG(wbc.WhiteBoardClient):
                 ack = self.pick_ack(message['previous_intent'], 'yes', ack_cs)
             elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
                 ack = self.pick_ack(message['previous_intent'], 'no', ack_cs)
+            elif message['user_intent']['entity_type'] and "hungry" in message['user_intent']['entity_type']:
+                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['hungry']:
+                        ack = self.pick_ack(message['previous_intent'], 'hungry', ack_cs)
+                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_hungry']:
+                        ack = self.pick_ack(message['previous_intent'], 'not_hungry', ack_cs)
+            elif message['user_intent']['entity_type'] and "healthy" in message['user_intent']['entity_type']:
+                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['healthy']:
+                        ack = self.pick_ack(message['previous_intent'], 'healthy', ack_cs)
+                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_healthy']:
+                        ack = self.pick_ack(message['previous_intent'], 'not_healthy', ack_cs)
+            elif message['user_intent']['entity_type'] and "time" in message['user_intent']['entity_type']:
+                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['time']:
+                        ack = self.pick_ack(message['previous_intent'], 'time', ack_cs)
+                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['no_time']:
+                        ack = self.pick_ack(message['previous_intent'], 'no_time', ack_cs)
             else:
                 if self.ackDB[message['previous_intent']]['default']:
                     ack = self.pick_ack(message['previous_intent'], 'default', ack_cs)
@@ -94,7 +116,10 @@ class NLG(wbc.WhiteBoardClient):
         final_sentence = self.replace(ack + " " + sentence)
 
         if message['recipe']:
-            msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], recipe_card)
+            if recipe_card:
+                msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], recipe_card)
+            else:
+                msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], None)
         else:
             msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
@@ -105,37 +130,38 @@ class NLG(wbc.WhiteBoardClient):
         imageURL = requests.get(recipe['image'])
 
         steps_string = ''
-        for step in recipe['analyzedInstructions'][0]['steps']:
-            steps_string = steps_string + step['step'] + "\n"
+        if recipe['analyzedInstructions']:
+            for step in recipe['analyzedInstructions'][0]['steps']:
+                steps_string = steps_string + step['step'] + "\n"
+        else:
+            steps_string = "Toss everything in and enjoy!"
 
         ingredients_string = ''
         for ingredient in recipe['missedIngredients']:
             ingredients_string = ingredients_string + ingredient['originalString'] + "\n"
 
-        response = requests.post(query,
-                                files={
-                                    #"source": recipe['sourceUrl'],
-                                    "backgroundColor": "#ffffff",
-                                    "fontColor": "#333333",
-                                    "title": recipe['title'],
-                                    "backgroundImage": "background1",
-                                    "image": BytesIO(imageURL.content),
-                                    "ingredients": ingredients_string,
-                                    "instructions": steps_string,
-                                    "mask": "potMask",
-                                    "readyInMinutes": recipe['readyInMinutes'],
-                                    "servings": recipe['servings']
-                                })
+        files = {
+            # "source": recipe['sourceUrl'],
+            "backgroundColor": "#ffffff",
+            "fontColor": "#333333",
+            "title": recipe['title'],
+            "backgroundImage": "background1",
+            "image": BytesIO(imageURL.content),
+            "ingredients": ingredients_string,
+            "instructions": steps_string,
+            "mask": "potMask",
+            "readyInMinutes": recipe['readyInMinutes'],
+            "servings": recipe['servings']
+        }
 
-        print("\nHere is the recipe: " + response.text)
+        response = requests.post(query, files=files)
         card_json = json.loads(response.text)
         return card_json['url']
 
-
     def msg_to_json(self, sentence, food_recipe, food_poster):
         frame = {'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
-        json_msg = json.dumps(frame)
-        return json_msg
+        #json_msg = json.dumps(frame)
+        return frame
 
     def pick_ack_social_strategy(self):
         #return random.choice(food_config.CS_LABELS)
@@ -169,6 +195,19 @@ class NLG(wbc.WhiteBoardClient):
             sentence = sentence.replace("#entity", self.user_intent['entity'])
         if "#recipe" in sentence:
             sentence = sentence.replace("#recipe", self.recipe['title'])
+        if "#features" in sentence:
+            features_string = ""
+            if "comfort" in self.user_model['liked_features']:
+                features_string = features_string + " are in a bad mood,"
+            if "filling" in self.user_model['liked_features']:
+                features_string = features_string + " feel hungry,"
+            if "health" in self.user_model['liked_features']:
+                features_string = features_string + " want to eat healthy,"
+            if "time" in self.user_model['liked_features']:
+                features_string = features_string + " and don't have much time to cook."
+            else:
+                features_string = features_string + " and still have time to cook."
+            sentence = sentence.replace("#features", features_string)
         if "#last_food" in sentence:
             if self.user_model['liked_food']:
                 sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])

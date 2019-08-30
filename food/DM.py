@@ -26,13 +26,11 @@ class DM(wbc.WhiteBoardClient):
 
         self.load_food_data()
 
-        self.hungry = None
-        self.diet = None
         self.current_recipe_list = None
         self.current_food_options = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
         self.nodes = {}
-        self.situation = ""
-        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special-diet': []}
+
+        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special_diet': [], 'situation': "Usual Dinner"}
         self.load_model(food_config.DM_MODEL)
         self.load_user_model(food_config.USER_MODELS, clientid)
 
@@ -77,22 +75,38 @@ class DM(wbc.WhiteBoardClient):
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
 
-            if "situation" in self.currState:
+            #Todo need to manage diet, time, and food
+
+            # Todo: Add vegan thingy in the requests
+            if "inform" in self.from_NLU['intent']:
+                if "health" in self.from_NLU['entity_type'] and self.from_NLU['entity'] is True:
+                    self.user_model['liked_features'].append('health')
+                if "hungry" in self.from_NLU['entity_type'] and self.from_NLU['entity'] is True:
+                    self.user_model['liked_features'].append('filling')
+                if "time" in self.from_NLU['entity_type'] and self.from_NLU['entity'] is False:
+                    self.user_model['liked_features'].append('time')
+                if "vegan" in self.from_NLU['entity_type'] and self.from_NLU['entity'] is True:
+                    self.user_model['special_diet'].append('vegan')
+                    food_config.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
+                if "food" in self.from_NLU['entity_type']:
+                    if "+" in self.from_NLU['polarity']:
+                        self.user_model['liked_food'].append(self.from_NLU['entity'])
+                    else:
+                        self.user_model['disliked_food'].append(self.from_NLU['entity'])
+
+            if "healthy" in self.currState:
                 if "yes" in self.from_NLU['intent']:
-                    self.situation = "Usual Lunch"
-                else:
-                    self.situation = "Lunch Out"
-            elif "hungry" in self.currState:
+                    self.user_model['liked_features'].append('health')
+            elif "greeting" in self.currState:
+                if "no" in self.from_NLU['intent']:
+                    self.user_model['liked_features'].append('comfort')
+            elif "filling" in self.currState:
                 if "yes" in self.from_NLU['intent']:
-                    self.hungry_weight = 1
-                else:
-                    self.hungry_weight = 0
-            elif "diet" in self.currState:
-                if "yes" in self.from_NLU['intent']:
-                    self.diet_weight = 1
-                else:
-                    self.diet_weight = 0
-            if "food" in next_state:
+                    self.user_model['liked_features'].append('filling')
+            elif "time" in self.currState:
+                if "no" in self.from_NLU['intent']:
+                    self.user_model['liked_features'].append('time')
+            if "inform(food)" in next_state:
                 if "request" in self.from_NLU['intent'] and "more" not in self.from_NLU['entity_type']:
                     food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU['entity_type'])
                 elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
@@ -104,16 +118,6 @@ class DM(wbc.WhiteBoardClient):
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
 
-            # Todo: Add vegan thingy in the requests
-            if "inform" in self.from_NLU['intent']:
-                if "diet" in self.from_NLU['entity_type']:
-                    food_config.EDAMAM_ADDITIONAL_DIET = "&health=" + self.from_NLU['entity']
-                if "food" in self.from_NLU['entity_type']:
-                    if "+" in self.from_NLU['polarity']:
-                        self.user_model['liked_food'].append(self.from_NLU['entity'])
-                    else:
-                        self.user_model['disliked_food'].append(self.from_NLU['entity'])
-
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
                 next_state = "greet_back"
@@ -124,13 +128,13 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, self.situation, recommended_food, recipe)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recommended_food, recipe)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg)
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, situation, reco_food, recipe):
-        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'situation': situation, 'reco_food': reco_food, 'recipe': recipe}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, reco_food, recipe):
+        frame = {'intent': intention, 'user_intent': user_intent, 'previous_intent': previous_intent, 'user_model': user_frame, 'reco_food': reco_food, 'recipe': recipe}
         json_msg = json.dumps(frame)
         return json_msg
 
@@ -151,12 +155,26 @@ class DM(wbc.WhiteBoardClient):
     def get_food_options(self, request):
         max_meal_value = max_dessert_value = max_drink_value = max_meat_value = max_side_value = -100
         best_meal = best_dessert = best_drink = best_meat = best_side = None
-        situated_food_matrix = self.get_food_per_situation(self.situation)
+        situated_food_matrix = self.get_food_per_situation(self.user_model['situation'])
+
+        if "health" in self.user_model['liked_features']:
+            healthy_weight = 2
+        else:
+            healthy_weight = 1
+        if "comfort" in self.user_model['liked_features']:
+            comfort_weight = 1
+        else:
+            comfort_weight = 0
+        if "filling" in self.user_model['liked_features']:
+            filling_weight = 1
+        else:
+            filling_weight = 0
+
         for index, row in situated_food_matrix.iterrows():
             if request:
-                current_food_value = 1 * row['healthiness'] + row[request] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+                current_food_value = healthy_weight * row['healthiness'] + row[request] + (comfort_weight * row['emotional_satisfaction']) + (filling_weight * row['food_fillingness'])
             else:
-                current_food_value = row['healthiness'] + (self.diet_weight * row['fatteningness']) + (self.hungry_weight * row['energy_level_goal'])
+                current_food_value = healthy_weight * row['healthiness'] + (comfort_weight * row['emotional_satisfaction']) + (filling_weight * row['food_fillingness'])
             if 'meal' in row['food_type'] and current_food_value > max_meal_value:
                 if row['food_name'] not in self.user_model['disliked_food']:
                     max_meal_value = current_food_value
@@ -206,13 +224,21 @@ class DM(wbc.WhiteBoardClient):
         return recipe_list
 
     def get_recipe_list_with_spoonacular(self, recommended_food):
+        #Todo Do something if no recipe
         if "with" in recommended_food['main']:
             request_food = recommended_food['main'].replace(" with ", "%20and%20")
             request_food = request_food.replace("side ", "")
         else:
             request_food = recommended_food['main'].replace(" dish", "")
         request_food = request_food.replace(" ", "%20")
-        spoonURL = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + request_food + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        if "time" in self.user_model['liked_features']:
+            max_time = 31
+        else:
+            max_time = 5000
+        if not self.user_model['liked_food']:
+            spoonURL = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        else:
+            spoonURL = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
         data = urllib.request.urlopen(spoonURL)
         result = data.read()
         json_recipe_list = json.loads(result)
@@ -227,8 +253,12 @@ class DM(wbc.WhiteBoardClient):
         situated_food_matrix = self.food_data.query("situation_name == '" + situation + "'")
         return situated_food_matrix
 
+    def save_recipes_as_pdf(self):
+        import pdfkit
+        pdfkit.from_url('https://www.google.co.in/', './shaurya.pdf')
 
-# A node corresponds to a specific state of the dialogue. It contains:
+
+    # A node corresponds to a specific state of the dialogue. It contains:
 # - a state ID (int)
 # - a state name (String)
 # - a default state (String) which represents the next state by default, whatever the user says.
