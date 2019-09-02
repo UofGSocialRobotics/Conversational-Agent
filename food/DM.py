@@ -158,9 +158,9 @@ class DM(wbc.WhiteBoardClient):
         situated_food_matrix = self.get_food_per_situation(self.user_model['situation'])
 
         if "health" in self.user_model['liked_features']:
-            healthy_weight = 2
-        else:
             healthy_weight = 1
+        else:
+            healthy_weight = 0
         if "comfort" in self.user_model['liked_features']:
             comfort_weight = 1
         else:
@@ -232,7 +232,7 @@ class DM(wbc.WhiteBoardClient):
             request_food = recommended_food['main'].replace(" dish", "")
         request_food = request_food.replace(" ", "%20")
         if "time" in self.user_model['liked_features']:
-            max_time = 31
+            max_time = 21
         else:
             max_time = 5000
         if not self.user_model['liked_food']:
