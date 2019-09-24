@@ -268,17 +268,18 @@ class ServerUsingFirebase:
         if client_id in self.clients_services.keys():
             for c in self.clients_services[client_id].values():
                 c.stop_service()
-                del c
-            del self.clients_services[client_id]
         if client_id in self.timer_threads.keys():
             self.timer_threads[client_id].cancel()
         self.close_stream_for_client(client_id, self.firebase_streams_dialog)
         self.close_stream_for_client(client_id, self.firebase_streams_datacol)
 
     def stop_all_services(self):
+        log.debug("in stop_all_services, thread(s) left:")
+        log.debug(threading.enumerate())
         for client_id, service_dict in self.clients_services.items():
-            for service in service_dict.values():
-                service.stop_service()
+            # for service in service_dict.values():
+            #     service.stop_service()
+            self.stop_services(client_id)
             if client_id in self.timer_threads.keys():
                 self.timer_threads[client_id].cancel()
             time.sleep(0.1)
