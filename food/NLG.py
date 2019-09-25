@@ -117,9 +117,9 @@ class NLG(wbc.WhiteBoardClient):
 
         if message['recipe']:
             if recipe_card:
-                msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], recipe_card)
+                msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], recipe_card)
             else:
-                msg_to_send = self.msg_to_json(final_sentence, self.recipe['sourceUrl'], None)
+                msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], None)
         else:
             msg_to_send = self.msg_to_json(final_sentence, None, None)
         self.publish(msg_to_send)
@@ -158,8 +158,8 @@ class NLG(wbc.WhiteBoardClient):
         card_json = json.loads(response.text)
         return card_json['url']
 
-    def msg_to_json(self, sentence, food_recipe, food_poster):
-        frame = {'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
+    def msg_to_json(self, intent, sentence, food_recipe, food_poster):
+        frame = {'intent': intent, 'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
         #json_msg = json.dumps(frame)
         return frame
 
