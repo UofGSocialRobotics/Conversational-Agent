@@ -121,7 +121,7 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], None)
         else:
-            msg_to_send = self.msg_to_json(final_sentence, None, None)
+            msg_to_send = self.msg_to_json(intent=None, sentence=final_sentence, food_recipe=None, food_poster=None)
         self.publish(msg_to_send)
 
     def create_recipe_card(self, recipe):
