@@ -264,7 +264,7 @@ class ServerUsingFirebase:
 
 
     def stop_services(self, client_id):
-        log.info("Shuting down services for client %s" % client_id)
+        log.info("Shutting down services for client %s" % client_id)
         if client_id in self.clients_services.keys():
             for c in self.clients_services[client_id].values():
                 c.stop_service()

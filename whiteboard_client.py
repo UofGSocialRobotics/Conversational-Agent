@@ -14,7 +14,7 @@ class WhiteBoardClient:
         self.publishes = publishes
         self.subscribes = subscribes
         self.service_started = False
-        log.info("%s: init" % self.name)
+        # log.info("%s: init" % self.name)
 
     def subscribe(self, topics):
         for t in topics:

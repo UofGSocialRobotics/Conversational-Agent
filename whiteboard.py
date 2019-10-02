@@ -58,6 +58,11 @@ class Whiteboard:
                 if len(d[key]) == 0:
                     del d[key]
                 return 1
+        # print("IN remove_elt in whiboard.py, Could not unsubscribe")
+        # print(key)
+        # print(value)
+        # print(d_txt)
+        # print(d)
         return -1
 
     def add_subscriber_to_topic(self, subscriber, topic):
@@ -74,13 +79,13 @@ class Whiteboard:
 
     def subscribe(self, subscriber, topic):
         v = self.add_subscriber_to_topic(subscriber, topic) + self.add_topic_to_subscriber(subscriber, topic)
-        if v != 2:
-            log.warning("%s already subscribed to %s." % (subscriber.name, topic))
+        # if v != 2:
+        #     log.warning("%s already subscribed to %s." % (subscriber.name, topic))
 
     def unsubscribe(self, subscriber, topic):
         v = self.remove_subscriber_from_topic(subscriber, topic) + self.remove_topic_from_subscriber(subscriber, topic)
-        if v != 2:
-            log.warning("ERR, %s not subscribed to %s." % (subscriber.name, topic))
+        # if v != 2:
+        #     log.warning("ERR, %s not subscribed to %s." % (subscriber.name, topic))
 
     def get_subscribers(self, topic):
         if topic in self.topics.keys():
