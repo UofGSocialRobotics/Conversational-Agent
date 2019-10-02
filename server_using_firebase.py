@@ -192,8 +192,8 @@ class ServerUsingFirebase:
         # Listener: for client
         dialog_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DIALOG))
         datacol_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DATACOLLECTION))
-        print("datacol_ref.path()")
-        print(datacol_ref.path)
+        # print("datacol_ref.path()")
+        # print(datacol_ref.path)
         self.firebase_streams_dialog[client_id] = dialog_ref.stream(stream_handler_dialog_ref, stream_id=client_id+"dialog")
         self.firebase_streams_datacol[client_id] = datacol_ref.stream(stream_handler_datacollection_ref, stream_id=client_id+"dialog")
         # Create services

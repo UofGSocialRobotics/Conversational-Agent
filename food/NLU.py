@@ -6,6 +6,7 @@ import json
 import nlu_helper_functions as nlu_helper
 import food.food_dataparser as food_dataparser
 import dataparser
+from ca_logging import log
 
 
 def inform_food(document, food_list):

@@ -6,7 +6,7 @@ from random import randint
 from pathlib import Path
 import pandas
 import urllib.request
-
+from ca_logging import log
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, subscribes, publishes, clientid):
@@ -108,10 +108,13 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model['liked_features'].append('time')
             if "inform(food)" in next_state:
                 if "request" in self.from_NLU['intent'] and "more" not in self.from_NLU['entity_type']:
+                    log.debug("trying to get 1st recommendation")
                     food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU['entity_type'])
                 elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
+                    log.debug("trying to get other recommendation")
                     self.current_recipe_list.pop(0)
                 else:
+                    log.debug("Not sure when we go in here")
                     food_options, recommended_food, self.current_recipe_list = self.recommend(None)
                 recipe = self.current_recipe_list[0]
             if "food" in self.currState:
@@ -150,6 +153,7 @@ class DM(wbc.WhiteBoardClient):
         food_options = self.get_food_options(additional_request)
         recommended_food = self.pick_food(food_options)
         recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
+        log.debug((food_options,recommended_food,recipe_list))
         return food_options, recommended_food, recipe_list
 
     def get_food_options(self, request):
@@ -199,11 +203,13 @@ class DM(wbc.WhiteBoardClient):
         return best_food
 
     def pick_food(self, food):
-        recommended_food = {'main': "", 'secondary': ""}
+        recommended_food = {'main': "", 'secondary': "", 'other_main': ""}
         if randint(0, 1) == 1:
             recommended_food['main'] = food['meal']
+            recommended_food['other_main'] = food['meat'] + " with " + food['side']
         else:
             recommended_food['main'] = food['meat'] + " with " + food['side']
+            recommended_food['other_main'] = food['meal']
         if randint(0, 1) == 1:
             recommended_food['secondary'] = food['dessert']
         else:
@@ -223,27 +229,63 @@ class DM(wbc.WhiteBoardClient):
         recipe_list = json_recipe_list['hits']
         return recipe_list
 
-    def get_recipe_list_with_spoonacular(self, recommended_food):
-        #Todo Do something if no recipe
-        if "with" in recommended_food['main']:
-            request_food = recommended_food['main'].replace(" with ", "%20and%20")
-            request_food = request_food.replace("side ", "")
-        else:
-            request_food = recommended_food['main'].replace(" dish", "")
-        request_food = request_food.replace(" ", "%20")
+    def format_recommended_food(self, recommended_food):
+        to_replace_pairs = [["with", "and"], ["side", ""], ["dish", ""]]
+        for to_replace, to_replace_with in to_replace_pairs:
+            if to_replace in recommended_food:
+                recommended_food = recommended_food.replace(to_replace, to_replace_with)
+        recommended_food = ' '.join(recommended_food.split(' '))
+        recommended_food = recommended_food.replace(" ", "%20")
+        return recommended_food
+
+
+    def get_recipe_from_spoonacular_with_specific_food_request(self, food_to_request, liked_food):
+        request_food = self.format_recommended_food(food_to_request)
+        log.debug(request_food)
         if "time" in self.user_model['liked_features']:
             max_time = 21
         else:
             max_time = 5000
-        if not self.user_model['liked_food']:
-            spoonURL = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        if not liked_food:
+            query = request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+            log.debug(query)
         else:
-            spoonURL = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+            query = request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + food_config.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+            # query = request_food + food_config.SPOONACULAR_API_MAX_TIME + str(max_time) + food_config.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + food_config.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+            log.debug(query)
+        recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
+        return recipe_list
+
+    def get_recipe_list_with_spoonacular(self, recommended_food):
+        #Todo Do something if no recipe-->
+        # recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request("potato")
+        recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
+        log.debug(recipe_list)
+
+        if not recipe_list:
+            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], self.user_model['liked_food'])
+            log.debug(recipe_list)
+        if not recipe_list:
+            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], liked_food=None)
+            log.debug(recipe_list)
+            log.debug(recipe_list)
+        if not recipe_list:
+            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], liked_food=None)
+            log.debug(recipe_list)
+
+        return recipe_list
+
+    def generate_soonacular_url(self, query):
+        tmp = food_config.SPOONACULAR_API_SEARCH + food_config.SPOONACULAR_KEY + "&query=" + query
+        log.debug(tmp)
+        return tmp
+
+    def query_spoonacular(self, spoonURL):
         data = urllib.request.urlopen(spoonURL)
         result = data.read()
         json_recipe_list = json.loads(result)
         recipe_list = json_recipe_list['results']
-        return recipe_list
+        return  recipe_list
 
     def get_headers(self, matrix):
         headers = matrix.keys()

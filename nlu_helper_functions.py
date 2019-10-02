@@ -2,6 +2,7 @@ import string
 import re
 import nltk
 from fuzzywuzzy import fuzz
+from ca_logging import log
 ####################################################################################################
 ##                                          Preprocesss                                           ##
 ####################################################################################################
@@ -153,7 +154,7 @@ def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_ti
         else:
             return res["no"]
     else:
-        return ("IDK", None, None, None)
+        return None
 
 
 
@@ -207,6 +208,8 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     :param voc_no: dictionary of no words (see resources/nlu/voc.json)
     :return: yes/no/false
     """
+    # log.debug("in is_yes_no")
+    # log.debug((voc_no["no_1word"]))
     sentence = flatten_sentence(sentence)
     first_word = document[0]
     if sentence in voc_yes["all_yes_words"]:
