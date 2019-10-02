@@ -118,6 +118,8 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     if not f:
         f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
     if not f:
+        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no'])
+    if not f:
         f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
     if not f:
         f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])

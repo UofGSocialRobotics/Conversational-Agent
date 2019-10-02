@@ -128,6 +128,35 @@ def get_NNs(document):
 
 ## ---------------------------------------- Bool functions -------------------------------------- ##
 
+def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_tired, voc_no):
+    res = {"yes": ("yes", None, None, None), "no": ("no", None, None, None)}
+    feel_good, feel_bad, negation = False, False, False
+    # print(voc_feel_tired)
+    if "under the weather" in sentence:
+        return res["no"]
+    for token in document:
+        if token.lemma_ in voc_feel_good or token.text in voc_feel_good:
+            feel_good = True
+        elif token.lemma_ in voc_feel_bad + voc_feel_tired or token.text in voc_feel_bad+voc_feel_tired:
+            feel_bad = True
+        elif is_negation(token, voc_no):
+            negation = True
+    # print(feel_good, feel_bad, negation)
+    if feel_good:
+        if not negation:
+            return res['yes']
+        else:
+            return res["no"]
+    elif feel_bad:
+        if negation:
+            return res["yes"]
+        else:
+            return res["no"]
+    else:
+        return ("IDK", None, None, None)
+
+
+
 def is_greeting(document, voc_greetings):
     '''
     Determines if intent is greeting
@@ -167,7 +196,6 @@ def is_goodbye(document, sentence, voc_bye):
     return False
 
 
-## ---------------------------------------- Non-bool functions ---------------------------------------- ##
 
 def is_yes_no(document, sentence, voc_yes, voc_no):
     res = {"yes": ("yes", None, None, None), "no": ("no", None, None, None)}
