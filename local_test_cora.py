@@ -81,7 +81,7 @@ class TestCora():
     def quit(self):
         for c in self.services.values():
             c.stop_service()
-        exit(0)
+        # exit(0)
 
 
 
@@ -94,8 +94,10 @@ if __name__ == "__main__":
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
     argp.add_argument("--logs", help="If you want to see the python logs in the console", action="store_true")
 
-    autotest = ["hello", "Not so good", "light, I m not hungry", "I'm a vegeratian", "might as well be good...", "I don t feel like cooking", "beans", "sure", "no thanks"]
-    autotest = ["hello", "Great", "I m super hungry", "No special diet", "Yeah healthy is better obviously", "I am in a rush", "carotts", "OK", "nop"]
+    autotest_scripts = dict()
+    autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "sure", "no thanks"]
+    autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
+    autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
 
     args = argp.parse_args()
     if not args.logs:
@@ -103,10 +105,16 @@ if __name__ == "__main__":
 
     if(args.domain in ["movies", "food"]):
         config.modules.set_domain(args.domain)
-        if (args.test):
-            autotest = None
+        if args.autotest and autotest_scripts:
+            for script_name, script in autotest_scripts.items():
+                print(colored(script_name, "blue"))
+                test = TestCora(script)
+
+        elif args.test:
+            TestCora()
+        else:
+            args.print_help()
     else:
         argp.print_help()
-        exit(0)
 
-    test = TestCora(autotest)
+

@@ -5,7 +5,13 @@
         "famish",
         "hunger",
         "hunger",
-        "crave"
+        "crave",
+        "heavy"
+    ],
+    "light": [
+        "light",
+        "small",
+        "lightweight"
     ],
     "healthy": [
         "healthy",

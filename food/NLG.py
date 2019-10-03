@@ -5,7 +5,8 @@ import random
 import food.food_config as food_config
 import requests
 from io import BytesIO
-
+from ca_logging import log
+from termcolor import colored
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, subscribes, publishes, clientid):
@@ -34,21 +35,71 @@ class NLG(wbc.WhiteBoardClient):
 
     def load_ack_model(self, path):
         with open(path) as f:
-            for line in f:
-                line = line.replace("\n", "")
-                line_input = line.split(",")
-                if self.ackDB.get(line_input[0]) is None:
-                    yes_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    no_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    not_hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    not_healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    no_time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    default_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                    self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'hungry': hungry_cs_dict, 'not_hungry': not_hungry_cs_dict, 'healthy': healthy_cs_dict, 'not_healthy': not_healthy_cs_dict, 'time': time_cs_dict, 'no_time': no_time_cs_dict, 'default': default_cs_dict}
-                self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
+            self.ackDB = json.load(f)
+            # for line in f:
+            #     line = line.replace("\n", "")
+            #     line_input = line.split(",")
+            #     if self.ackDB.get(line_input[0]) is None:
+            #         yes_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         no_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         not_hungry_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         not_healthy_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         no_time_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         default_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+            #         self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'hungry': hungry_cs_dict, 'not_hungry': not_hungry_cs_dict, 'healthy': healthy_cs_dict, 'not_healthy': not_healthy_cs_dict, 'time': time_cs_dict, 'no_time': no_time_cs_dict, 'default': default_cs_dict}
+            #     self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
+            print(self.ackDB)
+
+
+    def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
+        # print(colored("previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__(), "blue"))
+        word_valence_list = ["healthy", "time", "hungry"]
+        neg_word_valence_list = ["no_"+word for word in word_valence_list] + ["not_"+word for word in word_valence_list]
+        if valence and valence in word_valence_list:
+            valence = "yes"
+        elif valence in neg_word_valence_list:
+            valence = "no"
+        for ack_sentence, ack_sentence_dict in self.ackDB.items():
+            cond_previous_intent = previous_intent == ack_sentence_dict["previous_intent"]
+            cond_valence = ((valence and valence == ack_sentence_dict["valence"]) or (not valence and ack_sentence_dict["valence"] == "default"))
+            cond_CS = ((CS and CS in ack_sentence_dict["CS"]) or not CS)
+            cond_current_intent = ((current_intent and "current_intent" in ack_sentence_dict.keys() and current_intent == ack_sentence_dict["current_intent"]) or not current_intent or "current_intent" not in ack_sentence_dict.keys())
+            if cond_previous_intent and cond_valence and cond_CS and cond_current_intent:
+                return ack_sentence
+        log.warn("Could not find ack for previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__())
+        return ""
+
+        #  if previous_intent in self.ackDB:
+        #     if "yes" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['yes']:
+        #         ack = self.pick_ack(message['previous_intent'], 'yes', ack_cs)
+        #     elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
+        #         ack = self.pick_ack(message['previous_intent'], 'no', ack_cs)
+        #     elif message['user_intent']['entity_type'] and "hungry" in message['user_intent']['entity_type']:
+        #             if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['hungry']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'hungry', ack_cs)
+        #             elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_hungry']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'not_hungry', ack_cs)
+        #     elif message['user_intent']['entity_type'] and "healthy" in message['user_intent']['entity_type']:
+        #             if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['healthy']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'healthy', ack_cs)
+        #             elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_healthy']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'not_healthy', ack_cs)
+        #     elif message['user_intent']['entity_type'] and "time" in message['user_intent']['entity_type']:
+        #             if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['time']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'time', ack_cs)
+        #             elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['no_time']:
+        #                 ack = self.pick_ack(message['previous_intent'], 'no_time', ack_cs)
+        #     else:
+        #         if self.ackDB[message['previous_intent']]['default']:
+        #             ack = self.pick_ack(message['previous_intent'], 'default', ack_cs)
+        #         else:
+        #             ack = ""
+        # else:
+        #     ack = ""
+
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
@@ -86,31 +137,14 @@ class NLG(wbc.WhiteBoardClient):
         else:
             sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
 
-        if food_config.NLG_USE_ACKS and message['previous_intent'] in self.ackDB:
-            if "yes" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['yes']:
-                ack = self.pick_ack(message['previous_intent'], 'yes', ack_cs)
-            elif "no" in message['user_intent']['intent'] and self.ackDB[message['previous_intent']]['no']:
-                ack = self.pick_ack(message['previous_intent'], 'no', ack_cs)
-            elif message['user_intent']['entity_type'] and "hungry" in message['user_intent']['entity_type']:
-                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['hungry']:
-                        ack = self.pick_ack(message['previous_intent'], 'hungry', ack_cs)
-                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_hungry']:
-                        ack = self.pick_ack(message['previous_intent'], 'not_hungry', ack_cs)
-            elif message['user_intent']['entity_type'] and "healthy" in message['user_intent']['entity_type']:
-                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['healthy']:
-                        ack = self.pick_ack(message['previous_intent'], 'healthy', ack_cs)
-                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['not_healthy']:
-                        ack = self.pick_ack(message['previous_intent'], 'not_healthy', ack_cs)
-            elif message['user_intent']['entity_type'] and "time" in message['user_intent']['entity_type']:
-                    if message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['time']:
-                        ack = self.pick_ack(message['previous_intent'], 'time', ack_cs)
-                    elif not message['user_intent']['entity'] and self.ackDB[message['previous_intent']]['no_time']:
-                        ack = self.pick_ack(message['previous_intent'], 'no_time', ack_cs)
+        if food_config.NLG_USE_ACKS:
+            if message['user_intent']['intent'] in ["yes", "no"]:
+                valence = message['user_intent']['intent']
+            elif message['user_intent']['entity_type']:
+                valence = "yes" if message['user_intent']['entity'] else "no"
             else:
-                if self.ackDB[message['previous_intent']]['default']:
-                    ack = self.pick_ack(message['previous_intent'], 'default', ack_cs)
-                else:
-                    ack = ""
+                valence = None
+            ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=message["intent"])
         else:
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
@@ -196,17 +230,21 @@ class NLG(wbc.WhiteBoardClient):
         if "#recipe" in sentence:
             sentence = sentence.replace("#recipe", self.recipe['title'])
         if "#features" in sentence:
-            features_string = ""
+            features_list = []
             if "comfort" in self.user_model['liked_features']:
-                features_string = features_string + " are in a bad mood,"
+                features_list.append("are in a bad mood")
             if "filling" in self.user_model['liked_features']:
-                features_string = features_string + " feel hungry,"
+                features_list.append("feel hungry")
             if "health" in self.user_model['liked_features']:
-                features_string = features_string + " want to eat healthy,"
+                features_list.append("want to eat healthy")
             if "time" in self.user_model['liked_features']:
-                features_string = features_string + " and don't have much time to cook."
+                features_list.append("don't have much time to cook")
             else:
-                features_string = features_string + " and still have time to cook."
+                features_list.append("still have time to cook")
+            features_string = ", ".join(features_list[:-1])
+            if len(features_list) > 1:
+                features_string += " and "
+            features_string += features_list[-1] + "."
             sentence = sentence.replace("#features", features_string)
         if "#last_food" in sentence:
             if self.user_model['liked_food']:

@@ -64,8 +64,8 @@ def inform_time(document, voc_no, voc_time, voc_no_time):
         else:
             return ("inform", "time", False, None)
 
-def inform_hungry(document, voc_no, voc_hungry):
-    positive, hungry, empty, stomach = True, None, False, False
+def inform_hungry(document, voc_no, voc_hungry, voc_light):
+    positive, hungry, empty, stomach, light = True, None, False, False, False
     for token in document:
         if token.lemma_ in voc_hungry:
             hungry = True
@@ -75,10 +75,14 @@ def inform_hungry(document, voc_no, voc_hungry):
             stomach = True
         elif token.lemma_ == "empty":
             empty = True
+        elif token.lemma_ in voc_light:
+            light = True
     if (hungry or (empty and stomach)) and positive:
         return ("inform", "hungry", True, None)
     if (hungry and not positive):
         return ("inform", "hungry", False, None)
+    if light:
+        return ("inform", "hungry", not positive, None)
     return False
 
 def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
@@ -109,7 +113,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     capitalized_document = spacy_nlp(utterance.title())
     f = inform_food(document, food_list)
     if not f:
-        f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"])
+        f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     if not f:
         f = inform_healthy(document, voc_no=voc["no"], voc_healthy=voc["healthy"])
     if not f:
