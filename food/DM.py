@@ -31,7 +31,7 @@ class DM(wbc.WhiteBoardClient):
         self.current_food_options = {'meal': "", 'dessert': "", 'drink': "", 'meat': "", 'side': ""}
         self.nodes = {}
 
-        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special_diet': [], 'situation': "Usual Dinner"}
+        self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special_diet': [], 'situation': "Usual Dinner", "health_diagnostic_score": None}
         self.load_model(food_config.DM_MODEL)
         self.load_user_model(food_config.USER_MODELS, clientid)
 
@@ -68,6 +68,9 @@ class DM(wbc.WhiteBoardClient):
         elif "NLU" in topic:
             self.from_NLU = json.loads(msg)
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
+        elif "HealthDiagnostic" in topic:
+            self.user_model["health_diagnostic_score"] = msg["health_diagnostic_score"]
+            # print(colored(self.user_model,"blue"))
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
             recommended_food = None

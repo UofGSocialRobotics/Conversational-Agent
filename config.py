@@ -176,7 +176,7 @@ class Modules:
             logging.log.info("(config.py) Set domain as movies.")
         elif domain == "food":
             NLU_config = {"module": food_NLU.NLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
-            DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes, "publishes": DM_publishes}
+            DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
             NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
             SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}

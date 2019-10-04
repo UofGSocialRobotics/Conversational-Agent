@@ -28,5 +28,7 @@ class HealthDiagnostic(wbc.WhiteBoardClient):
                 self.food_diagnostic_score -= 1 * a
             self.food_diagnostic_score = float(self.food_diagnostic_score) / 50
             log.info("Health score is (%.2f)" % self.food_diagnostic_score)
+            data = {"health_diagnostic_score": self.food_diagnostic_score}
+            self.publish(data)
         else:
             log.debug("Already calculated health score (%.2f)" % self.food_diagnostic_score)
