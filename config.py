@@ -108,33 +108,27 @@ HealthDiagnostic_publishes = MSG_HEALTH_DIAGNOSTIC_OUT
 FIREBASE_KEY_USERS = "Users"
 FIREBASE_KEY_SESSIONS = "Sessions"
 
-# Low level keys
+# Shared / low level keys
 FIREBASE_KEY_DATETIME = "datetime"
 FIREBASE_KEY_CLIENTID = "client_id"
 FIREBASE_KEY_ACKFOR = "for"
 
-
-# Session keys
-# Keys used to write
+# Dialog keys
+FIREBASE_KEY_DIALOG = "dialog"
 FIREBASE_KEY_TEXT = "text"
 FIREBASE_KEY_SOURCE = "source"
 FIREBASE_VALUE_SOURCE_CLIENT = "client"
 FIREBASE_VALUE_SOURCE_AGENT = "agent"
 FIREBASE_KEY_ACK = "ack"
-# Keys used to read
+# Datacollection keys
 FIREBASE_KEY_AMTID = "amt_id"
 FIREBASE_KEY_DATACOLLECTION = "data_collection"
-# Keys used to write and read
-FIREBASE_KEY_DIALOG = "dialog"
+FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS = "food_diagnosis_answers"
 
 
 ####################################################################################################
 ##                                          Modules                                               ##
 ####################################################################################################
-# NLU = None
-# DM = None
-# NLG = None
-# SentimentAnalysis = None
 
 class Modules:
     """Singleton class"""

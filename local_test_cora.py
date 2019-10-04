@@ -28,7 +28,7 @@ class TestCora():
         self.services = list()
         for module_config in config.modules.modules:
             args = list(module_config.values())[1:]
-            print(*args)
+            # print(*args)
             new_module = module_config["module"](self.client_id, *args)
             self.services.append(new_module)
 

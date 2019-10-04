@@ -47,6 +47,9 @@ def stream_handler_datacollection_ref(message):
     if client_id:
         topic = config.MSG_DATACOL_IN + client_id
         whiteboard.publish(data, topic)
+        if config.FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS in data.keys() and data[config.FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS]:
+            topic = config.MSG_HEALTH_DIAGNOSTIC_IN + client_id
+            whiteboard.publish(data[config.FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS], topic)
 
 
 def stream_handler_dialog_ref(message):
