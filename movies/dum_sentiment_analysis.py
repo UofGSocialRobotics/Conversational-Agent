@@ -4,7 +4,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import helper_functions as helper
 
 class SentimentAnalysis(wbc.WhiteBoardClient,SentimentIntensityAnalyzer):
-    def __init__(self, subscribes, publishes, clientid):
+    def __init__(self, clientid, subscribes, publishes):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "SA"+clientid, subscribes, publishes)

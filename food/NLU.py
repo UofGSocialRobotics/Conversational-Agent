@@ -139,7 +139,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
 ####################################################################################################
 
 class NLU(wbc.WhiteBoardClient):
-    def __init__(self, subscribes, publishes, clientid):
+    def __init__(self, clientid, subscribes, publishes):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)

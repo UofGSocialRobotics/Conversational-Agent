@@ -229,25 +229,13 @@ class ServerUsingFirebase:
 
 
     def create_services(self, client_id):
-        self.clients_services[client_id] = dict()
-        # create dedicated NLU
-        new_nlu = config.modules.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
-        self.clients_services[client_id]["nlu"] = new_nlu
-        # create dedicated sentiment analysis
-        new_sa = config.modules.SentimentAnalysis(subscribes=config.SentimentAnalysis_subscribes, publishes=config.SentimentAnalysis_publishes, clientid=client_id)
-        self.clients_services[client_id]["sa"] = new_sa
-        # create dedicated DM
-        new_dm = config.modules.DM(subscribes=config.DM_subscribes, publishes=config.DM_publishes, clientid=client_id)
-        self.clients_services[client_id]["dm"] = new_dm
-        # create dedicated NLG
-        new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
-        self.clients_services[client_id]["nlg"] = new_nlg
-        # create dedicated data collector module
-        new_datacollector = config.modules.DataCollector(subscribes=config.DataCollector_subscribes, publishes=config.DataCollector_publishes, clientid=client_id, ack_msg=config.FIREBASE_KEY_ACK)
-        self.clients_services[client_id]["datacollector"] = new_datacollector
+        self.clients_services[client_id] = list()
+        for module_config in config.modules.modules:
+            args = list(module_config.values())[1:]
+            new_module = module_config["module"](client_id, *args)
+            self.clients_services[client_id].append(new_module)
 
-        # star services in dedicated threads
-        for key, s in self.clients_services[client_id].items():
+        for s in self.clients_services[client_id]:
             s.start_service()
 
         self.publish_whiteboard({config_data_collection.CLIENT_ID: client_id}, config.MSG_DATACOL_IN+client_id)
@@ -266,7 +254,7 @@ class ServerUsingFirebase:
     def stop_services(self, client_id):
         log.info("Shutting down services for client %s" % client_id)
         if client_id in self.clients_services.keys():
-            for c in self.clients_services[client_id].values():
+            for c in self.clients_services[client_id]:
                 c.stop_service()
         if client_id in self.timer_threads.keys():
             self.timer_threads[client_id].cancel()
@@ -276,7 +264,7 @@ class ServerUsingFirebase:
     def stop_all_services(self):
         log.debug("in stop_all_services, thread(s) left:")
         log.debug(threading.enumerate())
-        for client_id, service_dict in self.clients_services.items():
+        for client_id, services_list in self.clients_services.items():
             # for service in service_dict.values():
             #     service.stop_service()
             self.stop_services(client_id)

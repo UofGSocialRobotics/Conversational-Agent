@@ -32,7 +32,7 @@ MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
 
 SPOONACULAR_KEY = "f124c11f97374e4ea23184db8d4f4097"
 SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?apiKey="
-SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=2"
+SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=5"
 SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
 SPOONACULAR_API_SEARCH_ADDITIONAL_INFO = "&fillIngredients=true&addRecipeInformation=true"

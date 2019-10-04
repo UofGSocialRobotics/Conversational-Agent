@@ -8,7 +8,7 @@ import os.path
 
 
 class DataCollector(wbc.WhiteBoardClient):
-    def __init__(self, subscribes, publishes, clientid, ack_msg):
+    def __init__(self, clientid, subscribes, publishes, ack_msg):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="DataCollector"+clientid, subscribes=subscribes, publishes=publishes)

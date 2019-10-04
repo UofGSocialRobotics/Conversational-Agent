@@ -9,6 +9,7 @@ import food
 from food import DM as food_DM
 from food import NLG as food_NLG
 from food import NLU as food_NLU
+from food import heath_diagnostic
 import ca_logging as logging
 import data_collection
 
@@ -61,9 +62,11 @@ MSG_SERVER_OUT_ACK = "ACK"
 
 ## For AMT info module, server publishes on
 MSG_DATACOL_IN = "DataCollector_in/"
-
 ## For server, AMT info module publishes on
 MSG_DATACOL_OUT = "DataCollector_out/"
+
+MSG_HEALTH_DIAGNOSTIC_IN = "HealthDiagnostic_in/"
+MSG_HEALTH_DIAGNOSTIC_OUT = "HealthDiagnostic_out/"
 
 # Client to server, message content:
 MSG_CONNECTION = "client connected"
@@ -92,6 +95,10 @@ SentimentAnalysis_publishes = MSG_SA
 ## DataCollector
 DataCollector_subscribes = [MSG_DATACOL_IN]
 DataCollector_publishes = MSG_DATACOL_OUT
+
+## Health Diagnostic
+HealthDiagnostic_subscribes = [MSG_HEALTH_DIAGNOSTIC_IN]
+HealthDiagnostic_publishes = MSG_HEALTH_DIAGNOSTIC_OUT
 
 ####################################################################################################
 ##                                        Firebase Keys                                           ##
@@ -152,24 +159,38 @@ class Modules:
             logging.log.error("Singleton Class: contructor should not be called. Use Modules.getInstance()")
         else:
             Modules.__instance = self
-            self.NLU = None
-            self.DM = None
-            self.SentimentAnalysis = None
-            self.NLG = None
-            self.DataCollector = data_collection.DataCollector
+            # self.NLU = None
+            # self.DM = None
+            # self.SentimentAnalysis = None
+            # self.NLG = None
+            # self.DataCollector = data_collection.DataCollector
+            dataCollector_config = {"module": data_collection.DataCollector, "subscribes": DataCollector_subscribes, "publishes": DataCollector_publishes, "ack_msg": FIREBASE_KEY_ACK}
+            self.modules = list()
+            self.modules.append(dataCollector_config)
 
     def set_domain(self, domain):
         if domain == "movies":
-            self.NLU = movies_NLU.RuleBasedNLU
-            self.DM = movies_DM.DM
-            self.NLG = movies_NLG.NLG
-            self.SentimentAnalysis = movies_SA.SentimentAnalysis
+            # self.NLU = movies_NLU.RuleBasedNLU
+            # self.DM = movies_DM.DM
+            # self.NLG = movies_NLG.NLG
+            # self.SentimentAnalysis = movies_SA.SentimentAnalysis
+            NLU_config = {"module": movies_NLU.RuleBasedNLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
+            DM_config = {"module": movies_DM.DM, "subscribes": DM_subscribes, "publishes": DM_publishes}
+            NLG_config = {"module": movies_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
+            SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
+            self.modules += [NLU_config, DM_config, NLG_config, SA_config]
             logging.log.info("(config.py) Set domain as movies.")
         elif domain == "food":
-            self.NLU = food_NLU.NLU
-            self.DM = food_DM.DM
-            self.NLG = food_NLG.NLG
-            self.SentimentAnalysis = movies_SA.SentimentAnalysis
+            NLU_config = {"module": food_NLU.NLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
+            DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes, "publishes": DM_publishes}
+            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
+            SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
+            HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
+            self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
+            # self.NLU = food_NLU.NLU
+            # self.DM = food_DM.DM
+            # self.NLG = food_NLG.NLG
+            # self.SentimentAnalysis = movies_SA.SentimentAnalysis
             logging.log.info("(config.py) Set domain as food.")
         else:
             logging.log.error("No %s domain" % domain)

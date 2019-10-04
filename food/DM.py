@@ -7,9 +7,10 @@ from pathlib import Path
 import pandas
 import urllib.request
 from ca_logging import log
+from termcolor import colored
 
 class DM(wbc.WhiteBoardClient):
-    def __init__(self, subscribes, publishes, clientid):
+    def __init__(self, clientid, subscribes, publishes):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes)
@@ -116,10 +117,15 @@ class DM(wbc.WhiteBoardClient):
                 else:
                     log.debug("Not sure when we go in here")
                     food_options, recommended_food, self.current_recipe_list = self.recommend(None)
+                for recipe in self.current_recipe_list:
+                    print(recipe['title'])
+                # print(colored(self.current_recipe_list,"blue"))
                 recipe = self.current_recipe_list[0]
             if "food" in self.currState:
                 if "yes" in self.from_NLU['intent']:
                     self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
+                elif "no" in self.from_NLU['intent']:
+                    self.user_model['disliked_recipe'].append(self.current_recipe_list.pop(0))
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -152,8 +158,11 @@ class DM(wbc.WhiteBoardClient):
     def recommend(self, additional_request):
         food_options = self.get_food_options(additional_request)
         recommended_food = self.pick_food(food_options)
-        recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
-        log.debug((food_options,recommended_food,recipe_list))
+        # TODO: need to change that and update it each time?
+        recipe_list = self.current_recipe_list
+        if not recipe_list:
+            recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
+        # log.debug((food_options,recommended_food,recipe_list))
         return food_options, recommended_food, recipe_list
 
     def get_food_options(self, request):
@@ -173,6 +182,8 @@ class DM(wbc.WhiteBoardClient):
             filling_weight = 1
         else:
             filling_weight = 0
+
+
 
         for index, row in situated_food_matrix.iterrows():
             if request:
@@ -203,6 +214,7 @@ class DM(wbc.WhiteBoardClient):
         return best_food
 
     def pick_food(self, food):
+        # print(colored(food,"blue"))
         recommended_food = {'main': "", 'secondary': "", 'other_main': ""}
         if randint(0, 1) == 1:
             recommended_food['main'] = food['meal']
@@ -259,6 +271,7 @@ class DM(wbc.WhiteBoardClient):
     def get_recipe_list_with_spoonacular(self, recommended_food):
         #Todo Do something if no recipe-->
         # recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request("potato")
+        print(colored("in get_recipe_list_with_spoonacular", "blue"))
         recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
         log.debug(recipe_list)
 

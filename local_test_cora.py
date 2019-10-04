@@ -25,25 +25,15 @@ class TestCora():
         self.next_input()
 
     def create_services(self):
-        # create dedicated NLU
-        client_id = self.client_id
-        new_nlu = config.modules.NLU(subscribes=config.NLU_subscribes, publishes=config.NLU_publishes, clientid=client_id)
-        self.services["nlu"] = new_nlu
-        # create dedicated sentiment analysis
-        new_sa = config.modules.SentimentAnalysis(subscribes=config.SentimentAnalysis_subscribes, publishes=config.SentimentAnalysis_publishes, clientid=client_id)
-        self.services["sa"] = new_sa
-        # create dedicated DM
-        new_dm = config.modules.DM(subscribes=config.DM_subscribes, publishes=config.DM_publishes, clientid=client_id)
-        self.services["dm"] = new_dm
-        # create dedicated NLG
-        new_nlg = config.modules.NLG(subscribes=config.NLG_subscribes, publishes=config.NLG_publishes, clientid=client_id)
-        self.services["nlg"] = new_nlg
-        # create dedicated data collector module
-        new_datacollector = config.modules.DataCollector(subscribes=config.DataCollector_subscribes, publishes=config.DataCollector_publishes, clientid=client_id, ack_msg=config.FIREBASE_KEY_ACK)
-        self.services["datacollector"] = new_datacollector
+        self.services = list()
+        for module_config in config.modules.modules:
+            args = list(module_config.values())[1:]
+            print(*args)
+            new_module = module_config["module"](self.client_id, *args)
+            self.services.append(new_module)
 
         # star services in dedicated threads
-        for key, s in self.services.items():
+        for s in self.services:
             s.start_service()
 
 
@@ -79,7 +69,7 @@ class TestCora():
         whiteboard.publish(utterance, topic)
 
     def quit(self):
-        for c in self.services.values():
+        for c in self.services:
             c.stop_service()
         # exit(0)
 
@@ -95,9 +85,9 @@ if __name__ == "__main__":
     argp.add_argument("--logs", help="If you want to see the python logs in the console", action="store_true")
 
     autotest_scripts = dict()
-    autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "sure", "no thanks"]
-    autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
-    autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
+    autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "ok", "sure", "thanks"]
+    # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
+    # autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
 
     args = argp.parse_args()
     if not args.logs:
