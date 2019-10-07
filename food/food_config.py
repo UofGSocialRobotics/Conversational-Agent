@@ -1,5 +1,70 @@
 
 ####################################################################################################
+##                                              Voc                                               ##
+####################################################################################################
+intent = 'intent'
+cs = 'cs'
+tags = 'tags'
+entity = "entity"
+entity_type = "entity_type"
+polarity = "polarity"
+inform = "inform"
+
+food = "food"
+food_type = "food_type"
+food_name = "food_name"
+
+# keys words used by NLU
+yes = 'yes'
+no = 'no'
+healthy = "healthy"
+health = 'health'
+not_healthy = 'not_healthy'
+time = 'time'
+no_time = 'no_time'
+hungry = 'hungry'
+not_hungry = 'not_hungry'
+vegan = "vegan"
+greeting = "greeting"
+inform_food = "inform(food)"
+comfort = "comfort"
+filling = "filling"
+
+# food diamensions (larry)
+emotional_satisfaction = 'emotional_satisfaction'
+healthiness = "healthiness"
+food_fillingness = "food_fillingness"
+
+# Food options
+meal = 'meal'
+dessert = 'dessert'
+drink = 'drink'
+meat = 'meat'
+side = 'side'
+main = 'main'
+secondary = "secondary"
+other_main = "other_main"
+
+# Frame
+user_intent = 'user_intent'
+previous_intent = 'previous_intent'
+user_model = 'user_model'
+reco_food = 'reco_food'
+recipe = 'recipe'
+title = "title"
+
+# DM: user model
+liked_features = "liked_features"
+disliked_features = "disliked_features"
+liked_food = "liked_food"
+disliked_food = 'disliked_food'
+liked_recipe = "liked_recipe"
+disliked_recipe = "disliked_recipe"
+special_diet = 'special_diet'
+situation = "situation"
+health_diagnostic_score = "health_diagnostic_score"
+
+####################################################################################################
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
@@ -9,6 +74,7 @@ NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 # NLG_ACK_DB = "food/resources/nlg/ack_db.csv"
 NLG_ACK_DB = "food/resources/nlg/ack_db.json"
 FOOD_MODEL_PATH = "food/resources/dm/food_model.csv"
+LOCAL_FOOD_DB = "food/resources/dm/recipes.json"
 
 
 ####################################################################################################

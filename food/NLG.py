@@ -2,12 +2,15 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import json
 import random
-import food.food_config as food_config
+import food.food_config as fc
 import requests
 from io import BytesIO
 from ca_logging import log
 from termcolor import colored
 import csv
+from collections import namedtuple
+
+SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes):
@@ -23,18 +26,41 @@ class NLG(wbc.WhiteBoardClient):
         self.recipe = None
         self.situation = None
 
-        self.load_sentence_model(food_config.NLG_SENTENCE_DB)
-        self.load_ack_model(food_config.NLG_ACK_DB)
+        self.features_last_enumareted_on_turn = None
+
+        self.load_sentence_model(fc.NLG_SENTENCE_DB)
+        self.load_ack_model(fc.NLG_ACK_DB)
 
     def load_sentence_model(self, path):
         with open(path, 'r') as f:
             content = csv.reader(f)
             for line_input in content:
                 # line_input = line.split(",")
-                print(line_input[2])
-                if self.sentenceDB.get(line_input[0]) is None:
-                    self.sentenceDB[line_input[0]] = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                self.sentenceDB[line_input[0]][line_input[1]].append(line_input[2])
+                # print(line_input[2])
+                # if self.sentenceDB.get(line_input[0]) is None:
+                #     self.sentenceDB[line_input[0]] = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
+                # self.sentenceDB[line_input[0]][line_input[1]].append(line_input[2])
+                sentence_params = SentenceParameters(intent=line_input[0], cs=line_input[1], tags=line_input[2])
+                if sentence_params not in self.sentenceDB.keys():
+                    self.sentenceDB[sentence_params] = list()
+                self.sentenceDB[sentence_params].append(line_input[3])
+
+    def choose_sentence(self, intent, cs=None, tags_list=None):
+        # for sentence_params, sentences_list in self.sentenceDB.items():
+        sentences_params_list = self.sentenceDB.keys()
+        key_res = [s for s in sentences_params_list if s.intent == intent]
+        if cs:
+            key_res = [s for s in key_res if cs in s.cs]
+        if tags_list:
+            for tag in tags_list:
+                key_res = [s for s in key_res if tag in s.tags]
+
+        if key_res and len(key_res) > 0:
+            return random.choice(self.sentenceDB[key_res[0]])
+        else:
+            error_message = "Can't find a sentence for %s, %s, %s" % (intent, cs.__str__(), tags_list.__str__())
+            print(colored())
+
 
     def load_ack_model(self, path):
         with open(path) as f:
@@ -120,10 +146,10 @@ class NLG(wbc.WhiteBoardClient):
         # Sentence_CS
         # Explanation
 
-        if food_config.NLG_USE_ACKS_CS:
+        if fc.NLG_USE_ACKS_CS:
             ack_cs = self.pick_ack_social_strategy()
 
-        if food_config.NLG_USE_CS:
+        if fc.NLG_USE_CS:
             cs = self.pick_social_strategy()
 
         self.food = message['reco_food']
@@ -135,12 +161,14 @@ class NLG(wbc.WhiteBoardClient):
         #
         # Based on the strategies selected during the content planning, we generate the sentence.
 
-        if self.sentenceDB[message['intent']][cs]:
-            sentence = random.choice(self.sentenceDB[message['intent']][cs])
-        else:
-            sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
+        # if self.sentenceDB[message['intent']][cs]:
+        #     # sentence = random.choice(self.sentenceDB[message['intent']][cs])
+        #     sentence = self.choose_sentence(message[fc.intent], cs)
+        # else:
+            # sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
+        sentence = self.choose_sentence(message[fc.intent], cs=None)
 
-        if food_config.NLG_USE_ACKS:
+        if fc.NLG_USE_ACKS:
             if message['user_intent']['intent'] in ["yes", "no"]:
                 valence = message['user_intent']['intent']
             elif message['user_intent']['entity_type']:
@@ -162,7 +190,7 @@ class NLG(wbc.WhiteBoardClient):
         self.publish(msg_to_send)
 
     def create_recipe_card(self, recipe):
-        query = food_config.SPOONACULAR_API_VISUALIZE + food_config.SPOONACULAR_KEY
+        query = fc.SPOONACULAR_API_VISUALIZE + fc.SPOONACULAR_KEY
 
         imageURL = requests.get(recipe['image'])
 
@@ -201,11 +229,11 @@ class NLG(wbc.WhiteBoardClient):
         return frame
 
     def pick_ack_social_strategy(self):
-        #return random.choice(food_config.CS_LABELS)
+        #return random.choice(fc.CS_LABELS)
         return "NONE"
 
     def pick_social_strategy(self):
-        #return random.choice(food_config.CS_LABELS)
+        #return random.choice(fc.CS_LABELS)
         return "NONE"
 
     def pick_ack(self, previous_intent, valence, cs):
