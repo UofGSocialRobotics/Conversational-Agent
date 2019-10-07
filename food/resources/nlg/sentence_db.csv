@@ -1,16 +1,16 @@
-greeting,NONE,Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me; How are you doing today?,
-greet_back,NONE,Welcome back! How are you doing today?,
-request_back(last_movie),NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!,
+greeting,NONE,Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me; How are you doing today?
+greet_back,NONE,Welcome back! How are you doing today?
+request_back(last_movie),NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!
 inform(opinion_last_movie),NONE,Oh. can you tell me why?
-request(situation),NONE,I'm here to help you find something healthy to eat. So tell me. Where do you plan to have lunch today?,
-request(hungry),NONE,Are you feeling hungry or would you rather have a light lunch?,
+request(situation),NONE,I'm here to help you find something healthy to eat. So tell me. Where do you plan to have lunch today?
+request(hungry),NONE,Are you feeling hungry or would you rather have a light lunch?
 inform(food),NONE, One great food option for #situation would be to eat #recipe with #secondaryfood. That's a great option if you #features What do you think?,
 inform(food),NONE, What about #recipe with #secondaryfood? This meal contains #mainfood which is great if you #features,
-inform(food),NONE, For #situation I'd recommend eating #recipe, ideal if you #features What do you think?,
-bye,NONE,Enjoy your meal and see you soon!,
-request(filling),NONE,So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?,
-request(healthy),NONE,How healthy do you want your meal to be?,
-request(diet),NONE,Any specific diet I should be aware of?,
-request(time),NONE,We're almost there. Would you have some time to cook tonight or would you rather get something quick to prepare?,
-request(food),NONE,One last question. Is there any food you'd like to use? Something already in your kitchen or that you could buy?,
-request(another),NONE,Would you like another recipe?,
+inform(food),NONE,"For #situation I'd recommend eating #recipe, ideal if you #features What do you think?"
+bye,NONE,Enjoy your meal and see you soon!
+request(filling),NONE,So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+request(healthy),NONE,How healthy do you want your meal to be?
+request(diet),NONE,Any specific diet I should be aware of?
+request(time),NONE,We're almost there. Would you have some time to cook tonight or would you rather get something quick to prepare?
+request(food),NONE,One last question. Is there any food you'd like to use? Something already in your kitchen or that you could buy?
+request(another),NONE,Would you like another recipe?

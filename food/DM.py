@@ -8,6 +8,7 @@ import pandas
 import urllib.request
 from ca_logging import log
 from termcolor import colored
+from fuzzywuzzy import fuzz
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes):
@@ -34,6 +35,11 @@ class DM(wbc.WhiteBoardClient):
         self.user_model = {"liked_features": [], "disliked_features": [], "liked_food": [], 'disliked_food': [], "liked_recipe": [], "disliked_recipe": [], 'special_diet': [], 'situation': "Usual Dinner", "health_diagnostic_score": None}
         self.load_model(food_config.DM_MODEL)
         self.load_user_model(food_config.USER_MODELS, clientid)
+        self.use_local_recipe_DB = False
+
+
+    def set_use_local_recipe_DB(self, val):
+        self.use_local_recipe_DB = val
 
     # Parse the model.csv file and transform that into a dict of Nodes representing the scenario
     def load_model(self, path):
@@ -70,7 +76,6 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
         elif "HealthDiagnostic" in topic:
             self.user_model["health_diagnostic_score"] = msg["health_diagnostic_score"]
-            # print(colored(self.user_model,"blue"))
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
             recommended_food = None
@@ -78,6 +83,12 @@ class DM(wbc.WhiteBoardClient):
             food_recipe_list = None
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU['intent'])
+
+            if "food" in self.currState:
+                if "yes" in self.from_NLU['intent']:
+                    self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
+                elif "no" in self.from_NLU['intent']:
+                    self.user_model['disliked_recipe'].append(self.current_recipe_list.pop(0))
 
             #Todo need to manage diet, time, and food
 
@@ -113,22 +124,14 @@ class DM(wbc.WhiteBoardClient):
             if "inform(food)" in next_state:
                 if "request" in self.from_NLU['intent'] and "more" not in self.from_NLU['entity_type']:
                     log.debug("trying to get 1st recommendation")
-                    food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU['entity_type'])
+                    food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU['entity_type'], use_local_recipe_DB=self.use_local_recipe_DB)
                 elif "request" in self.from_NLU['intent'] and "more" in self.from_NLU['entity_type']:
                     log.debug("trying to get other recommendation")
                     self.current_recipe_list.pop(0)
                 else:
                     log.debug("Not sure when we go in here")
-                    food_options, recommended_food, self.current_recipe_list = self.recommend(None)
-                for recipe in self.current_recipe_list:
-                    print(recipe['title'])
-                # print(colored(self.current_recipe_list,"blue"))
+                    food_options, recommended_food, self.current_recipe_list = self.recommend(None, use_local_recipe_DB=self.use_local_recipe_DB)
                 recipe = self.current_recipe_list[0]
-            if "food" in self.currState:
-                if "yes" in self.from_NLU['intent']:
-                    self.user_model['liked_recipe'].append(self.current_recipe_list.pop(0))
-                elif "no" in self.from_NLU['intent']:
-                    self.user_model['disliked_recipe'].append(self.current_recipe_list.pop(0))
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -158,15 +161,40 @@ class DM(wbc.WhiteBoardClient):
     def load_food_data(self):
         self.food_data = pandas.read_csv(food_config.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
 
-    def recommend(self, additional_request):
+    def remove_disliked_foods(self):
+        new_recipe_list = list()
+        for recipe in self.current_recipe_list:
+            bool_recipe_disliked = False
+            for disliked_recipe in self.user_model["disliked_recipe"]:
+                shortest_recipe_title = recipe['title'] if len(recipe['title']) < len(disliked_recipe['title']) else disliked_recipe['title']
+                longest_recipe_title = recipe['title'] if len(recipe['title']) >= len(disliked_recipe['title']) else disliked_recipe['title']
+                if shortest_recipe_title in longest_recipe_title:
+                    bool_recipe_disliked = True
+                    break
+                similarity_score = fuzz.token_sort_ratio(recipe['title'], disliked_recipe['title'])
+                if similarity_score > 85:
+                    bool_recipe_disliked = True
+                    log.debug("Removing "+recipe['title'])
+                    break
+            if not bool_recipe_disliked:
+                new_recipe_list.append(recipe)
+        self.current_recipe_list = new_recipe_list
+
+    def recommend(self, additional_request, use_local_recipe_DB=False):
         food_options = self.get_food_options(additional_request)
         recommended_food = self.pick_food(food_options)
         # TODO: need to change that and update it each time?
-        recipe_list = self.current_recipe_list
-        if not recipe_list:
-            recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
+        if not self.current_recipe_list:
+            if use_local_recipe_DB:
+                with open("food/resources/dm/recipes.json", 'rb') as f:
+                    self.current_recipe_list = json.load(f)
+            else:
+                self.current_recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
+        self.remove_disliked_foods()
         # log.debug((food_options,recommended_food,recipe_list))
-        return food_options, recommended_food, recipe_list
+        if not self.current_recipe_list:
+            log.critical(colored("No recipe to recommend","cyan"))
+        return food_options, recommended_food, self.current_recipe_list
 
     def get_food_options(self, request):
         max_meal_value = max_dessert_value = max_drink_value = max_meat_value = max_side_value = -100
@@ -217,7 +245,6 @@ class DM(wbc.WhiteBoardClient):
         return best_food
 
     def pick_food(self, food):
-        # print(colored(food,"blue"))
         recommended_food = {'main': "", 'secondary': "", 'other_main': ""}
         if randint(0, 1) == 1:
             recommended_food['main'] = food['meal']

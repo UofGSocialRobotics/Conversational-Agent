@@ -7,6 +7,7 @@ import requests
 from io import BytesIO
 from ca_logging import log
 from termcolor import colored
+import csv
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes):
@@ -26,9 +27,11 @@ class NLG(wbc.WhiteBoardClient):
         self.load_ack_model(food_config.NLG_ACK_DB)
 
     def load_sentence_model(self, path):
-        with open(path) as f:
-            for line in f:
-                line_input = line.split(",")
+        with open(path, 'r') as f:
+            content = csv.reader(f)
+            for line_input in content:
+                # line_input = line.split(",")
+                print(line_input[2])
                 if self.sentenceDB.get(line_input[0]) is None:
                     self.sentenceDB[line_input[0]] = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
                 self.sentenceDB[line_input[0]][line_input[1]].append(line_input[2])
@@ -51,7 +54,7 @@ class NLG(wbc.WhiteBoardClient):
             #         default_cs_dict = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
             #         self.ackDB[line_input[0]] = {'yes': yes_cs_dict, 'no': no_cs_dict, 'hungry': hungry_cs_dict, 'not_hungry': not_hungry_cs_dict, 'healthy': healthy_cs_dict, 'not_healthy': not_healthy_cs_dict, 'time': time_cs_dict, 'no_time': no_time_cs_dict, 'default': default_cs_dict}
             #     self.ackDB[line_input[0]][line_input[4]][line_input[2]].append(line_input[3])
-            print(self.ackDB)
+            # print(self.ackDB)
 
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
