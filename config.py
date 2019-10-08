@@ -15,6 +15,15 @@ import data_collection
 
 
 ####################################################################################################
+##                                       Experimental conditions                                  ##
+####################################################################################################
+exp_type_food = "food"
+exp_type_opinion = "opinion"
+exp_type_feature = "feature"
+EXPLANATION_TYPE = []
+
+
+####################################################################################################
 ##                                        Firebase config                                         ##
 ####################################################################################################
 FIREBASE_CONFIG = {
@@ -164,10 +173,6 @@ class Modules:
 
     def set_domain(self, domain):
         if domain == "movies":
-            # self.NLU = movies_NLU.RuleBasedNLU
-            # self.DM = movies_DM.DM
-            # self.NLG = movies_NLG.NLG
-            # self.SentimentAnalysis = movies_SA.SentimentAnalysis
             NLU_config = {"module": movies_NLU.RuleBasedNLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
             DM_config = {"module": movies_DM.DM, "subscribes": DM_subscribes, "publishes": DM_publishes}
             NLG_config = {"module": movies_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
@@ -177,14 +182,10 @@ class Modules:
         elif domain == "food":
             NLU_config = {"module": food_NLU.NLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
             DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
-            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
+            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE}
             SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
-            # self.NLU = food_NLU.NLU
-            # self.DM = food_DM.DM
-            # self.NLG = food_NLG.NLG
-            # self.SentimentAnalysis = movies_SA.SentimentAnalysis
             logging.log.info("(config.py) Set domain as food.")
         else:
             logging.log.error("No %s domain" % domain)

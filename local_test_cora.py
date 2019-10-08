@@ -6,6 +6,7 @@ import argparse
 from termcolor import colored, cprint
 import datetime
 import time
+import traceback
 
 class TestCora():
     def __init__(self, autotest_script=None):
@@ -118,22 +119,33 @@ if __name__ == "__main__":
     if not args.logs:
         log.setLevel(logging.CRITICAL)
 
-    if(args.domain in ["movies", "food"]):
-        config.modules.set_domain(args.domain)
-        if args.autotest and autotest_scripts:
-            for script_name, script in autotest_scripts.items():
-                print(colored(script_name, "blue"))
-                test = TestCora(script)
+    try:
+        test = None
+        if(args.domain in ["movies", "food"]):
+            config.modules.set_domain(args.domain)
+            if args.autotest and autotest_scripts:
+                for script_name, script in autotest_scripts.items():
+                    print(colored(script_name, "blue"))
+                    test = TestCora(script)
+                    test.set_use_local_DB_value(args.localDB)
+                    test.start_testCora()
+
+            elif args.test:
+                test = TestCora()
                 test.set_use_local_DB_value(args.localDB)
                 test.start_testCora()
-
-        elif args.test:
-            test = TestCora()
-            test.set_use_local_DB_value(args.localDB)
-            test.start_testCora()
+            else:
+                args.print_help()
         else:
-            args.print_help()
-    else:
-        argp.print_help()
+            argp.print_help()
+
+    except:
+        if test:
+            test.quit()
+        exceptiondata = traceback.format_exc().splitlines()
+        print(exceptiondata[0])
+        print("  [...]")
+        for line in exceptiondata[-9:]:
+            print(line)
 
 
