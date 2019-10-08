@@ -11,6 +11,7 @@ import csv
 from collections import namedtuple
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
+AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent])
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[]):
@@ -36,18 +37,28 @@ class NLG(wbc.WhiteBoardClient):
         with open(path, 'r') as f:
             content = csv.reader(f)
             for line_input in content:
-                # line_input = line.split(",")
-                # print(line_input[2])
-                # if self.sentenceDB.get(line_input[0]) is None:
-                #     self.sentenceDB[line_input[0]] = {'SD': [], 'VSN': [], 'PR': [], 'HE': [], 'NONE': [], 'QESD': []}
-                # self.sentenceDB[line_input[0]][line_input[1]].append(line_input[2])
                 sentence_params = SentenceParameters(intent=line_input[0], cs=line_input[1], tags=line_input[2])
                 if sentence_params not in self.sentenceDB.keys():
                     self.sentenceDB[sentence_params] = list()
                 self.sentenceDB[sentence_params].append(line_input[3])
 
+    def load_ack_model(self, path):
+        with open(path, 'r') as f:
+            content = csv.reader(f)
+            for i, line_input in enumerate(content):
+                if i > 0:
+                    # print(line_input[3])
+                    valence = list(line_input[3]) if "," in line_input[3] else line_input[3].split(",")
+                    valence = [v.strip() for v in valence]
+                    ack_params = AckParameters(previous_intent=line_input[0], cs=line_input[1], valence=line_input[3], current_intent=line_input[4])
+                    if ack_params not in self.ackDB.keys():
+                        self.ackDB[ack_params] = list()
+                    self.ackDB[ack_params].append(line_input[2])
+        # print(self.ackDB)
+
     def choose_sentence(self, intent, cs=None, tags_list=None):
         # for sentence_params, sentences_list in self.sentenceDB.items():
+        # print((intent, cs.__str__(), tags_list.__str__()))
         sentences_params_list = self.sentenceDB.keys()
         key_res = [s for s in sentences_params_list if s.intent == intent]
         if cs:
@@ -57,37 +68,32 @@ class NLG(wbc.WhiteBoardClient):
                 key_res = [s for s in key_res if tag in s.tags]
 
         if key_res and len(key_res) > 0:
-            return random.choice(self.sentenceDB[key_res[0]])
+            sentences_to_choose_from = list()
+            for key in key_res:
+                sentences_to_choose_from += self.sentenceDB[key]
+            return random.choice(sentences_to_choose_from)
         else:
             error_message = "Can't find a sentence for %s, %s, %s" % (intent, cs.__str__(), tags_list.__str__())
             print(colored(error_message, "blue"))
             log.critical(error_message)
 
-
-    def load_ack_model(self, path):
-        with open(path) as f:
-            self.ackDB = json.load(f)
-
-
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
-        # print(colored("previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__(), "blue"))
-        word_valence_list = ["healthy", "time", "hungry"]
-        neg_word_valence_list = ["no_"+word for word in word_valence_list] + ["not_"+word for word in word_valence_list]
-        if valence and valence in word_valence_list:
-            valence = "yes"
-        elif valence in neg_word_valence_list:
-            valence = "no"
-        for ack_sentence, ack_sentence_dict in self.ackDB.items():
-            cond_previous_intent = previous_intent == ack_sentence_dict["previous_intent"]
-            cond_valence = ((valence and valence == ack_sentence_dict["valence"]) or (not valence and ack_sentence_dict["valence"] == "default"))
-            cond_CS = ((CS and CS in ack_sentence_dict["CS"]) or not CS)
-            cond_current_intent = ((current_intent and "current_intent" in ack_sentence_dict.keys() and current_intent == ack_sentence_dict["current_intent"]) or not current_intent or "current_intent" not in ack_sentence_dict.keys())
-            if cond_previous_intent and cond_valence and cond_CS and cond_current_intent:
-                return ack_sentence
-        log.warn("Could not find ack for previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__())
-        return ""
+        ack_params_list = self.ackDB.keys()
+        key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
+        if CS:
+            key_res = [ack_params for ack_params in key_res if ack_params.cs == CS]
+        if valence:
+            key_res = [ack_params for ack_params in key_res if valence in ack_params.valence]
+        if current_intent:
+            key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent]
 
-
+        if key_res and len(key_res) > 0:
+            return random.choice(self.ackDB[key_res[0]])
+        else:
+            error_message = "Could not find ack for previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__()
+            log.warn(error_message)
+            # print(colored(error_message, "blue"))
+            return ""
 
     def treat_message(self, msg, topic):
         message = json.loads(msg)
@@ -135,7 +141,8 @@ class NLG(wbc.WhiteBoardClient):
                 valence = "yes" if message['user_intent']['entity'] else "no"
             else:
                 valence = None
-            ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=message["intent"])
+            current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
+            ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=current_intent)
         else:
             ack = ""
         final_sentence = self.replace(ack + " " + sentence)
