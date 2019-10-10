@@ -20,7 +20,7 @@ import data_collection
 exp_type_food = "food"
 exp_type_opinion = "opinion"
 exp_type_feature = "feature"
-EXPLANATION_TYPE = []
+EXPLANATION_TYPE = [exp_type_food]
 
 
 ####################################################################################################

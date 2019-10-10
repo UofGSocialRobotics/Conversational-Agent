@@ -95,8 +95,8 @@ class NLG(wbc.WhiteBoardClient):
             # print(colored(error_message, "blue"))
             return ""
 
-    def treat_message(self, msg, topic):
-        message = json.loads(msg)
+    def treat_message(self, message, topic):
+        # message = json.loads(msg)
         recipe_card = None
         self.user_model = message['user_model']
         self.user_intent = message['user_intent']
@@ -188,7 +188,13 @@ class NLG(wbc.WhiteBoardClient):
 
         response = requests.post(query, files=files)
         card_json = json.loads(response.text)
-        return card_json['url']
+        try:
+            url = card_json['url']
+            return url
+        except KeyError as e:
+            print(e)
+            print(card_json)
+            return None
 
     def msg_to_json(self, intent, sentence, food_recipe, food_poster):
         frame = {'intent': intent, 'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
@@ -218,10 +224,22 @@ class NLG(wbc.WhiteBoardClient):
 
     def replace_food(self, sentence, food_tag, food_key):
         if food_tag in sentence:
-            replace_with = self.food[food_key]
-            replace_with = replace_with.replace(" dish", "")
+            if food_tag == "#mainfood":
+                replace_with = self.get_random_ingredient_from_recipe(self.recipe)
+            else:
+                replace_with = self.food[food_key]
+                replace_with = replace_with.replace(" dish", "")
             sentence = sentence.replace(food_tag, replace_with)
         return sentence
+
+    def get_random_ingredient_from_recipe(self, recipe):
+        ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] + recipe["unusedIngredients"]
+        # chosen_ingredient = random.choice(ingredients)
+        for ingredient in ingredients:
+            if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
+                return ingredient["name"]
+        chosen_ingredient = random.choice(ingredients)
+        return chosen_ingredient["name"]
 
     def replace_features(self, sentence):
         if "#features" in sentence:

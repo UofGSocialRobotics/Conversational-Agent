@@ -72,7 +72,7 @@ class DM(wbc.WhiteBoardClient):
         if "SA" in topic:
             self.from_SA = msg
         elif "NLU" in topic:
-            self.from_NLU = json.loads(msg)
+            self.from_NLU = msg
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
         elif "HealthDiagnostic" in topic:
             self.user_model[fc.health_diagnostic_score] = msg[fc.health_diagnostic_score]
@@ -84,7 +84,7 @@ class DM(wbc.WhiteBoardClient):
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU[fc.intent])
 
-            if fc.food in self.currState:
+            if fc.inform_food in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
                 elif fc.no in self.from_NLU[fc.intent]:
@@ -150,8 +150,8 @@ class DM(wbc.WhiteBoardClient):
 
     def msg_to_json(self, intention, user_intent, previous_intent, user_frame, reco_food, recipe):
         frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.reco_food: reco_food, fc.recipe: recipe}
-        json_msg = json.dumps(frame)
-        return json_msg
+        # json_msg = json.dumps(frame)
+        return frame
 
     def parse_from_NLU(self, NLU_message):
         if "request" in NLU_message[fc.intent]:
@@ -163,6 +163,7 @@ class DM(wbc.WhiteBoardClient):
 
     def remove_disliked_foods(self):
         new_recipe_list = list()
+        log.debug("Before removing disliked foods: "+ len(self.current_recipe_list).__str__())
         for recipe in self.current_recipe_list:
             bool_recipe_disliked = False
             for disliked_recipe in self.user_model[fc.disliked_recipe]:
@@ -179,6 +180,7 @@ class DM(wbc.WhiteBoardClient):
             if not bool_recipe_disliked:
                 new_recipe_list.append(recipe)
         self.current_recipe_list = new_recipe_list
+        log.debug("After removing disliked foods: "+ len(self.current_recipe_list).__str__())
 
     def recommend(self, additional_request, use_local_recipe_DB=False):
         food_options = self.get_food_options(additional_request)
@@ -299,23 +301,25 @@ class DM(wbc.WhiteBoardClient):
         return recipe_list
 
     def get_recipe_list_with_spoonacular(self, recommended_food):
-        #Todo Do something if no recipe-->
-        # recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request("potato")
         print(colored("in get_recipe_list_with_spoonacular", "blue"))
-        recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
-        log.debug(recipe_list)
+        recipe_list = []
+        recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
+        # log.debug(recipe_list)
 
-        if not recipe_list:
-            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], self.user_model['liked_food'])
-            log.debug(recipe_list)
-        if not recipe_list:
-            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], liked_food=None)
-            log.debug(recipe_list)
-            log.debug(recipe_list)
-        if not recipe_list:
-            recipe_list = self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], liked_food=None)
-            log.debug(recipe_list)
+        if not recipe_list or len(recipe_list)<5 and "mashed" in recommended_food["main"]:
+            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"].replace("mashed",""), self.user_model['liked_food'])
+        if not recipe_list or len(recipe_list)<5:
+            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], self.user_model['liked_food'])
+            # log.debug(recipe_list)
+        if not recipe_list or len(recipe_list)<5:
+            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], liked_food=None)
+            # log.debug(recipe_list)
+            # log.debug(recipe_list)
+        if not recipe_list or len(recipe_list)<5:
+            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], liked_food=None)
+            # log.debug(recipe_list)
 
+        log.debug("Got %d recipes with Spoonacular" % len(recipe_list))
         return recipe_list
 
     def generate_soonacular_url(self, query):
