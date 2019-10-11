@@ -104,6 +104,7 @@ SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?apiK
 SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=5"
 SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
+SPOONACULAR_API_DIET = "&diet="
 SPOONACULAR_API_SEARCH_ADDITIONAL_INFO = "&fillIngredients=true&addRecipeInformation=true"
 SPOONACULAR_FOOD_RECO = "https://api.spoonacular.com/food/detect?apiKey="
 SPOONACULAR_API_VISUALIZE = "https://api.spoonacular.com/recipes/visualizeRecipe?apiKey="

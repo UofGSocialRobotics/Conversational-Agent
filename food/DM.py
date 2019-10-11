@@ -274,12 +274,13 @@ class DM(wbc.WhiteBoardClient):
         return recipe_list
 
     def format_recommended_food(self, recommended_food):
-        to_replace_pairs = [["with", "and"], ["side", ""], ["dish", ""]]
+        to_replace_pairs = [["with", ""], ["side", ""], ["dish", ""]]
         for to_replace, to_replace_with in to_replace_pairs:
             if to_replace in recommended_food:
                 recommended_food = recommended_food.replace(to_replace, to_replace_with)
         recommended_food = ' '.join(recommended_food.split(' '))
         recommended_food = recommended_food.replace(" ", "%20")
+        recommended_food = '%20'.join(recommended_food.split('%20'))
         return recommended_food
 
 
@@ -290,13 +291,11 @@ class DM(wbc.WhiteBoardClient):
             max_time = 21
         else:
             max_time = 5000
-        if not liked_food:
-            query = request_food + fc.SPOONACULAR_API_MAX_TIME + str(max_time) + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
-            log.debug(query)
-        else:
-            query = request_food + fc.SPOONACULAR_API_MAX_TIME + str(max_time) + fc.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
-            # query = request_food + fc.SPOONACULAR_API_MAX_TIME + str(max_time) + fc.SPOONACULAR_API_ADDITIONAL_INGREDIENTS + self.user_model['liked_food'][0] + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
-            log.debug(query)
+        time_str = fc.SPOONACULAR_API_MAX_TIME + str(max_time)
+        diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
+        liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
+        query = request_food + liked_food_str + time_str + diet_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO+ fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        log.debug(query)
         recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
         return recipe_list
 

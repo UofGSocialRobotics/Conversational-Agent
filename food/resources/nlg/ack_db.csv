@@ -14,7 +14,7 @@ request(time),NONE,Great! Coocking can be so much fun when you have time for it!
 request(time),NONE,No time constraint. Good to know.,"yes, time",NONE
 request(healthy),NONE,Nice. I'm sure the both of us will get along well!,"yes, healthy",NONE
 request(healthy),NONE,"Sure! Health is the real wealth, you're a smart person!","yes, healthy",NONE
-request(healthy),NONE,"Ya, taste first and healthyness second right? I totally agree.","no, not_healthy",NONE
+request(healthy),NONE,"Ya, taste first and healthiness second right? I totally agree.","no, not_healthy",NONE
 request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE
 inform(food),NONE,I'm happy you like it.,yes,NONE
 inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE
