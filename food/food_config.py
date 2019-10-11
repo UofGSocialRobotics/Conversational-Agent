@@ -2,6 +2,10 @@
 ####################################################################################################
 ##                                              Voc                                               ##
 ####################################################################################################
+# DM publishes on 2 channels
+RECIPE_DM_MSG = "recipe_DM_msg" # should be used to send recipes to NLG so that NLS can fetch recipe cards in advance.
+USUAL_DM_MSG = "usual_DM_msg" #should be used for everything else
+
 intent = 'intent'
 previous_intent = "previous_intent"
 current_intent = "current_intent"

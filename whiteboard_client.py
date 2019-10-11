@@ -51,13 +51,19 @@ class WhiteBoardClient:
         # print("treat_message WhiteBoardClient %s" % self.name)
         self.time_start = time.time()
 
-    def publish(self, message):
+    def publish(self, message, topic=None):
         helper.print_message(self.name, "publishing", message, self.publishes)
         if self.resp_time:
             resp_time = time.time() - self.time_start
             color = "green" if resp_time < 0.5 else "red"
             print(colored("%s response time: " % self.name, "green") + colored( "%.3f sec" % resp_time, color) )
-        whiteboard.publish(message, self.publishes)
+        if isinstance(self.publishes, list):
+            if not topic:
+                log.critical("No topic provided. %s can publish on :" % self.name + self.publishes)
+            else:
+                whiteboard.publish(message, topic)
+        else:
+            whiteboard.publish(message, self.publishes)
 
     def loop_forever(self):
         self.service_started = True

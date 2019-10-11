@@ -61,6 +61,7 @@ MSG_SA = "SA/"
 
 ## For NLG, DM published on
 MSG_DM = "DM/"
+MSG_DM_RECIPE_LIST = "DMrecipes/"
 
 ## For main server, NLG publishes on
 MSG_NLG = "NLG/"
@@ -91,10 +92,10 @@ NLU_publishes = MSG_NLU
 
 ## DM
 DM_subscribes = [MSG_NLU, MSG_SA]
-DM_publishes = MSG_DM
+DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST]
 
 ## NLG
-NLG_subscribes = [MSG_DM]
+NLG_subscribes = [MSG_DM, MSG_DM_RECIPE_LIST]
 NLG_publishes = MSG_NLG
 
 ## Sentiment analysis

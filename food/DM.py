@@ -9,11 +9,13 @@ import urllib.request
 from ca_logging import log
 from termcolor import colored
 from fuzzywuzzy import fuzz
+import threading
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
-        publishes = publishes + clientid
+        # publishes = {fc.USUAL_DM_MSG : publishes[0] + clientid, fc.RECIPE_DM_MSG: publishes[1] + clientid}
+        publishes = [p + clientid for p in publishes]
         wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes, resp_time)
 
         self.client_id = clientid
@@ -148,7 +150,7 @@ class DM(wbc.WhiteBoardClient):
             new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recommended_food, recipe)
             self.from_NLU = None
             self.from_SA = None
-            self.publish(new_msg)
+            self.publish(new_msg, topic=self.publishes[0])
 
     def msg_to_json(self, intention, user_intent, previous_intent, user_frame, reco_food, recipe):
         frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.reco_food: reco_food, fc.recipe: recipe}
@@ -191,10 +193,20 @@ class DM(wbc.WhiteBoardClient):
         if not self.current_recipe_list:
             if use_local_recipe_DB:
                 with open(fc.LOCAL_FOOD_DB, 'rb') as f:
-                    self.current_recipe_list = json.load(f)
+                    content = json.load(f)
+                    self.current_recipe_list = list()
+                    for i in range(5):
+                        self.current_recipe_list.append(content[i])
+                    # self.current_recipe_list = json.load(f)
             else:
                 self.current_recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
         self.remove_disliked_foods()
+
+        #Sending recipes to NLG so that NLG can start fetching recipe cards
+        thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))
+        thread.setDaemon(True)
+        thread.start()
+
         # log.debug((food_options,recommended_food,recipe_list))
         if not self.current_recipe_list:
             log.critical(colored("No recipe to recommend","cyan"))

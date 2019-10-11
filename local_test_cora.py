@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
 
     autotest_scripts = dict()
-    autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "no, not that either.", "ok", "sure", "thanks"]
-    # autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
+    # autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "no, not that either.", "ok", "sure", "thanks"]
+    autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
     # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
     # autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
 

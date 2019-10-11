@@ -9,6 +9,8 @@ from ca_logging import log
 from termcolor import colored
 import csv
 from collections import namedtuple
+import time
+import threading
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent])
@@ -32,6 +34,9 @@ class NLG(wbc.WhiteBoardClient):
 
         self.load_sentence_model(fc.NLG_SENTENCE_DB)
         self.load_ack_model(fc.NLG_ACK_DB)
+        self.timeit_details = False
+
+        self.recipe_cards = dict()
 
     def load_sentence_model(self, path):
         with open(path, 'r') as f:
@@ -57,6 +62,7 @@ class NLG(wbc.WhiteBoardClient):
         # print(self.ackDB)
 
     def choose_sentence(self, intent, cs=None, tags_list=None):
+        start = time.time()
         # for sentence_params, sentences_list in self.sentenceDB.items():
         # print((intent, cs.__str__(), tags_list.__str__()))
         sentences_params_list = self.sentenceDB.keys()
@@ -77,7 +83,11 @@ class NLG(wbc.WhiteBoardClient):
             print(colored(error_message, "blue"))
             log.critical(error_message)
 
+        if self.timeit_details:
+            print("Response time choose_sentence: %.3f sec" % (time.time() - start))
+
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
+        start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
         if CS:
@@ -87,77 +97,112 @@ class NLG(wbc.WhiteBoardClient):
         if current_intent:
             key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent]
 
+        to_return = None
         if key_res and len(key_res) > 0:
-            return random.choice(self.ackDB[key_res[0]])
+            to_return = random.choice(self.ackDB[key_res[0]])
         else:
             error_message = "Could not find ack for previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__()
             log.warn(error_message)
             # print(colored(error_message, "blue"))
-            return ""
+            to_return = ""
+        if self.timeit_details:
+            print("Response time choose_ack: %.3f sec" % (time.time() - start))
+        return to_return
+
+    def get_create_all_cards(self, recipe_list):
+        for recipe in recipe_list:
+            # print(recipe['id'], type(self.recipe_cards.keys()))
+            if recipe["id"] not in self.recipe_cards.keys():
+                self.create_recipe_card(recipe)
+            # threading.current_thread().join()
+
+    def get_recipe_card(self, recipe):
+        # print(recipe['id'], self.recipe_cards)
+        # print(self.recipe_cards)
+        if recipe["id"] in self.recipe_cards.keys():
+            log.debug("found recipe %d in localDB" % recipe["id"])
+            return self.recipe_cards[recipe['id']]
+        else:
+            log.debug("can't find card in localDB for recipe %d" % recipe['id'])
+            new_card = self.create_recipe_card(recipe)
+            self.recipe_cards[recipe['id']] = new_card
+            return new_card
+
 
     def treat_message(self, message, topic):
+        start = time.time()
         super(NLG, self).treat_message(message, topic)
-        # message = json.loads(msg)
-        recipe_card = None
-        self.user_model = message['user_model']
-        self.user_intent = message['user_intent']
-        self.situation = self.user_model['situation']
 
-        # Todo: Better authoring
-
-        # Content Planning
-        #
-        # Here we select the different strategies that will be used to deliver the content:
-        # Ack + Ack_CS
-        # Sentence_CS
-        # Explanation
-
-        intent = message[fc.intent]
-        ack_cs = self.pick_ack_social_strategy() if fc.NLG_USE_ACKS_CS else None
-        cs = self.pick_social_strategy() if fc.NLG_USE_CS else None
-        tags = self.tags_explanation_types if intent == fc.inform_food else []
-
-        self.food = message['reco_food']
-        if message['recipe']:
-            self.recipe = message['recipe']
-            recipe_card = self.create_recipe_card(self.recipe)
-
-
-
-        # Sentence Planning
-        #
-        # Based on the strategies selected during the content planning, we generate the sentence.
-
-        # if self.sentenceDB[message['intent']][cs]:
-        #     # sentence = random.choice(self.sentenceDB[message['intent']][cs])
-        #     sentence = self.choose_sentence(message[fc.intent], cs)
-        # else:
-            # sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
-        sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
-
-        if fc.NLG_USE_ACKS:
-            if message['user_intent']['intent'] in ["yes", "no"]:
-                valence = message['user_intent']['intent']
-            elif message['user_intent']['entity_type']:
-                valence = "yes" if message['user_intent']['entity'] else "no"
-            else:
-                valence = None
-            current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
-            ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=current_intent)
+        if topic == self.subscribes[1]:
+            log.debug("Will start fetching recipe cards!")
+            self.get_create_all_cards(message)
+            return
         else:
-            ack = ""
-        final_sentence = self.replace(ack + " " + sentence)
 
-        if message['recipe']:
-            if recipe_card:
-                msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], recipe_card)
+            # message = json.loads(msg)
+            recipe_card = None
+            self.user_model = message['user_model']
+            self.user_intent = message['user_intent']
+            self.situation = self.user_model['situation']
+
+            # Todo: Better authoring
+
+            # Content Planning
+            #
+            # Here we select the different strategies that will be used to deliver the content:
+            # Ack + Ack_CS
+            # Sentence_CS
+            # Explanation
+
+            intent = message[fc.intent]
+            ack_cs = self.pick_ack_social_strategy() if fc.NLG_USE_ACKS_CS else None
+            cs = self.pick_social_strategy() if fc.NLG_USE_CS else None
+            tags = self.tags_explanation_types if intent == fc.inform_food else []
+
+            self.food = message['reco_food']
+            if message['recipe']:
+                self.recipe = message['recipe']
+                recipe_card = self.get_recipe_card(self.recipe)
+
+            # Sentence Planning
+            #
+            # Based on the strategies selected during the content planning, we generate the sentence.
+
+            # if self.sentenceDB[message['intent']][cs]:
+            #     # sentence = random.choice(self.sentenceDB[message['intent']][cs])
+            #     sentence = self.choose_sentence(message[fc.intent], cs)
+            # else:
+                # sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
+            sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
+
+            if fc.NLG_USE_ACKS:
+                if message['user_intent']['intent'] in ["yes", "no"]:
+                    valence = message['user_intent']['intent']
+                elif message['user_intent']['entity_type']:
+                    valence = "yes" if message['user_intent']['entity'] else "no"
+                else:
+                    valence = None
+                current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
+                ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=current_intent)
             else:
-                msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], None)
-        else:
-            msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
+                ack = ""
+            final_sentence = self.replace(ack + " " + sentence)
+
+            if message['recipe']:
+                if recipe_card:
+                    msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], recipe_card)
+                else:
+                    msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], None)
+            else:
+                msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
+
+        if self.timeit_details:
+            print("Response time treat_message: %.3f sec" % (time.time() - start))
         self.publish(msg_to_send)
 
     def create_recipe_card(self, recipe):
+        # print(colored("in create_recipe_card for recipe " + recipe['id'].__str__(), "blue"))
+        start = time.time()
         query = fc.SPOONACULAR_API_VISUALIZE + fc.SPOONACULAR_KEY
 
         imageURL = requests.get(recipe['image'])
@@ -189,8 +234,11 @@ class NLG(wbc.WhiteBoardClient):
 
         response = requests.post(query, files=files)
         card_json = json.loads(response.text)
+        if self.timeit_details:
+            print("Response time create_recipe_card: %.3f sec" % (time.time() - start))
         try:
             url = card_json['url']
+            self.recipe_cards[recipe['id']] = url
             return url
         except KeyError as e:
             print(e)
@@ -211,6 +259,7 @@ class NLG(wbc.WhiteBoardClient):
         return "NONE"
 
     def pick_ack(self, previous_intent, valence, cs):
+        start = time.time()
         potential_options = []
         for option in self.ackDB[previous_intent][valence][cs]:
             if "#entity" in option:
@@ -219,11 +268,15 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 potential_options.append(option)
         if potential_options:
-            return random.choice(potential_options)
+            to_return = random.choice(potential_options)
         else:
-            return ""
+            to_return = ""
+        if self.timeit_details:
+            print("Response time pick_ack: %.3f sec" % (time.time() - start))
+        return to_return
 
     def replace_food(self, sentence, food_tag, food_key):
+        start = time.time()
         if food_tag in sentence:
             if food_tag == "#mainfood":
                 replace_with = self.get_random_ingredient_from_recipe(self.recipe)
@@ -231,18 +284,24 @@ class NLG(wbc.WhiteBoardClient):
                 replace_with = self.food[food_key]
                 replace_with = replace_with.replace(" dish", "")
             sentence = sentence.replace(food_tag, replace_with)
+        if self.timeit_details:
+            print("Response time replace_food: %.3f sec" % (time.time() - start))
         return sentence
 
     def get_random_ingredient_from_recipe(self, recipe):
+        start = time.time()
         ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] + recipe["unusedIngredients"]
         # chosen_ingredient = random.choice(ingredients)
         for ingredient in ingredients:
             if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
                 return ingredient["name"]
         chosen_ingredient = random.choice(ingredients)
+        if self.timeit_details:
+            print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
         return chosen_ingredient["name"]
 
     def replace_features(self, sentence):
+        start = time.time()
         if "#features" in sentence:
             features_list = []
             if "comfort" in self.user_model['liked_features']:
@@ -260,10 +319,13 @@ class NLG(wbc.WhiteBoardClient):
                 features_string += " and "
             features_string += features_list[-1]
             sentence = sentence.replace("#features", features_string)
+        if self.timeit_details:
+            print("Response time replace_features: %.3f sec" % (time.time() - start))
         return sentence
 
 
     def replace(self, sentence):
+        start = time.time()
         sentence = self.replace_food(sentence, "#mainfood", 'main')
         sentence = self.replace_food(sentence, "#secondaryfood", 'secondary')
         if "#situation" in sentence:
@@ -278,6 +340,8 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])
             else:
                 sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
+        if self.timeit_details:
+            print("Response time replace: %.3f sec" % (time.time() - start))
         return sentence
 
 
