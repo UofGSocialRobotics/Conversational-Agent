@@ -5,10 +5,10 @@ import helper_functions as helper
 
 
 class HealthDiagnostic(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes):
+    def __init__(self, clientid, subscribes, publishes, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, name="HealthDiagnostic"+clientid, subscribes=subscribes, publishes=publishes)
+        wbc.WhiteBoardClient.__init__(self, name="HealthDiagnostic"+clientid, subscribes=subscribes, publishes=publishes, resp_time=resp_time)
         self.food_diagnostic_score = None
 
 

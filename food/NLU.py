@@ -139,15 +139,16 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
 ####################################################################################################
 
 class NLU(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes):
+    def __init__(self, clientid, subscribes, publishes, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes)
+        wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes, resp_time=resp_time)
         self.voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
         self.food_list = food_dataparser.get_food_names()
 
     def treat_message(self, msg, topic):
+        super(NLU, self).treat_message(msg,topic)
         msg_lower = msg.lower()
 
         # Todo Distinguish actors and directors

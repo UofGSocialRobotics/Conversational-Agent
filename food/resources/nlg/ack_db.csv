@@ -10,7 +10,7 @@ request(filling),NONE,I'm hungry too!,"yes, hungry",NONE
 request(filling),NONE,Same here! I'm starving...,"yes, hungry",NONE
 request(time),NONE,"Of course, you're a busy person. ","no, no_time",NONE
 request(time),NONE,Don't worry. I'll find something quick to prepare.,"no, no_time",NONE
-request(time),NONE,Great! Coocking can be so much fun when you have time for it!,"yes, time",NONE
+request(time),NONE,Great! Cooking can be so much fun when you have time for it!,"yes, time",NONE
 request(time),NONE,No time constraint. Good to know.,"yes, time",NONE
 request(healthy),NONE,Nice. I'm sure the both of us will get along well!,"yes, healthy",NONE
 request(healthy),NONE,"Sure! Health is the real wealth, you're a smart person!","yes, healthy",NONE

@@ -9,10 +9,11 @@ import time
 import traceback
 
 class TestCora():
-    def __init__(self, autotest_script=None):
+    def __init__(self, timeit, autotest_script=None):
         self.name = "TestCora"
         self.autotest_script = autotest_script
         self.autotest_script_index = 0
+        self.timeit = timeit
 
         self.client_id = "test" + datetime.datetime.now().__str__()
         self.create_services()
@@ -51,6 +52,7 @@ class TestCora():
         self.services = list()
         for module_config in config.modules.modules:
             args = list(module_config.values())[1:]
+            args.append(self.timeit)
             # print(*args)
             new_module = module_config["module"](self.client_id, *args)
             self.services.append(new_module)
@@ -108,15 +110,18 @@ if __name__ == "__main__":
     argp.add_argument("--autotest", help="To test the system with a predefined script (to write bellow directly in the python file)", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
     argp.add_argument("--logs", help="If you want to see the python logs in the console", action="store_true")
-    argp.add_argument("--localDB", help="If you want avoid querring Spoonacular and use the limited local recipe DB instead", action="store_true")
+    argp.add_argument("--localDB", help="If you want avoid querying Spoonacular and use the limited local recipe DB instead", action="store_true")
+    argp.add_argument("--timeit", help="If you want get the execution time for each module", action="store_true")
+
 
     autotest_scripts = dict()
     autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "no, not that either.", "ok", "sure", "thanks"]
-    autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
-    autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
-    autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
+    # autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
+    # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
+    # autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
 
     args = argp.parse_args()
+    timeit = args.timeit if args.timeit else False
     if not args.logs:
         log.setLevel(logging.CRITICAL)
 
@@ -127,12 +132,12 @@ if __name__ == "__main__":
             if args.autotest and autotest_scripts:
                 for script_name, script in autotest_scripts.items():
                     print(colored(script_name, "blue"))
-                    test = TestCora(script)
+                    test = TestCora(timeit, script)
                     test.set_use_local_DB_value(args.localDB)
                     test.start_testCora()
 
             elif args.test:
-                test = TestCora()
+                test = TestCora(timeit)
                 test.set_use_local_DB_value(args.localDB)
                 test.start_testCora()
             else:

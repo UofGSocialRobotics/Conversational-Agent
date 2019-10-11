@@ -14,10 +14,10 @@ SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent])
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[]):
+    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes)
+        wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes, resp_time)
         self.tags_explanation_types = tags_explanation_types
         self.sentenceDB = {}
         self.ackDB = {}
@@ -96,6 +96,7 @@ class NLG(wbc.WhiteBoardClient):
             return ""
 
     def treat_message(self, message, topic):
+        super(NLG, self).treat_message(message, topic)
         # message = json.loads(msg)
         recipe_card = None
         self.user_model = message['user_model']

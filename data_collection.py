@@ -8,7 +8,7 @@ import os.path
 
 
 class DataCollector(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes, ack_msg):
+    def __init__(self, clientid, subscribes, publishes, ack_msg, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="DataCollector"+clientid, subscribes=subscribes, publishes=publishes)
@@ -22,6 +22,8 @@ class DataCollector(wbc.WhiteBoardClient):
 
 
     def treat_message(self, msg, topic):
+        super(DataCollector, self).treat_message(msg, topic)
+
         key = list(msg.keys())[0]
         if config_data_collection.DIALOG in msg.keys():
             self.data[config_data_collection.DIALOG].append(msg[config_data_collection.DIALOG])

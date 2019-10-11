@@ -11,10 +11,10 @@ from termcolor import colored
 from fuzzywuzzy import fuzz
 
 class DM(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes):
+    def __init__(self, clientid, subscribes, publishes, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes)
+        wbc.WhiteBoardClient.__init__(self, "DM" + clientid, subscribes, publishes, resp_time)
 
         self.client_id = clientid
 
@@ -65,6 +65,8 @@ class DM(wbc.WhiteBoardClient):
                 self.user_model = json.load(json_file)
 
     def treat_message(self, msg, topic):
+
+        super(DM, self).treat_message(msg, topic)
 
         # Todo: Second interaction
         # Todo: no then request(sweet/bitter/...)

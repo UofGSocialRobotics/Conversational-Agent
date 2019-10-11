@@ -4,14 +4,15 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import helper_functions as helper
 
 class SentimentAnalysis(wbc.WhiteBoardClient,SentimentIntensityAnalyzer):
-    def __init__(self, clientid, subscribes, publishes):
+    def __init__(self, clientid, subscribes, publishes, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
-        wbc.WhiteBoardClient.__init__(self, "SA"+clientid, subscribes, publishes)
+        wbc.WhiteBoardClient.__init__(self, "SA"+clientid, subscribes, publishes, resp_time)
         SentimentIntensityAnalyzer.__init__(self)
 
 
     def treat_message(self, msg, topic):
+        super(SentimentAnalysis, self).treat_message(msg,topic)
         # Dumb Sentiment analysis performed using nltk library.
         # The result is almost always neutral
         # ToDo: Retrain the pipeline OR use StanfordCoreNLP library
