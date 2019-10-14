@@ -20,6 +20,10 @@ def print_message(name,action,msg_txt,topic):
         if "recipe" in msg_txt.keys() and msg_to_print["recipe"]:
             # print(msg_txt["recipe"])
             msg_to_print["recipe"] = just_get_recipe_main_info(msg_txt["recipe"])
+    if isinstance(msg_txt, list) and "vegetarian" in msg_txt[0].keys():
+        msg_to_print = list()
+        for recipe in msg_txt:
+            msg_to_print.append(just_get_recipe_main_info(recipe))
 
     log.info("%s: %-10s message: TOPIC = %-20s | CONTENT = %s" % (name,action,topic,msg_to_print))
 

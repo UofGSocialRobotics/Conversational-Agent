@@ -218,6 +218,8 @@ class ServerUsingFirebase:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
         elif config.MSG_NLG in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
+            if isinstance(message, dict) and "intent" in message.keys() and message["intent"] == "bye":
+                self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
         else:
             log.critical("Not implemented yet")
 
