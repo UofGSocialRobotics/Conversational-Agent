@@ -10,11 +10,11 @@ To install python packages, run:
 ```shell
 pip install spacy
 python -m spacy download en
-import nltk
+pip install nltk
 pip install fuzzywuzzy
 # pip install pandas
 pip install pyrebase #https://github.com/thisbejim/Pyrebase
-pip install cryptography
+pip install cryptography==2.5
 ```
 
 Run in your python environment:

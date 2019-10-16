@@ -2,7 +2,7 @@ from ca_logging import log
 import config
 import argparse
 import threading
-import gui
+
 import server_using_firebase
 
 def main():
@@ -27,6 +27,7 @@ if __name__ == '__main__':
     argp = argparse.ArgumentParser()
     argp.add_argument("--food", help="Movie recommendation system", action="store_true")
     argp.add_argument("--movies", help="Food recommendation system", action="store_true")
+    argp.add_argument("--gui", help="To get a GUI to stop the system", action="store_true")
     # argp.add_argument("--debug", help="Sentence to debug", action="store")
 
     args = argp.parse_args()
@@ -41,6 +42,8 @@ if __name__ == '__main__':
 
     server_thread, server = main()
 
-    main_gui = gui.GUI(server, server_thread)
-    main_gui.start_gui()
+    if args.gui:
+        import gui
+        main_gui = gui.GUI(server, server_thread)
+        main_gui.start_gui()
 
