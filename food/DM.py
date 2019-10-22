@@ -165,7 +165,7 @@ class DM(wbc.WhiteBoardClient):
     def load_food_data(self):
         self.food_data = pandas.read_csv(fc.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
 
-    def remove_disliked_foods(self):
+    def remove_recipes_likely_to_be_disliked(self):
         new_recipe_list = list()
         log.debug("Before removing disliked foods: "+ len(self.current_recipe_list).__str__())
         for recipe in self.current_recipe_list:
@@ -200,7 +200,7 @@ class DM(wbc.WhiteBoardClient):
                     # self.current_recipe_list = json.load(f)
             else:
                 self.current_recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
-        self.remove_disliked_foods()
+        self.remove_recipes_likely_to_be_disliked()
 
         #Sending recipes to NLG so that NLG can start fetching recipe cards
         thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))

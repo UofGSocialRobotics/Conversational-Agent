@@ -24,6 +24,8 @@ def inform_food(document, food_list, voc_no, voc_dislike):
         return ("inform", "food", ",".join(ingredients_list), valence)
     return False
 
+
+
 def inform_healthy(document, voc_no, voc_healthy):
     healthy, negation = False, False
     for token in document:
@@ -112,6 +114,19 @@ def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
             return ("inform", "vegan", False, None)
 
 
+def inform_intolerance(document, voc_no, voc_intolerances):
+    intolerances = list()
+    for token in document:
+        if token.lemma_ in voc_intolerances:
+            intolerances.append(token.lemma_)
+        elif token.text in voc_intolerances:
+            intolerances.append(token.text)
+    if intolerances:
+        return ("inform", "intolerances", ",".join(intolerances), None)
+    else:
+        return False
+
+
 def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
 
     utterance = nlu_helper.preprocess(utterance)
@@ -126,6 +141,8 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
         f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"])
     if not f:
         f = inform_vegan(document, voc_no=voc["no"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+    if not f:
+        f = inform_intolerance(document, voc_no=voc["no"], voc_intolerances=voc["spoonacular_intolerances"])
     if not f:
         f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
     if not f:

@@ -142,5 +142,18 @@
         "disgusting",
         "detestable",
         "disapprove"
+    ],
+    "spoonacular_intolerances": [
+        "dairy",
+        "egg",
+        "gluten",
+        "grain",
+        "peanut",
+        "seafood",
+        "sesame",
+        "shellfish",
+        "soy",
+        "sulfite",
+        "wheat"
     ]
 }
