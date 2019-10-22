@@ -9,13 +9,19 @@ import dataparser
 from ca_logging import log
 
 
-def inform_food(document, food_list):
+def inform_food(document, food_list, voc_no, voc_dislike):
     ingredients_list = list()
+    negation = False
     for token in document:
         if token.text in food_list:
             ingredients_list.append(token.text)
+        elif nlu_helper.is_negation(token, voc_no):
+            negation = True
+        elif token.text in voc_dislike or token.lemma_ in voc_dislike:
+            negation = True
     if ingredients_list:
-        return "inform", "food", ",".join(ingredients_list), "+"
+        valence = "-" if negation else "+"
+        return ("inform", "food", ",".join(ingredients_list), valence)
     return False
 
 def inform_healthy(document, voc_no, voc_healthy):
@@ -111,7 +117,7 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     utterance = nlu_helper.preprocess(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
-    f = inform_food(document, food_list)
+    f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
     if not f:
         f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     if not f:

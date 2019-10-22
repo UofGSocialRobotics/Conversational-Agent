@@ -125,5 +125,22 @@
         "cold",
         "headache",
         "migraine"
+    ],
+    "dislike": [
+        "dislike",
+        "hate",
+        "despise",
+        "detest",
+        "abhor",
+        "loathe",
+        "execrate",
+        "aversion",
+        "abominate",
+        "hostile",
+        "repelled",
+        "disgust",
+        "disgusting",
+        "detestable",
+        "disapprove"
     ]
 }

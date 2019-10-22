@@ -12,7 +12,7 @@ pip install spacy
 python -m spacy download en
 pip install nltk
 pip install fuzzywuzzy
-# pip install pandas
+pip install pandas
 pip install pyrebase #https://github.com/thisbejim/Pyrebase
 pip install cryptography==2.5
 ```
