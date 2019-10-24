@@ -88,12 +88,6 @@ class DM(wbc.WhiteBoardClient):
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
-            for node_name, node in self.nodes.items():
-                if node_name == self.currState:
-                    print(node.stateName, node.rules)
-            # print(self.nodes)
-            print(self.currState, next_state)
-            print(self.from_NLU)
 
             if fc.inform_food in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
