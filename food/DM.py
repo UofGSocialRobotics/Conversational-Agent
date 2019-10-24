@@ -86,13 +86,23 @@ class DM(wbc.WhiteBoardClient):
             food_options = None
             food_recipe_list = None
             recipe = None
-            next_state = self.nodes.get(self.currState).get_action(self.from_NLU[fc.intent])
+            next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
+
+            for node_name, node in self.nodes.items():
+                if node_name == self.currState:
+                    print(node.stateName, node.rules)
+            # print(self.nodes)
+            print(self.currState, next_state)
+            print(self.from_NLU)
 
             if fc.inform_food in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
                 elif fc.no in self.from_NLU[fc.intent]:
                     self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
+                elif fc.inform in self.from_NLU[fc.intent] and fc.food in self.from_NLU[fc.entity_type] and "-" in self.from_NLU[fc.polarity]:
+                    self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
+
 
             #Todo need to manage diet, time, and food
 
@@ -109,9 +119,11 @@ class DM(wbc.WhiteBoardClient):
                     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
                 if fc.food in self.from_NLU[fc.entity_type]:
                     if "+" in self.from_NLU[fc.polarity]:
-                        self.user_model[fc.liked_food].append(self.from_NLU[fc.entity])
+                        # self.user_model[fc.liked_food].append(self.from_NLU[fc.entity])
+                        self.user_model[fc.liked_food] += self.from_NLU[fc.entity]
                     else:
-                        self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
+                        self.user_model[fc.disliked_food] += self.from_NLU[fc.entity]
+                        # self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
 
             if fc.healthy in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
@@ -184,7 +196,30 @@ class DM(wbc.WhiteBoardClient):
             if not bool_recipe_disliked:
                 new_recipe_list.append(recipe)
         self.current_recipe_list = new_recipe_list
-        log.debug("After removing disliked foods: "+ len(self.current_recipe_list).__str__())
+        log.debug("After removing disliked foods: " + len(self.current_recipe_list).__str__())
+
+    def get_all_ingredients(self, recipe):
+        ingredients = recipe['usedIngredients'] + recipe["missedIngredients"]
+        return [ingredient['name'] for ingredient in ingredients]
+
+    def remove_recipes_with_disliked_ingredients(self):
+        print("in remove_recipes_with_disliked_ingredients")
+        if not self.user_model[fc.disliked_food]:
+            return self.current_recipe_list
+        new_recipe_list = list()
+        for recipe in self.current_recipe_list:
+            disliked_ingredient_in_recipe = False
+            ingredients_list = self.get_all_ingredients(recipe)
+            for ingredient in ingredients_list:
+                if ingredient in self.user_model[fc.disliked_food]:
+                    msg = "Removing recipe %s because it has disliked ingredient (%s)" % (recipe['title'], ingredient)
+                    log.debug(msg)
+                    print(colored(msg, "green"))
+                    disliked_ingredient_in_recipe = True
+                    break
+            if not disliked_ingredient_in_recipe:
+                new_recipe_list.append(recipe)
+        self.current_recipe_list = new_recipe_list
 
     def recommend(self, additional_request, use_local_recipe_DB=False):
         food_options = self.get_food_options(additional_request)
@@ -201,6 +236,7 @@ class DM(wbc.WhiteBoardClient):
             else:
                 self.current_recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
         self.remove_recipes_likely_to_be_disliked()
+        self.remove_recipes_with_disliked_ingredients()
 
         #Sending recipes to NLG so that NLG can start fetching recipe cards
         thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))
@@ -241,14 +277,6 @@ class DM(wbc.WhiteBoardClient):
                 if row[fc.food_name] not in self.user_model[fc.disliked_food]:
                     max_meal_value = current_food_value
                     best_meal = row[fc.food_name]
-            elif fc.dessert in row[fc.food_type] and current_food_value > max_dessert_value:
-                if row[fc.food_name] not in self.user_model[fc.disliked_food]:
-                    max_dessert_value = current_food_value
-                    best_dessert = row[fc.food_name]
-            elif fc.drink in row[fc.food_type] and current_food_value > max_drink_value:
-                if row[fc.food_name] not in self.user_model[fc.disliked_food]:
-                    max_drink_value = current_food_value
-                    best_drink = row[fc.food_name]
             elif fc.meat in row[fc.food_type] and current_food_value > max_meat_value:
                 if row[fc.food_name] not in self.user_model[fc.disliked_food]:
                     max_meat_value = current_food_value
@@ -257,35 +285,36 @@ class DM(wbc.WhiteBoardClient):
                 if row[fc.food_name] not in self.user_model[fc.disliked_food]:
                     max_side_value = current_food_value
                     best_side = row[fc.food_name]
-        best_food = {fc.meal: best_meal, fc.dessert: best_dessert, fc.drink: best_drink, fc.meat: best_meat, fc.side: best_side}
+        # best_food = {fc.meal: best_meal, fc.dessert: best_dessert, fc.drink: best_drink, fc.meat: best_meat, fc.side: best_side}
+        best_food = {fc.meal: best_meal, fc.meat: best_meat, fc.side: best_side}
         return best_food
 
     def pick_food(self, food):
-        recommended_food = {fc.main: "", fc.secondary: "", fc.other_main: ""}
+        recommended_food = {fc.main: "", fc.other_main: ""}
         if randint(0, 1) == 1:
             recommended_food[fc.main] = food[fc.meal]
             recommended_food[fc.other_main] = food[fc.meat] + " with " + food[fc.side]
         else:
             recommended_food[fc.main] = food[fc.meat] + " with " + food[fc.side]
             recommended_food[fc.other_main] = food[fc.meal]
-        if randint(0, 1) == 1:
-            recommended_food[fc.secondary] = food[fc.dessert]
-        else:
-            recommended_food[fc.secondary] = food[fc.drink]
+        # if randint(0, 1) == 1:
+        #     recommended_food[fc.secondary] = food[fc.dessert]
+        # else:
+        #     recommended_food[fc.secondary] = food[fc.drink]
         return recommended_food
 
-    def get_recipe_list_with_edamam(self, recommended_food):
-        if "with" in recommended_food[fc.main]:
-            request_food = recommended_food[fc.main].replace(" with ", "%20and%20")
-            request_food = request_food.replace("side ", "")
-        else:
-            request_food = recommended_food[fc.main].replace(" dish", "")
-        edamamURL = fc.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + fc.EDAMAM_APP_ID + fc.EDAMAM_KEY + fc.EDAMAM_PROPERTY + fc.EDAMAM_ADDITIONAL_DIET
-        data = urllib.request.urlopen(edamamURL)
-        result = data.read()
-        json_recipe_list = json.loads(result)
-        recipe_list = json_recipe_list['hits']
-        return recipe_list
+    # def get_recipe_list_with_edamam(self, recommended_food):
+    #     if "with" in recommended_food[fc.main]:
+    #         request_food = recommended_food[fc.main].replace(" with ", "%20and%20")
+    #         request_food = request_food.replace("side ", "")
+    #     else:
+    #         request_food = recommended_food[fc.main].replace(" dish", "")
+    #     edamamURL = fc.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + fc.EDAMAM_APP_ID + fc.EDAMAM_KEY + fc.EDAMAM_PROPERTY + fc.EDAMAM_ADDITIONAL_DIET
+    #     data = urllib.request.urlopen(edamamURL)
+    #     result = data.read()
+    #     json_recipe_list = json.loads(result)
+    #     recipe_list = json_recipe_list['hits']
+    #     return recipe_list
 
     def format_recommended_food(self, recommended_food):
         to_replace_pairs = [["with", ""], ["side", ""], ["dish", ""]]
@@ -308,7 +337,8 @@ class DM(wbc.WhiteBoardClient):
         time_str = fc.SPOONACULAR_API_MAX_TIME + str(max_time)
         diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
         liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
-        query = request_food + liked_food_str + time_str + diet_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO+ fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        exclude_ingredients_str = fc.SPOONACULAR_API_EXCLUDE_INGREDIENTS + ",".join(self.user_model[fc.disliked_food]) if self.user_model[fc.disliked_food] else ""
+        query = request_food + liked_food_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
         log.debug(query)
         recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
         return recipe_list
@@ -318,6 +348,7 @@ class DM(wbc.WhiteBoardClient):
         recipe_list = []
         recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
         # log.debug(recipe_list)
+
 
         if not recipe_list or len(recipe_list)<5 and "mashed" in recommended_food["main"]:
             recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"].replace("mashed",""), self.user_model['liked_food'])
@@ -380,7 +411,10 @@ class DMNode:
         intents = string.split("-")
         self.rules[intents[0]] = intents[1]
 
-    def get_action(self, user_intent):
+    def get_action(self, from_NLU):
+        user_intent = from_NLU[fc.intent]
+        if user_intent == fc.inform:
+            user_intent += "(" + from_NLU[fc.entity_type] + ")"
         if user_intent in self.rules:
             return self.rules.get(user_intent)
         else:

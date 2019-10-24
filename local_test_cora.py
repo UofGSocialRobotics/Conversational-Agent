@@ -115,7 +115,8 @@ if __name__ == "__main__":
 
 
     autotest_scripts = dict()
-    autotest_scripts["understand_yes_when_no"] = ["hello", "good and u?", " I ll be hungry, i m always hungry for dinner", "the healthier the better" , "nop", "I have time", " i have fish in the fridge that s going to go bad if i don t cook it today", "no"]
+    autotest_scripts["understand_yes_when_no"] = ["hello", "good and u?", " I ll be hungry, i m always hungry for dinner", "the healthier the better" , "nop", "I have time", " i have fish in the fridge that s going to go bad if i don t cook it today", "no, i don t like apples", "okay", "no thanks"]
+    # autotest_scripts["cant_find_recipes"] = ["hello", "good", "hungry", "very healthy" , "vegan", "quick", "oysters", "okay", "no"]
     # autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "no, not that either.", "ok", "sure", "thanks"]
     # autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
     # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]

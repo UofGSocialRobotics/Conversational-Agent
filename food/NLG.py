@@ -97,7 +97,6 @@ class NLG(wbc.WhiteBoardClient):
         if current_intent:
             key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent]
 
-        to_return = None
         if key_res and len(key_res) > 0:
             to_return = random.choice(self.ackDB[key_res[0]])
         else:
@@ -290,7 +289,7 @@ class NLG(wbc.WhiteBoardClient):
 
     def get_random_ingredient_from_recipe(self, recipe):
         start = time.time()
-        ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] + recipe["unusedIngredients"]
+        ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] #+ recipe["unusedIngredients"]
         # chosen_ingredient = random.choice(ingredients)
         for ingredient in ingredients:
             if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
@@ -327,7 +326,7 @@ class NLG(wbc.WhiteBoardClient):
     def replace(self, sentence):
         start = time.time()
         sentence = self.replace_food(sentence, "#mainfood", 'main')
-        sentence = self.replace_food(sentence, "#secondaryfood", 'secondary')
+        # sentence = self.replace_food(sentence, "#secondaryfood", 'secondary')
         if "#situation" in sentence:
             sentence = sentence.replace("#situation", self.situation)
         if "#entity" in sentence:
@@ -345,8 +344,3 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
-if __name__ == "__main__":
-    fake_msg = {'intent': 'inform(movie)', 'movie': 'John Wick: Chapter 3 – Parabellum'}
-    json_msg = json.dumps(fake_msg)
-    nlg = NLG("test_subscribe", "test_publishes", "test12345")
-    nlg.treat_message(json_msg, "test")

@@ -15,13 +15,15 @@ def inform_food(document, food_list, voc_no, voc_dislike):
     for token in document:
         if token.text in food_list:
             ingredients_list.append(token.text)
+        elif token.lemma_ in food_list:
+            ingredients_list.append(token.lemma_)
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
         elif token.text in voc_dislike or token.lemma_ in voc_dislike:
             negation = True
     if ingredients_list:
         valence = "-" if negation else "+"
-        return ("inform", "food", ",".join(ingredients_list), valence)
+        return ("inform", "food", ingredients_list, valence)
     return False
 
 
