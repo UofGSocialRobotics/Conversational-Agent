@@ -154,6 +154,8 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     if not f:
         f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
     if not f:
+        f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
+    if not f:
         f = "IDK", None, None, None
     return f
 

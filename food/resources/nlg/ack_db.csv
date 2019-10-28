@@ -18,6 +18,7 @@ request(healthy),NONE,"Ya, taste first and healthiness second right? I totally a
 request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE
 inform(food),NONE,I'm happy you like it.,yes,NONE
 inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE
+inform(food),NONE,I'm sorry I can't find anything that correspond to your criteria.,no,NONE
 inform(food),NONE,Give another chance.,no,bye
 inform(food),NONE,I can recommend something else.,no,bye
 inform(food),NONE,I have something else for you.,no,bye

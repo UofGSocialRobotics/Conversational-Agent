@@ -61,19 +61,6 @@ def is_alreadywatched(sentence):
     return False
 
 
-def is_requestmore(document, voc_request_more):
-    '''
-    Determines if intent is request more
-    :param document: spacy document
-    :param voc_request_more: list of request-more key words
-    :return: bool
-    '''
-    for token in document:
-        if token.text in voc_request_more:
-            return ("request", "more", None, None)
-    return False
-
-
 def is_askGenre(document, voc_genres):
     """
     Determines if intent is ask_genre

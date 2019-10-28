@@ -141,7 +141,11 @@ class DM(wbc.WhiteBoardClient):
                 else:
                     log.debug("Not sure when we go in here")
                     food_options, recommended_food, self.current_recipe_list = self.recommend(None, use_local_recipe_DB=self.use_local_recipe_DB)
-                recipe = self.current_recipe_list[0]
+
+                if self.current_recipe_list:
+                    recipe = self.current_recipe_list[0]
+                else:
+                    next_state = "bye"
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -157,6 +161,8 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg, topic=self.publishes[0])
+
+
 
     def msg_to_json(self, intention, user_intent, previous_intent, user_frame, reco_food, recipe):
         frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.reco_food: reco_food, fc.recipe: recipe}

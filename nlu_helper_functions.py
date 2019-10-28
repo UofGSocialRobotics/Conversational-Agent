@@ -158,6 +158,19 @@ def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_ti
 
 
 
+def is_requestmore(document, voc_request_more):
+    '''
+    Determines if intent is request more
+    :param document: spacy document
+    :param voc_request_more: list of request-more key words
+    :return: bool
+    '''
+    for token in document:
+        if token.text in voc_request_more:
+            return ("request", "more", None, None)
+    return False
+
+
 def is_greeting(document, voc_greetings):
     '''
     Determines if intent is greeting
