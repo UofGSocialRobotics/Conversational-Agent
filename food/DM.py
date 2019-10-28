@@ -66,6 +66,17 @@ class DM(wbc.WhiteBoardClient):
             with open(file) as json_file:
                 self.user_model = json.load(json_file)
 
+    def check_if_previous_recommendation_is_liked(self):
+        if fc.yes in self.from_NLU[fc.intent]:
+            self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
+
+    def check_if_previous_recommendation_is_disliked(self):
+        user_says_no = fc.no in self.from_NLU[fc.intent]
+        user_says_dislike_ingredient = fc.inform in self.from_NLU[fc.intent] and fc.food in self.from_NLU[fc.entity_type] and "-" in self.from_NLU[fc.polarity]
+        user_says_want_more =  fc.request in self.from_NLU[fc.intent] and fc.more in self.from_NLU[fc.entity_type]
+        if user_says_no or user_says_dislike_ingredient or user_says_want_more:
+            self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
+
     def treat_message(self, msg, topic):
 
         super(DM, self).treat_message(msg, topic)
@@ -90,12 +101,8 @@ class DM(wbc.WhiteBoardClient):
 
 
             if fc.inform_food in self.currState:
-                if fc.yes in self.from_NLU[fc.intent]:
-                    self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
-                elif fc.no in self.from_NLU[fc.intent]:
-                    self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
-                elif fc.inform in self.from_NLU[fc.intent] and fc.food in self.from_NLU[fc.entity_type] and "-" in self.from_NLU[fc.polarity]:
-                    self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
+                self.check_if_previous_recommendation_is_liked()
+                self.check_if_previous_recommendation_is_disliked()
 
 
             #Todo need to manage diet, time, and food
@@ -203,7 +210,6 @@ class DM(wbc.WhiteBoardClient):
         return [ingredient['name'] for ingredient in ingredients]
 
     def remove_recipes_with_disliked_ingredients(self):
-        print("in remove_recipes_with_disliked_ingredients")
         if not self.user_model[fc.disliked_food]:
             return self.current_recipe_list
         new_recipe_list = list()

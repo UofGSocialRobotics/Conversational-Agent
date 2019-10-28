@@ -1,27 +1,27 @@
-previous_intent,CS,ack,valence,current_intent_is_NOT
-greeting,NONE,Lovely! I'm glad to hear that.,yes,NONE
-greeting,NONE,I'm sorry to hear that. I'll try to find something to cheer you up then!,no,NONE
-greeting_back,NONE,Looking good as always!,NONE,NONE
-request(situation),NONE,Sure.,no,NONE
-request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE
-request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE
-request(filling),NONE,Let's get something light then.,"no, not_hungry",NONE
-request(filling),NONE,I'm hungry too!,"yes, hungry",NONE
-request(filling),NONE,Same here! I'm starving...,"yes, hungry",NONE
-request(time),NONE,"Of course, you're a busy person. ","no, no_time",NONE
-request(time),NONE,Don't worry. I'll find something quick to prepare.,"no, no_time",NONE
-request(time),NONE,Great! Cooking can be so much fun when you have time for it!,"yes, time",NONE
-request(time),NONE,No time constraint. Good to know.,"yes, time",NONE
-request(healthy),NONE,Nice. I'm sure the both of us will get along well!,"yes, healthy",NONE
-request(healthy),NONE,"Sure! Health is the real wealth, you're a smart person!","yes, healthy",NONE
-request(healthy),NONE,"Ya, taste first and healthiness second right? I totally agree.","no, not_healthy",NONE
-request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE
-inform(food),NONE,I'm happy you like it.,yes,NONE
-inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE
-inform(food),NONE,I'm sorry I can't find anything that correspond to your criteria.,no,NONE
-inform(food),NONE,Give another chance.,no,bye
-inform(food),NONE,I can recommend something else.,no,bye
-inform(food),NONE,I have something else for you.,no,bye
-inform(food),NONE,Let me find something else.,no,bye
-NONE,NONE,Okay.,NONE,NONE
-NONE,NONE,Alright.,NONE,NONE
+previous_intent,CS,ack,valence,current_intent_is_NOT, current_intent_is
+greeting,NONE,Lovely! I'm glad to hear that.,yes,NONE,NONE
+greeting,NONE,I'm sorry to hear that. I'll try to find something to cheer you up then!,no,NONE,NONE
+greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
+request(situation),NONE,Sure.,no,NONE,NONE
+request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NONE
+request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE,NONE
+request(filling),NONE,Let's get something light then.,"no, not_hungry",NONE,NONE
+request(filling),NONE,I'm hungry too!,"yes, hungry",NONE,NONE
+request(filling),NONE,Same here! I'm starving...,"yes, hungry",NONE,NONE
+request(time),NONE,"Of course, you're a busy person. ","no, no_time",NONE,NONE
+request(time),NONE,Don't worry. I'll find something quick to prepare.,"no, no_time",NONE,NONE
+request(time),NONE,Great! Cooking can be so much fun when you have time for it!,"yes, time",NONE,NONE
+request(time),NONE,No time constraint. Good to know.,"yes, time",NONE,NONE
+request(healthy),NONE,Nice. I'm sure the both of us will get along well!,"yes, healthy",NONE,NONE
+request(healthy),NONE,"Sure! Health is the real wealth, you're a smart person!","yes, healthy",NONE,NONE
+request(healthy),NONE,"Ya, taste first and healthiness second right? I totally agree.","no, not_healthy",NONE,NONE
+request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE,NONE
+inform(food),NONE,I'm happy you like it.,yes,NONE,NONE
+inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE,NONE
+inform(food),NONE,Give another chance.,no,bye,NONE
+inform(food),NONE,I can recommend something else.,no,bye,NONE
+inform(food),NONE,I have something else for you.,no,bye,NONE
+inform(food),NONE,Let me find something else.,no,bye,NONE
+inform(food),NONE,I'm sorry I can't find anything that correspond to your criteria.,no,NONE,bye
+NONE,NONE,Okay.,NONE,NONE,NONE
+NONE,NONE,Alright.,NONE,NONE,NONE

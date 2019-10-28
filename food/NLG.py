@@ -13,7 +13,7 @@ import time
 import threading
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
-AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent])
+AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], resp_time=False):
@@ -55,7 +55,7 @@ class NLG(wbc.WhiteBoardClient):
                     # print(line_input[3])
                     valence = list(line_input[3]) if "," in line_input[3] else line_input[3].split(",")
                     valence = [v.strip() for v in valence]
-                    ack_params = AckParameters(previous_intent=line_input[0], cs=line_input[1], valence=line_input[3], current_intent=line_input[4])
+                    ack_params = AckParameters(previous_intent=line_input[0], cs=line_input[1], valence=line_input[3], current_intent_should_not_be=line_input[4], current_intent_should_be=line_input[5])
                     if ack_params not in self.ackDB.keys():
                         self.ackDB[ack_params] = list()
                     self.ackDB[ack_params].append(line_input[2])
@@ -87,6 +87,8 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time choose_sentence: %.3f sec" % (time.time() - start))
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
+        print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()
+                      + ", " + current_intent.__str__()))
         start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
@@ -95,7 +97,8 @@ class NLG(wbc.WhiteBoardClient):
         if valence:
             key_res = [ack_params for ack_params in key_res if valence in ack_params.valence]
         if current_intent:
-            key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent]
+            key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent_should_not_be]
+            key_res = [ack_params for ack_params in key_res if (ack_params.current_intent_should_be == 'NONE' or current_intent in ack_params.current_intent_should_be)]
 
         if key_res and len(key_res) > 0:
             to_return = random.choice(self.ackDB[key_res[0]])
@@ -178,7 +181,7 @@ class NLG(wbc.WhiteBoardClient):
                 if message['user_intent']['intent'] in ["yes", "no"]:
                     valence = message['user_intent']['intent']
                 elif message['user_intent']['entity_type']:
-                    valence = "yes" if message['user_intent']['entity'] else "no"
+                    valence = "yes" if message['user_intent']['entity'] and message['user_intent']['polarity'] == '+' else "no"
                 else:
                     valence = None
                 current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
@@ -240,8 +243,11 @@ class NLG(wbc.WhiteBoardClient):
             self.recipe_cards[recipe['id']] = url
             return url
         except KeyError as e:
-            print(e)
-            print(card_json)
+            error_message = "Can't get recipe card! Error: " + e.__str__()
+            # print(e)
+            # print(card_json)
+            log.warn(error_message)
+            print(colored(error_message, "green"))
             return None
 
     def msg_to_json(self, intent, sentence, food_recipe, food_poster):

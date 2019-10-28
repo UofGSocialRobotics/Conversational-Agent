@@ -9,6 +9,8 @@ USUAL_DM_MSG = "usual_DM_msg" #should be used for everything else
 intent = 'intent'
 previous_intent = "previous_intent"
 current_intent = "current_intent"
+current_intent_should_not_be = "current_intent_should_not_be"
+current_intent_should_be = "current_intent_should_be"
 valence = "valence"
 cs = 'cs'
 tags = 'tags'
@@ -36,6 +38,8 @@ greeting = "greeting"
 inform_food = "inform(food)"
 comfort = "comfort"
 filling = "filling"
+request = "request"
+more = "more"
 
 # food diamensions (larry)
 emotional_satisfaction = 'emotional_satisfaction'
