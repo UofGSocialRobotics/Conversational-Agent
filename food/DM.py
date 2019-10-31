@@ -10,6 +10,9 @@ from ca_logging import log
 from termcolor import colored
 from fuzzywuzzy import fuzz
 import threading
+import copy
+import numpy as np
+import operator
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -38,6 +41,14 @@ class DM(wbc.WhiteBoardClient):
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
         self.use_local_recipe_DB = False
+        self.situated_food_matrix = self.get_food_per_situation(self.user_model[fc.situation])
+
+        self.n_recommendations = 0
+        self.list_sorted_ingredients = list()
+        self.current_recipe_list = list()
+
+        self.spoonacular_queries = list()
+        self.used_seed_ingredients = list()
 
 
     def set_use_local_recipe_DB(self, val):
@@ -73,7 +84,7 @@ class DM(wbc.WhiteBoardClient):
     def check_if_previous_recommendation_is_disliked(self):
         user_says_no = fc.no in self.from_NLU[fc.intent]
         user_says_dislike_ingredient = fc.inform in self.from_NLU[fc.intent] and fc.food in self.from_NLU[fc.entity_type] and "-" in self.from_NLU[fc.polarity]
-        user_says_want_more =  fc.request in self.from_NLU[fc.intent] and fc.more in self.from_NLU[fc.entity_type]
+        user_says_want_more = fc.request in self.from_NLU[fc.intent] and fc.more in self.from_NLU[fc.entity_type]
         if user_says_no or user_says_dislike_ingredient or user_says_want_more:
             self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
 
@@ -99,15 +110,10 @@ class DM(wbc.WhiteBoardClient):
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
-
             if fc.inform_food in self.currState:
                 self.check_if_previous_recommendation_is_liked()
                 self.check_if_previous_recommendation_is_disliked()
 
-
-            #Todo need to manage diet, time, and food
-
-            # Todo: Add vegan thingy in the requests
             if fc.inform in self.from_NLU[fc.intent]:
                 if fc.health in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
                     self.user_model[fc.liked_features].append(fc.health)
@@ -119,12 +125,14 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model[fc.special_diet].append(fc.vegan)
                     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
                 if fc.food in self.from_NLU[fc.entity_type]:
-                    if "+" in self.from_NLU[fc.polarity]:
-                        # self.user_model[fc.liked_food].append(self.from_NLU[fc.entity])
-                        self.user_model[fc.liked_food] += self.from_NLU[fc.entity]
+                    ingredients_list = self.from_NLU[fc.entity]
+                    if "+" in self.from_NLU[fc.polarity] or self.currState == "request(food)":
+                        self.user_model[fc.liked_food] += ingredients_list
                     else:
-                        self.user_model[fc.disliked_food] += self.from_NLU[fc.entity]
-                        # self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
+                        self.user_model[fc.disliked_food] += ingredients_list
+                        self.remove_recipes_with_disliked_ingredients()
+                        # print("there", self.from_NLU[fc.polarity])
+
 
             if fc.healthy in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
@@ -139,20 +147,25 @@ class DM(wbc.WhiteBoardClient):
                 if fc.no in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.time)
             if fc.inform_food in next_state:
-                if "request" in self.from_NLU[fc.intent] and "more" not in self.from_NLU[fc.entity_type]:
-                    log.debug("trying to get 1st recommendation")
-                    food_options, recommended_food, self.current_recipe_list = self.recommend(self.from_NLU[fc.entity_type], use_local_recipe_DB=self.use_local_recipe_DB)
-                elif "request" in self.from_NLU[fc.intent] and "more" in self.from_NLU[fc.entity_type]:
-                    log.debug("trying to get other recommendation")
-                    self.current_recipe_list.pop(0)
-                else:
-                    log.debug("Not sure when we go in here")
-                    food_options, recommended_food, self.current_recipe_list = self.recommend(None, use_local_recipe_DB=self.use_local_recipe_DB)
-
-                if self.current_recipe_list:
-                    recipe = self.current_recipe_list[0]
-                else:
+                if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
                     next_state = "bye"
+                else:
+                    if "request" in self.from_NLU[fc.intent] and "more" not in self.from_NLU[fc.entity_type]:
+                        log.debug("trying to get 1st recommendation")
+                        # food_options, recommended_food, self.current_recipe_list = self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                        self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                    elif "request" in self.from_NLU[fc.intent] and "more" in self.from_NLU[fc.entity_type]:
+                        log.debug("trying to get other recommendation")
+                        self.current_recipe_list.pop(0)
+                    else:
+                        log.debug("Not sure when we go in here")
+                        self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+
+                    if self.current_recipe_list:
+                        recipe = self.current_recipe_list[0]
+                        self.n_recommendations += 1
+                    else:
+                        next_state = "bye"
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -161,18 +174,19 @@ class DM(wbc.WhiteBoardClient):
             # saves the user model at the end of the interaction
             if next_state == 'bye' and fc.SAVE_USER_MODEL:
                 self.save_user_model()
+                print(colored("Did %d queries to Spoonacular\nWorked with ingredients: %s" % (len(self.spoonacular_queries), ", ".join(self.used_seed_ingredients)), "blue"))
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recommended_food, recipe)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe)
             self.from_NLU = None
             self.from_SA = None
             self.publish(new_msg, topic=self.publishes[0])
 
 
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, reco_food, recipe):
-        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.reco_food: reco_food, fc.recipe: recipe}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipe):
+        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.recipe: recipe}
         # json_msg = json.dumps(frame)
         return frame
 
@@ -214,33 +228,48 @@ class DM(wbc.WhiteBoardClient):
             return self.current_recipe_list
         new_recipe_list = list()
         for recipe in self.current_recipe_list:
-            disliked_ingredient_in_recipe = False
-            ingredients_list = self.get_all_ingredients(recipe)
-            for ingredient in ingredients_list:
-                if ingredient in self.user_model[fc.disliked_food]:
-                    msg = "Removing recipe %s because it has disliked ingredient (%s)" % (recipe['title'], ingredient)
-                    log.debug(msg)
+            # Check disliked ingredients are not in recipe title
+            disliked_ingredient_in_recipe_title = False
+            for disliked_i in self.user_model[fc.disliked_food]:
+                if disliked_i.lower() in recipe["title"].lower():
+                    disliked_ingredient_in_recipe_title = True
+                    msg = "Removing recipe %s because it has disliked ingredient (%s)" % (recipe['title'], disliked_i)
                     print(colored(msg, "green"))
-                    disliked_ingredient_in_recipe = True
                     break
-            if not disliked_ingredient_in_recipe:
+            # Check disliked ingredients are not in ingredients list
+            disliked_ingredient_in_recipe = False
+            if not disliked_ingredient_in_recipe_title:
+                ingredients_list = self.get_all_ingredients(recipe)
+                for ingredient in ingredients_list:
+                    for disliked_i in self.user_model[fc.disliked_food]:
+                        if disliked_i.lower() in ingredient.lower() or ingredient.lower() in disliked_i.lower():
+                            msg = "Removing recipe %s because it has disliked ingredient (%s)" % (recipe['title'], ingredient)
+                            print(colored(msg, "green"))
+                            disliked_ingredient_in_recipe = True
+                            break
+                    if disliked_ingredient_in_recipe:
+                        break
+            if not disliked_ingredient_in_recipe and not disliked_ingredient_in_recipe_title:
                 new_recipe_list.append(recipe)
         self.current_recipe_list = new_recipe_list
+        # print("len(self.current_recipe_list)", len(self.current_recipe_list))
 
-    def recommend(self, additional_request, use_local_recipe_DB=False):
-        food_options = self.get_food_options(additional_request)
-        recommended_food = self.pick_food(food_options)
+    def recommend(self, use_local_recipe_DB=False):
+
+        if not self.list_sorted_ingredients:
+            self.sort_ingredients_to_recommend()
+
         # TODO: need to change that and update it each time?
         if not self.current_recipe_list:
             if use_local_recipe_DB:
                 with open(fc.LOCAL_FOOD_DB, 'rb') as f:
                     content = json.load(f)
                     self.current_recipe_list = list()
-                    for i in range(5):
+                    for i in range(fc.N_RESULTS):
                         self.current_recipe_list.append(content[i])
                     # self.current_recipe_list = json.load(f)
             else:
-                self.current_recipe_list = self.get_recipe_list_with_spoonacular(recommended_food)
+                self.get_recipe_list_with_spoonacular()
         self.remove_recipes_likely_to_be_disliked()
         self.remove_recipes_with_disliked_ingredients()
 
@@ -252,129 +281,86 @@ class DM(wbc.WhiteBoardClient):
         # log.debug((food_options,recommended_food,recipe_list))
         if not self.current_recipe_list:
             log.critical(colored("No recipe to recommend","cyan"))
-        return food_options, recommended_food, self.current_recipe_list
 
-    def get_food_options(self, request):
-        max_meal_value = max_dessert_value = max_drink_value = max_meat_value = max_side_value = -100
-        best_meal = best_dessert = best_drink = best_meat = best_side = None
-        situated_food_matrix = self.get_food_per_situation(self.user_model[fc.situation])
 
-        if fc.health in self.user_model[fc.liked_features]:
-            healthy_weight = 1
+    def get_desired_food_values(self):
+        #TODO: get actual desired values
+        return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
+
+    def sort_ingredients_to_recommend(self):
+        if self.user_model[fc.special_diet] == fc.vegan:
+            expected_food_type = ["meal", "side"]
         else:
-            healthy_weight = 0
-        if fc.comfort in self.user_model[fc.liked_features]:
-            comfort_weight = 1
-        else:
-            comfort_weight = 0
-        if fc.filling in self.user_model[fc.liked_features]:
-            filling_weight = 1
-        else:
-            filling_weight = 0
+            expected_food_type = ["meal", "meat", "side"]
+        d_h, d_f, d_c = self.get_desired_food_values()
+        all_foods = list()
+        for index, row in self.situated_food_matrix.iterrows():
+            if row[fc.food_type] in expected_food_type:
+                h, f, c = row[fc.healthiness], row[fc.emotional_satisfaction], row[fc.food_fillingness]
+                distance = abs(h - d_h) + abs(f - d_f) + abs(c - d_c)
+                all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f, c)))
+        self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
+        closest_food = self.list_sorted_ingredients[0]
+        # print("desired values", d_h, d_f, d_c)
+        # print("actual values", closest_food[2])
+        # print("chosen_food", closest_food[0])
+        # return self.preprocess_ingredient_name(closest_food)
 
+    def preprocess_ingredient_name(self, ingredient):
+        ingredient = ingredient.replace("dish", "")
+        ingredient = ingredient.replace("side", "")
+        ingredient = ingredient.replace("meal", "")
+        ingredient = ingredient.replace("(only)", "")
+        ingredient = ingredient.replace(" ", "%20")
+        ingredient.strip()
+        return ingredient
 
-
-        for index, row in situated_food_matrix.iterrows():
-            if request:
-                current_food_value = healthy_weight * row[fc.healthiness] + row[request] + (comfort_weight * row[fc.emotional_satisfaction]) + (filling_weight * row[fc.food_fillingness])
-            else:
-                current_food_value = healthy_weight * row[fc.healthiness] + (comfort_weight * row[fc.emotional_satisfaction]) + (filling_weight * row[fc.food_fillingness])
-            if fc.meal in row[fc.food_type] and current_food_value > max_meal_value:
-                if row[fc.food_name] not in self.user_model[fc.disliked_food]:
-                    max_meal_value = current_food_value
-                    best_meal = row[fc.food_name]
-            elif fc.meat in row[fc.food_type] and current_food_value > max_meat_value:
-                if row[fc.food_name] not in self.user_model[fc.disliked_food]:
-                    max_meat_value = current_food_value
-                    best_meat = row[fc.food_name]
-            elif fc.side in row[fc.food_type] and current_food_value > max_side_value:
-                if row[fc.food_name] not in self.user_model[fc.disliked_food]:
-                    max_side_value = current_food_value
-                    best_side = row[fc.food_name]
-        # best_food = {fc.meal: best_meal, fc.dessert: best_dessert, fc.drink: best_drink, fc.meat: best_meat, fc.side: best_side}
-        best_food = {fc.meal: best_meal, fc.meat: best_meat, fc.side: best_side}
-        return best_food
-
-    def pick_food(self, food):
-        recommended_food = {fc.main: "", fc.other_main: ""}
-        if randint(0, 1) == 1:
-            recommended_food[fc.main] = food[fc.meal]
-            recommended_food[fc.other_main] = food[fc.meat] + " with " + food[fc.side]
-        else:
-            recommended_food[fc.main] = food[fc.meat] + " with " + food[fc.side]
-            recommended_food[fc.other_main] = food[fc.meal]
-        # if randint(0, 1) == 1:
-        #     recommended_food[fc.secondary] = food[fc.dessert]
-        # else:
-        #     recommended_food[fc.secondary] = food[fc.drink]
-        return recommended_food
-
-    # def get_recipe_list_with_edamam(self, recommended_food):
-    #     if "with" in recommended_food[fc.main]:
-    #         request_food = recommended_food[fc.main].replace(" with ", "%20and%20")
-    #         request_food = request_food.replace("side ", "")
-    #     else:
-    #         request_food = recommended_food[fc.main].replace(" dish", "")
-    #     edamamURL = fc.EDAMAM_SEARCH_RECIPE_ADDRESS + request_food + fc.EDAMAM_APP_ID + fc.EDAMAM_KEY + fc.EDAMAM_PROPERTY + fc.EDAMAM_ADDITIONAL_DIET
-    #     data = urllib.request.urlopen(edamamURL)
-    #     result = data.read()
-    #     json_recipe_list = json.loads(result)
-    #     recipe_list = json_recipe_list['hits']
-    #     return recipe_list
-
-    def format_recommended_food(self, recommended_food):
-        to_replace_pairs = [["with", ""], ["side", ""], ["dish", ""]]
-        for to_replace, to_replace_with in to_replace_pairs:
-            if to_replace in recommended_food:
-                recommended_food = recommended_food.replace(to_replace, to_replace_with)
-        recommended_food = ' '.join(recommended_food.split(' '))
-        recommended_food = recommended_food.replace(" ", "%20")
-        recommended_food = '%20'.join(recommended_food.split('%20'))
-        return recommended_food
-
-
-    def get_recipe_from_spoonacular_with_specific_food_request(self, food_to_request, liked_food):
-        request_food = self.format_recommended_food(food_to_request)
-        log.debug(request_food)
+    def get_recipe_from_spoonacular_with_specific_food_request(self):
+        ingredients_str = self.list_sorted_ingredients.pop(0)[0]
+        self.used_seed_ingredients.append(ingredients_str)
         if fc.time in self.user_model[fc.liked_features]:
             max_time = 21
         else:
             max_time = 5000
         time_str = fc.SPOONACULAR_API_MAX_TIME + str(max_time)
         diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
-        liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
+        # liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
         exclude_ingredients_str = fc.SPOONACULAR_API_EXCLUDE_INGREDIENTS + ",".join(self.user_model[fc.disliked_food]) if self.user_model[fc.disliked_food] else ""
-        query = request_food + liked_food_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        query = ingredients_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
         log.debug(query)
         recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
-        return recipe_list
 
-    def get_recipe_list_with_spoonacular(self, recommended_food):
+        if not recipe_list or len(recipe_list) < fc.N_RESULTS and "mashed" in ingredients_str:
+            ingredients_str = ingredients_str.replace("mashed", "")
+            ingredients_str = ingredients_str.strip()
+            query = ingredients_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+            log.debug(query)
+            recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
+
+        return recipe_list, ingredients_str
+
+    def get_recipe_list_with_spoonacular(self):
         print(colored("in get_recipe_list_with_spoonacular", "blue"))
-        recipe_list = []
-        recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], self.user_model['liked_food'])
-        # log.debug(recipe_list)
+        self.current_recipe_list = list()
+        potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
+        self.add_new_recipes(potential_new_recipes, seed_ingredient)
+        while len(self.current_recipe_list) < fc.N_RESULTS and len(self.list_sorted_ingredients) > 0:
+            potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
+            self.add_new_recipes(potential_new_recipes, seed_ingredient)
+        log.debug("Got %d recipes with Spoonacular" % len(self.current_recipe_list))
 
-
-        if not recipe_list or len(recipe_list)<5 and "mashed" in recommended_food["main"]:
-            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"].replace("mashed",""), self.user_model['liked_food'])
-        if not recipe_list or len(recipe_list)<5:
-            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], self.user_model['liked_food'])
-            # log.debug(recipe_list)
-        if not recipe_list or len(recipe_list)<5:
-            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["main"], liked_food=None)
-            # log.debug(recipe_list)
-            # log.debug(recipe_list)
-        if not recipe_list or len(recipe_list)<5:
-            recipe_list += self.get_recipe_from_spoonacular_with_specific_food_request(recommended_food["other_main"], liked_food=None)
-            # log.debug(recipe_list)
-
-        log.debug("Got %d recipes with Spoonacular" % len(recipe_list))
-        return recipe_list
+    def add_new_recipes(self, potential_new_recipes_list, seed_ingredient):
+        tmp_copy = copy.deepcopy(self.current_recipe_list)
+        for recipe in potential_new_recipes_list:
+            if recipe['title'] not in [r['title'] for r in tmp_copy]:
+                recipe ['seed_ingredient'] = seed_ingredient
+                self.current_recipe_list.append(recipe)
 
     def generate_soonacular_url(self, query):
         tmp = fc.SPOONACULAR_API_SEARCH + fc.SPOONACULAR_KEY + "&query=" + query
         log.debug(tmp)
+        self.spoonacular_queries.append(query)
+        # print(tmp)
         return tmp
 
     def query_spoonacular(self, spoonURL):
@@ -382,7 +368,7 @@ class DM(wbc.WhiteBoardClient):
         result = data.read()
         json_recipe_list = json.loads(result)
         recipe_list = json_recipe_list['results']
-        return  recipe_list
+        return recipe_list
 
     def get_headers(self, matrix):
         headers = matrix.keys()
@@ -391,6 +377,29 @@ class DM(wbc.WhiteBoardClient):
     def get_food_per_situation(self, situation):
         situated_food_matrix = self.food_data.query("situation_name == '" + situation + "'")
         return situated_food_matrix
+
+    def get_ingredient_info(self, ingredient_name):
+        ingredient_info = self.food_data.query("food_name == '" + ingredient_name + "'")
+        return ingredient_info
+
+    def get_ingredient_categories(self, ingredient_name):
+        ingredient_info = self.get_ingredient_info(ingredient_name)
+        types_list = list()
+        for index, row in ingredient_info.iterrows():
+            t = row[fc.food_type]
+            # print(t)
+            if t not in types_list:
+                types_list.append(t)
+        return types_list
+
+    def get_ingredient_main_category(self, ingredient_name):
+        categories = self.get_ingredient_categories(ingredient_name)
+        if "meal" in categories:
+            return "meat"
+        elif "meat" in categories:
+            return "meat"
+        else:
+            return "side"
 
     def save_recipes_as_pdf(self):
         import pdfkit

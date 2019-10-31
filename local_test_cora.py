@@ -7,6 +7,7 @@ from termcolor import colored, cprint
 import datetime
 import time
 import traceback
+import random
 
 class TestCora():
     def __init__(self, timeit, autotest_script=None):
@@ -108,15 +109,25 @@ if __name__ == "__main__":
     argp = argparse.ArgumentParser()
     argp.add_argument('domain', metavar='domain', type=str, help='Domain to test (e.g. movies? food?)')
     argp.add_argument("--autotest", help="To test the system with a predefined script (to write bellow directly in the python file)", action="store_true")
+    argp.add_argument("--randomtest", help="To test the system with random utterances (chosen from list written in this file)", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
     argp.add_argument("--logs", help="If you want to see the python logs in the console", action="store_true")
     argp.add_argument("--localDB", help="If you want avoid querying Spoonacular and use the limited local recipe DB instead", action="store_true")
     argp.add_argument("--timeit", help="If you want get the execution time for each module", action="store_true")
 
+    hi = ["hi", "hello", "good morning", "hiya", "hallo"]
+    i_am_emotion = ["i m tired", "good", "amazing", "i feel great", "OK", "fine", "i m good", "exhausted", "i had a good night and i feel great this morning!", "not good", "i feel bad", "i am in a bad mood", "i am sick", "I have a headache"]
+    hungriness = ["i am starving", "i am hungry", "super hungry", "something light", "not too hungry", "never hungry for diner"]
+    healthiness = ["very healthy", "i don t care", "i don t know", "healthy maybe?", "not healthy", "testy, not healthy", "no healthy i want pizza"]
+    diet = ["no", "i am vegan", "i don t eat meat", "i dont eat dairy", "i eat gluten free", "no gluten please"]
+    time_options = ["I have time", "I don t have time", "I am in a rush", "something quick", "I have plenty of time", "not in a rush"]
+    accept_recipe = ["no", "something else", "not that", "seems good", "yes", "sure", "I don t like salmon", "i don t like salad", "i don t like chicken"]
+    conversation_stages = [hi, i_am_emotion, hungriness, healthiness, diet, time_options, accept_recipe]
+
 
     autotest_scripts = dict()
     # autotest_scripts["understand_yes_when_no"] = ["hello", "good and u?", " I ll be hungry, i m always hungry for dinner", "the healthier the better" , "nop", "I have time", " i have fish in the fridge that s going to go bad if i don t cook it today", "no, i don t like apples", "okay", "no thanks"]
-    autotest_scripts["always_says_no"] = ["hello", "good and u?", " I ll be hungry, i m always hungry for dinner", "the healthier the better" , "nop", "I have time", " i have fish in the fridge that s going to go bad if i don t cook it today", "no, i don t like apples", "anything else?", "no", "no"]
+    autotest_scripts["always_says_no"] = ["hello", "good and u?", " I ll be hungry, i m always hungry for dinner", "the healthier the better" , "nop", "I have time", " i don t like salmon", "no", "anything else?", "no", "no"]
     # autotest_scripts["cant_find_recipes"] = ["hello", "good", "hungry", "very healthy" , "vegan", "quick", "oysters", "okay", "no"]
     # autotest_scripts["light_vegetarian_healty_notime_beans"] = ["hello", "Not so good", "light, I m not hungry", "might as well be good...", "I'm a vegeratian", "I don t feel like cooking", "beans", "no, not that", "no, not that either.", "ok", "sure", "thanks"]
     # autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
@@ -143,6 +154,17 @@ if __name__ == "__main__":
                 test = TestCora(timeit)
                 test.set_use_local_DB_value(args.localDB)
                 test.start_testCora()
+
+            elif args.randomtest:
+                script = list()
+                for elt in conversation_stages:
+                    script.append(random.choice(elt))
+                for i in range(10):
+                    script.append(random.choice(conversation_stages[-1]))
+                test = TestCora(timeit, script)
+                test.set_use_local_DB_value(args.localDB)
+                test.start_testCora()
+
             else:
                 args.print_help()
         else:

@@ -41,7 +41,7 @@ for key, value in FIREBASE_CONFIG.items():
     FIREBASE_CONFIG[key] = f.decrypt(value).decode()
 
 # Connection timeout, in secondes
-CONNECTION_TIMEOUT = 60 * 10
+CONNECTION_TIMEOUT = 60 * 15
 
 ####################################################################################################
 ##                                           Messages                                             ##

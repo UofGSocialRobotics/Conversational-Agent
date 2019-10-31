@@ -1,3 +1,5 @@
+import cryptography.fernet as fernet
+import json
 
 ####################################################################################################
 ##                                              Voc                                               ##
@@ -97,6 +99,7 @@ NLG_USE_ACKS_CS = True
 NLG_USE_CS = True
 NLG_USE_EXPLANATIONS = False
 CS_LABELS = ["SD", "PR", "HE", "VSN", "NONE", 'QESD']
+MAX_RECOMMENDATIONS = 5
 
 EDAMAM_APP_ID = "&app_id=31e2abca"
 EDAMAM_KEY = "&app_key=befbcff0d60f1af684f881c7f24ed296"
@@ -107,9 +110,10 @@ MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
 # "https://api.edamam.com/search?q=chicken&app_id=${YOUR_APP_ID}&app_key=${YOUR_APP_KEY}&from=0&to=3&calories=591-722&health=alcohol-free"
 
 
-SPOONACULAR_KEY = "f124c11f97374e4ea23184db8d4f4097"
+SPOONACULAR_KEY = b'gAAAAABduryIrAaX-zsQLqzVjah6HXKrwA1GBGPCTNap8FyXniQKFw2uGJP8vxbcbut-WVUXnR3Emct7iMxXhKWQ15wUPlt2idUjNnxhiB9TF8pM9S12ev19M-2u40cGoE6Vxeb7duqR'
 SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?apiKey="
-SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=5"
+N_RESULTS = 5
+SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=" + N_RESULTS.__str__()
 SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
 SPOONACULAR_API_DIET = "&diet="
@@ -132,3 +136,11 @@ SPOONACULAR_API_VISUALIZE = "https://api.spoonacular.com/recipes/visualizeRecipe
 #backgroundColor 	string 	#ffffff 	The background color for the recipe card as a hex-string.
 #fontColor 	string 	#333333 	The font color for the recipe card as a hex-string.
 #source 	string 	spoonacular.com 	The source of the recipe.
+
+
+with open("shared_resources/encryption_key.json", 'rb') as f:
+    key = json.load(f)["encryption_key"]
+# print(key)
+f = fernet.Fernet(key.encode())
+SPOONACULAR_KEY = f.decrypt(SPOONACULAR_KEY).decode()
+print("Spoonacular KEY ", SPOONACULAR_KEY)

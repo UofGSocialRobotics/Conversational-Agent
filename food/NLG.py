@@ -87,8 +87,8 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time choose_sentence: %.3f sec" % (time.time() - start))
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
-        print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()
-                      + ", " + current_intent.__str__()))
+        # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()
+        #               + ", " + current_intent.__str__()))
         start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
@@ -161,7 +161,7 @@ class NLG(wbc.WhiteBoardClient):
             cs = self.pick_social_strategy() if fc.NLG_USE_CS else None
             tags = self.tags_explanation_types if intent == fc.inform_food else []
 
-            self.food = message['reco_food']
+            # self.food = message['reco_food']
             if message['recipe']:
                 self.recipe = message['recipe']
                 recipe_card = self.get_recipe_card(self.recipe)
@@ -181,7 +181,7 @@ class NLG(wbc.WhiteBoardClient):
                 if message['user_intent']['intent'] in ["yes", "no"]:
                     valence = message['user_intent']['intent']
                 elif message['user_intent']['entity_type']:
-                    valence = "yes" if message['user_intent']['entity'] and message['user_intent']['polarity'] == '+' else "no"
+                    valence = "yes" if message['user_intent']['entity'] and (message['user_intent']['polarity'] == '+' or message['user_intent']['polarity'] == None) else "no"
                 else:
                     valence = None
                 current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
@@ -285,9 +285,9 @@ class NLG(wbc.WhiteBoardClient):
         if food_tag in sentence:
             if food_tag == "#mainfood":
                 replace_with = self.get_random_ingredient_from_recipe(self.recipe)
-            else:
-                replace_with = self.food[food_key]
-                replace_with = replace_with.replace(" dish", "")
+            # else:
+            #     replace_with = self.food[food_key]
+            #     replace_with = replace_with.replace(" dish", "")
             sentence = sentence.replace(food_tag, replace_with)
         if self.timeit_details:
             print("Response time replace_food: %.3f sec" % (time.time() - start))
@@ -300,7 +300,12 @@ class NLG(wbc.WhiteBoardClient):
         for ingredient in ingredients:
             if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
                 return ingredient["name"]
-        chosen_ingredient = random.choice(ingredients)
+        try:
+            chosen_ingredient = random.choice(ingredients)
+        except IndexError as e:
+            print("recipe", "ingredients")
+            print(recipe, ingredients)
+            raise e
         if self.timeit_details:
             print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
         return chosen_ingredient["name"]

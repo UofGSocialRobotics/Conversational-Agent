@@ -43,6 +43,7 @@ def just_get_recipe_main_info(recipe_dict):
     new_dict["title"] = recipe_dict['title']
     new_dict['vegan'] = recipe_dict['vegan']
     new_dict['spoonacularSourceUrl'] = recipe_dict['spoonacularSourceUrl']
+    new_dict['seed_ingredient'] = recipe_dict['seed_ingredient']
     new_dict["..."] = "..."
     return new_dict
 
