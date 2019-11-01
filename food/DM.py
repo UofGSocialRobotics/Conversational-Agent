@@ -38,11 +38,13 @@ class DM(wbc.WhiteBoardClient):
         self.current_food_options = {fc.meal: "", fc.dessert: "", fc.drink: "", fc.meat: "", fc.side: ""}
         self.nodes = {}
 
-        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.situation: "Usual Dinner", fc.health_diagnostic_score: None}
+        state_values = {fc.healthiness: 0, fc.food_fillingness: 0, fc.comfort: 0}
+        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
         self.use_local_recipe_DB = False
         self.situated_food_matrix = self.get_food_per_situation(self.user_model[fc.situation])
+        self.situated_food_matrix = helper.norm_pandas_matrix(self.situated_food_matrix)
 
         self.n_recommendations = 0
         self.n_accepted_recommendations = 0
@@ -106,25 +108,36 @@ class DM(wbc.WhiteBoardClient):
             self.from_NLU = msg
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
         elif "HealthDiagnostic" in topic:
-            self.user_model[fc.health_diagnostic_score] = msg[fc.health_diagnostic_score]
+            self.user_model[fc.food_scores_trait] = msg[fc.food_scores_trait]
         # Wait for both SA and NLU messages before sending something back to the whiteboard
         if self.from_NLU and self.from_SA:
-            recommended_food = None
-            food_options = None
-            food_recipe_list = None
+
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
-
 
             if fc.inform_food in self.currState:
                 self.check_if_previous_recommendation_is_liked()
                 self.check_if_previous_recommendation_is_disliked()
 
+            if self.currState == "greeting":
+                if fc.yes in self.from_NLU[fc.intent]:
+                    self.user_model[fc.food_scores_state][fc.comfort] = -1
+                elif fc.no in self.from_NLU[fc.intent]:
+                    self.user_model[fc.food_scores_state][fc.comfort] = 1
+
             if fc.inform in self.from_NLU[fc.intent]:
-                if fc.health in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
-                    self.user_model[fc.liked_features].append(fc.health)
-                if fc.hungry in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
-                    self.user_model[fc.liked_features].append(fc.filling)
+                if fc.health in self.from_NLU[fc.entity_type]:
+                    if self.from_NLU[fc.entity] is True:
+                        self.user_model[fc.liked_features].append(fc.health)
+                        self.user_model[fc.food_scores_state][fc.healthiness] = 1
+                    elif self.from_NLU[fc.entity] is False:
+                        self.user_model[fc.food_scores_state][fc.healthiness] = -1
+                if fc.hungry in self.from_NLU[fc.entity_type]:
+                    if self.from_NLU[fc.entity] is True:
+                        self.user_model[fc.liked_features].append(fc.filling)
+                        self.user_model[fc.food_scores_state][fc.food_fillingness] = 1
+                    elif self.from_NLU[fc.entity] is False:
+                        self.user_model[fc.food_scores_state][fc.food_fillingness] = -1
                 if fc.time in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is False:
                     self.user_model[fc.liked_features].append(fc.time)
                 if fc.vegan in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
@@ -222,6 +235,9 @@ class DM(wbc.WhiteBoardClient):
 
     def load_food_data(self):
         self.food_data = pandas.read_csv(fc.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
+        # print(self.food_data)
+
+
 
     def remove_recipes_likely_to_be_disliked(self):
         new_recipe_list = list()
@@ -312,8 +328,18 @@ class DM(wbc.WhiteBoardClient):
 
 
     def get_desired_food_values(self):
-        #TODO: get actual desired values
-        return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
+        trait_values = self.user_model[fc.food_scores_trait] 
+        state_values = self.user_model[fc.food_scores_state]
+        if not trait_values:
+            waning_msg = "No trait values for food diagnostic. Generating radom values!"
+            print(colored(waning_msg, "green"))
+            log.warn(waning_msg)
+            trait_values = {fc.healthiness: np.random.uniform(-1,1), fc.food_fillingness: np.random.uniform(-1,1), fc.comfort: np.random.uniform(-1,1)}
+        print(colored((trait_values, state_values), "blue"))
+
+        return (trait_values[fc.healthiness] + state_values[fc.healthiness]) / float(2), (trait_values[fc.food_fillingness] + state_values[fc.food_fillingness]) / float(2), (trait_values[fc.comfort] + state_values[fc.comfort]) / float(2)
+        
+        # return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
         # return 0.413, -.603, -2.016
 
     def sort_ingredients_to_recommend(self):

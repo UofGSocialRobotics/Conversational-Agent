@@ -95,3 +95,32 @@ def capitalize_first_word_in_str(str):
         return str_splited[0].capitalize()
     else:
         return str_splited[0].capitalize() + " " + " ".join([w for w in str_splited[1:]])
+
+def norm_pandas_matrix(matrix):
+    mins_per_column = dict()
+    maxs_per_column = dict()
+    normed_matrix = copy.deepcopy(matrix)
+    print(matrix.shape)
+    lines, columns = matrix.shape
+    for j in range(4, columns):
+        mins_per_column[j] = 10
+        maxs_per_column[j] = -10
+    for i, row in matrix.iterrows():
+        for j, elt in enumerate(row):
+            # print(i, j)
+            if j > 3:
+                if elt < mins_per_column[j]:
+                    mins_per_column[j] = elt
+                if elt > maxs_per_column[j]:
+                    maxs_per_column[j] = elt
+    # matrix = copy.deepcopy(normed_matrix)
+    i_init = None
+    for i, row in matrix.iterrows():
+        if not i_init:
+            i_init = i
+        for j, elt in enumerate(row):
+            if j > 3:
+                v = 2 * ((elt - mins_per_column[j]) / (maxs_per_column[j] - mins_per_column[j])) - 1
+                normed_matrix.iat[i - i_init, j] = v
+
+    return normed_matrix

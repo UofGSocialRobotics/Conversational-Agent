@@ -75,7 +75,8 @@ liked_recipe = "liked_recipe"
 disliked_recipe = "disliked_recipe"
 special_diet = 'special_diet'
 situation = "situation"
-health_diagnostic_score = "health_diagnostic_score"
+food_scores_trait = "food_scores_trait"
+food_scores_state = "food_scores_state"
 
 ####################################################################################################
 ##                                          Resources Path                                        ##
