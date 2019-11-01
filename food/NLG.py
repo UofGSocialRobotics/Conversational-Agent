@@ -323,7 +323,7 @@ class NLG(wbc.WhiteBoardClient):
             if "time" in self.user_model['liked_features']:
                 features_list.append("don't have much time to cook")
             else:
-                features_list.append("still have time to cook")
+                features_list.append("have time to cook")
             features_string = ", ".join(features_list[:-1])
             if len(features_list) > 1:
                 features_string += " and "

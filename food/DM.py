@@ -13,6 +13,7 @@ import threading
 import copy
 import numpy as np
 import operator
+import multiprocessing
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -122,6 +123,7 @@ class DM(wbc.WhiteBoardClient):
                 if fc.time in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is False:
                     self.user_model[fc.liked_features].append(fc.time)
                 if fc.vegan in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
+                    print(colored("user is vegan", "green"))
                     self.user_model[fc.special_diet].append(fc.vegan)
                     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
                 if fc.food in self.from_NLU[fc.entity_type]:
@@ -269,7 +271,10 @@ class DM(wbc.WhiteBoardClient):
                         self.current_recipe_list.append(content[i])
                     # self.current_recipe_list = json.load(f)
             else:
-                self.get_recipe_list_with_spoonacular()
+                got_recipe = False
+                n_trials = 0
+                while got_recipe is False and n_trials < 3:
+                    got_recipe = self.get_recipe_list_with_spoonacular_in_no_more_than_two_seconds()
         self.remove_recipes_likely_to_be_disliked()
         self.remove_recipes_with_disliked_ingredients()
 
@@ -285,10 +290,11 @@ class DM(wbc.WhiteBoardClient):
 
     def get_desired_food_values(self):
         #TODO: get actual desired values
-        return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
+        # return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
+        return 0.413, -.603, -2.016
 
     def sort_ingredients_to_recommend(self):
-        if self.user_model[fc.special_diet] == fc.vegan:
+        if fc.vegan in self.user_model[fc.special_diet]:
             expected_food_type = ["meal", "side"]
         else:
             expected_food_type = ["meal", "meat", "side"]
@@ -296,7 +302,7 @@ class DM(wbc.WhiteBoardClient):
         all_foods = list()
         for index, row in self.situated_food_matrix.iterrows():
             if row[fc.food_type] in expected_food_type:
-                h, f, c = row[fc.healthiness], row[fc.emotional_satisfaction], row[fc.food_fillingness]
+                h, f, c = row[fc.healthiness], row[fc.food_fillingness], row[fc.emotional_satisfaction]
                 distance = abs(h - d_h) + abs(f - d_f) + abs(c - d_c)
                 all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f, c)))
         self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
@@ -311,8 +317,10 @@ class DM(wbc.WhiteBoardClient):
         ingredient = ingredient.replace("side", "")
         ingredient = ingredient.replace("meal", "")
         ingredient = ingredient.replace("(only)", "")
-        ingredient = ingredient.replace(" ", "%20")
         ingredient.strip()
+        if "/" in ingredient:
+            ingredient = ingredient.split("/")[0]
+        ingredient = ingredient.replace(" ", "%20")
         return ingredient
 
     def get_recipe_from_spoonacular_with_specific_food_request(self):
@@ -338,6 +346,20 @@ class DM(wbc.WhiteBoardClient):
             recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
 
         return recipe_list, ingredients_str
+
+    def get_recipe_list_with_spoonacular_in_no_more_than_two_seconds(self):
+        p = multiprocessing.Process(target=self.get_recipe_list_with_spoonacular(), name=self.name+"/get_recipe_list_with_spoonacular", args=(self,))
+        p.start()
+        p.join(2)
+        if p.is_alive():
+            error_msg = "Getting recipe with Spoonacular is taking too long"
+            print(colored(error_msg,"green"))
+            log.warn(error_msg)
+            p.terminate()
+            p.join()
+            return False
+        else:
+            return True
 
     def get_recipe_list_with_spoonacular(self):
         print(colored("in get_recipe_list_with_spoonacular", "blue"))
