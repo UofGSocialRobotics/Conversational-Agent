@@ -111,6 +111,7 @@ class DM(wbc.WhiteBoardClient):
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
+
             if fc.inform_food in self.currState:
                 self.check_if_previous_recommendation_is_liked()
                 self.check_if_previous_recommendation_is_disliked()
@@ -168,6 +169,10 @@ class DM(wbc.WhiteBoardClient):
                         self.n_recommendations += 1
                     else:
                         next_state = "bye"
+
+
+            if next_state == "request(another)" and self.n_recommendations == fc.MAX_RECOMMENDATIONS:
+                next_state = "bye"
 
             # if the user comes back
             if next_state == 'greeting' and (self.user_model['liked_food']):
@@ -290,8 +295,8 @@ class DM(wbc.WhiteBoardClient):
 
     def get_desired_food_values(self):
         #TODO: get actual desired values
-        # return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
-        return 0.413, -.603, -2.016
+        return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
+        # return 0.413, -.603, -2.016
 
     def sort_ingredients_to_recommend(self):
         if fc.vegan in self.user_model[fc.special_diet]:
