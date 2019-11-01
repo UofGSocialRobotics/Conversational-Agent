@@ -1,7 +1,7 @@
 from ca_logging import log
 import json
 import random
-import os
+import re
 import copy
 
 def write_json(file_name,dictionary):
@@ -81,3 +81,16 @@ def string_contain_common_word(string1, string2):
       if word in d.keys():
         return True
     return False
+
+def capitalize_after_punctuation(text):
+    punc_filter = re.compile('([.!?]\s*)')
+    split_with_punctuation = punc_filter.split(text)
+    final = ''.join([capitalize_first_word_in_str(i) for i in split_with_punctuation])
+    return final
+
+def capitalize_first_word_in_str(str):
+    str_splited = str.split(" ")
+    if len(str_splited) == 1:
+        return str_splited[0].capitalize()
+    else:
+        return str_splited[0].capitalize() + " " + " ".join([w for w in str_splited[1:]])
