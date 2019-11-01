@@ -92,7 +92,7 @@ NLU_publishes = MSG_NLU
 
 ## DM
 DM_subscribes = [MSG_NLU, MSG_SA]
-DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST]
+DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT]
 
 ## NLG
 NLG_subscribes = [MSG_DM, MSG_DM_RECIPE_LIST]
@@ -134,6 +134,7 @@ FIREBASE_KEY_ACK = "ack"
 FIREBASE_KEY_AMTID = "amt_id"
 FIREBASE_KEY_DATACOLLECTION = "data_collection"
 FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS = "food_diagnosis_answers"
+FIREBASE_KEY_DATA_RECO = "data_recommendation"
 
 
 ####################################################################################################

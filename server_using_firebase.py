@@ -147,6 +147,9 @@ class ServerUsingFirebase:
                     for_data_col[config_data_collection.DIALOG] = message
                     whiteboard.publish(message=for_data_col, topic=topic)
 
+                elif isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys():
+                    self.firebase_root_ref.update_at(message, path=get_path_in_sessions(client_id))
+
                 else:
                     data = dict()
                     data[config.FIREBASE_KEY_ACK] = True

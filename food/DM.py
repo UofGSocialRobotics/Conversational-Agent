@@ -45,11 +45,14 @@ class DM(wbc.WhiteBoardClient):
         self.situated_food_matrix = self.get_food_per_situation(self.user_model[fc.situation])
 
         self.n_recommendations = 0
+        self.n_accepted_recommendations = 0
         self.list_sorted_ingredients = list()
         self.current_recipe_list = list()
 
+        self.food_values = None
         self.spoonacular_queries = list()
         self.used_seed_ingredients = list()
+
 
 
     def set_use_local_recipe_DB(self, val):
@@ -81,6 +84,7 @@ class DM(wbc.WhiteBoardClient):
     def check_if_previous_recommendation_is_liked(self):
         if fc.yes in self.from_NLU[fc.intent]:
             self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
+            self.n_accepted_recommendations += 1
 
     def check_if_previous_recommendation_is_disliked(self):
         user_says_no = fc.no in self.from_NLU[fc.intent]
@@ -153,11 +157,11 @@ class DM(wbc.WhiteBoardClient):
                 if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
                     next_state = "bye"
                 else:
-                    if "request" in self.from_NLU[fc.intent] and "more" not in self.from_NLU[fc.entity_type]:
-                        log.debug("trying to get 1st recommendation")
-                        # food_options, recommended_food, self.current_recipe_list = self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-                        self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-                    elif "request" in self.from_NLU[fc.intent] and "more" in self.from_NLU[fc.entity_type]:
+                    # if "request" in self.from_NLU[fc.intent] and "more" not in self.from_NLU[fc.entity_type]:
+                    #     log.debug("trying to get 1st recommendation")
+                    #     # food_options, recommended_food, self.current_recipe_list = self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                    #     self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                    if "request" in self.from_NLU[fc.intent] and "more" in self.from_NLU[fc.entity_type]:
                         log.debug("trying to get other recommendation")
                         self.current_recipe_list.pop(0)
                     else:
@@ -181,7 +185,7 @@ class DM(wbc.WhiteBoardClient):
             # saves the user model at the end of the interaction
             if next_state == 'bye' and fc.SAVE_USER_MODEL:
                 self.save_user_model()
-                print(colored("Did %d queries to Spoonacular\nWorked with ingredients: %s" % (len(self.spoonacular_queries), ", ".join(self.used_seed_ingredients)), "blue"))
+                self.save_reco_data()
 
             prev_state = self.currState
             self.currState = next_state
@@ -190,6 +194,20 @@ class DM(wbc.WhiteBoardClient):
             self.from_SA = None
             self.publish(new_msg, topic=self.publishes[0])
 
+    def save_reco_data(self):
+        # print(colored("Did %d queries to Spoonacular\nWorked with ingredients: %s" % (len(self.spoonacular_queries), ", ".join(self.used_seed_ingredients)), "blue"))
+        data_reco = dict()
+        data_reco["n_queries"] = len(self.spoonacular_queries)
+        data_reco["queries"] = self.spoonacular_queries
+        data_reco["n_seed_ingredients"] = len(self.used_seed_ingredients)
+        data_reco["seed_ingredients"] = self.used_seed_ingredients
+        data_reco["n_reco"] = self.n_recommendations
+        data_reco["n_accepted_reco"] = self.n_accepted_recommendations
+        data_reco["food_values"] = self.food_values
+        print(colored(data_reco, "blue"))
+        data = {"data_recommendation": data_reco}
+        self.publish(data, topic=self.publishes[2])
+        self.publish(data, topic=self.publishes[3])
 
 
     def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipe):
@@ -304,6 +322,7 @@ class DM(wbc.WhiteBoardClient):
         else:
             expected_food_type = ["meal", "meat", "side"]
         d_h, d_f, d_c = self.get_desired_food_values()
+        self.food_values = {fc.healthiness: d_h, fc.food_fillingness: d_f, fc.comfort: d_c}
         all_foods = list()
         for index, row in self.situated_food_matrix.iterrows():
             if row[fc.food_type] in expected_food_type:
@@ -311,11 +330,6 @@ class DM(wbc.WhiteBoardClient):
                 distance = abs(h - d_h) + abs(f - d_f) + abs(c - d_c)
                 all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f, c)))
         self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
-        closest_food = self.list_sorted_ingredients[0]
-        # print("desired values", d_h, d_f, d_c)
-        # print("actual values", closest_food[2])
-        # print("chosen_food", closest_food[0])
-        # return self.preprocess_ingredient_name(closest_food)
 
     def preprocess_ingredient_name(self, ingredient):
         ingredient = ingredient.replace("dish", "")

@@ -71,6 +71,7 @@ class TestCora():
             # self.publish_for_client(message, self.client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
             print("Response time: %.3f sec" % (time.time() - self.timer_response_time))
             print(colored("Cora says: "+message["sentence"], "red"))
+            self.publish_whiteboard({"dialog": message["sentence"]}, config.MSG_DATACOL_IN + self.client_id)
             if message["intent"] == "bye":
                 self.quit()
             else:
@@ -87,6 +88,7 @@ class TestCora():
         if self.autotest_script:
             utterance = self.autotest_script[self.autotest_script_index]
             self.autotest_script_index += 1
+            self.publish_whiteboard({"dialog": utterance}, config.MSG_DATACOL_IN + self.client_id)
             print(colored("User: "+utterance, "yellow"))
         else:
             utterance = input(colored("Enter text (q to quit): ","yellow"))
