@@ -121,7 +121,7 @@ if __name__ == "__main__":
     i_am_emotion = ["i m tired", "good", "amazing", "i feel great", "OK", "fine", "i m good", "exhausted", "i had a good night and i feel great this morning!", "not good", "i feel bad", "i am in a bad mood", "i am sick", "I have a headache"]
     hungriness = ["i am starving", "i am hungry", "super hungry", "something light", "not too hungry", "never hungry for diner"]
     healthiness = ["very healthy", "i don t care", "i don t know", "healthy maybe?", "not healthy", "testy, not healthy", "no healthy i want pizza"]
-    diet = ["no", "i am vegan", "i don t eat meat", "i dont eat dairy", "i eat gluten free", "no gluten please"]
+    diet = ["no", "i am vegan", "i don t eat meat", "i dont eat dairy", "i eat gluten free", "no gluten please", "i don t eat eggs", "I am intolerant to shelfish", "no", "no", "no", "no", "no", "no", "no", "no"]
     time_options = ["I have time", "I don t have time", "I am in a rush", "something quick", "I have plenty of time", "not in a rush"]
     accept_recipe = ["no", "something else", "not that", "seems good", "yes", "sure", "I don t like salmon", "i don t like salad", "i don t like chicken"]
     conversation_stages = [hi, i_am_emotion, hungriness, healthiness, diet, time_options, accept_recipe]
@@ -135,7 +135,8 @@ if __name__ == "__main__":
     # autotest_scripts["hungry_notdiet_nothealty_time_chicken"] = ["hello", "Good", "Oh I'm really starving!", "I don t care a all.", "no", "I have plenty of time", "chicken", "no, not that", "no, not that either.", "no", "ok", "sure", "thanks"]
     # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
     # autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
-    autotest_scripts["recommend_squid_to_vegan"] = ["hello", "i had a good night and i feel great this morning!", " not too hungry", "testy, not healthy", "i am vegan", "I have plenty of time", "no", "no", "no", "no", "yes", "thanks"]
+    # autotest_scripts["recommend_squid_to_vegan"] = ["hello", "i had a good night and i feel great this morning!", " not too hungry", "testy, not healthy", "i am vegan", "I have plenty of time", "no", "no", "no", "no", "yes", "thanks"]
+    autotest_scripts["error_pop_from_empty_list"] = ["hiya", "exhausted", "i am hungry", "very healthy", 'i dont eat dairy', "I have plenty of time", "yes", "sure", "i don t like salad", "something else", "something else", "no", "no", "no"]
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False
@@ -179,7 +180,8 @@ if __name__ == "__main__":
         exceptiondata = traceback.format_exc().splitlines()
         print(exceptiondata[0])
         print("  [...]")
-        for line in exceptiondata[-9:]:
+        # for line in exceptiondata[-9:]:
+        for line in exceptiondata:
             print(line)
 
 

@@ -177,12 +177,7 @@ class DM(wbc.WhiteBoardClient):
                     #     log.debug("trying to get 1st recommendation")
                     #     # food_options, recommended_food, self.current_recipe_list = self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
                     #     self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-                    if "request" in self.from_NLU[fc.intent] and "more" in self.from_NLU[fc.entity_type]:
-                        log.debug("trying to get other recommendation")
-                        self.current_recipe_list.pop(0)
-                    else:
-                        log.debug("Not sure when we go in here")
-                        self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                    self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
 
                     if self.current_recipe_list:
                         recipe = self.current_recipe_list[0]
