@@ -19,14 +19,15 @@ def test_nlu(domain):
         voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         food_list = food_dataparser.get_food_names()
     while(not q):
-        utterance = input("Enter text (q to quit): ")
+        utterance = input("Enter conversation_stage / utterance (q to quit): ")
         if utterance == 'q':
             q = True
         else:
             if domain == "movies":
                 formula = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
             elif domain == "food":
-                formula = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list)
+                conversation_stage, utterance = utterance.split('/')
+                formula = food_NLU.rule_based_nlu(utterance.strip(), spacy_nlp, voc, food_list, conversation_stage.strip())
             print(formula)
             # intent, entity, entitytype, polarity = nlu_helper.format_formula(formula)
             # print(intent, entity, entitytype, polarity)

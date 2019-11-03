@@ -36,6 +36,7 @@ no_time = 'no_time'
 hungry = 'hungry'
 not_hungry = 'not_hungry'
 vegan = "vegan"
+intolerances = "intolerances"
 greeting = "greeting"
 inform_food = "inform(food)"
 comfort = "comfort"
@@ -119,7 +120,7 @@ SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
 SPOONACULAR_API_DIET = "&diet="
 SPOONACULAR_API_EXCLUDE_INGREDIENTS = "&excludeIngredients="
-SPOONACULAR_API_GF = "&intolerances=gluten"
+SPOONACULAR_API_INTOLERANCES = "&intolerances="
 SPOONACULAR_API_SEARCH_ADDITIONAL_INFO = "&fillIngredients=true&addRecipeInformation=true"
 SPOONACULAR_FOOD_RECO = "https://api.spoonacular.com/food/detect?apiKey="
 SPOONACULAR_API_VISUALIZE = "https://api.spoonacular.com/recipes/visualizeRecipe?apiKey="

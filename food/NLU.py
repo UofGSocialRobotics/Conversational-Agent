@@ -1,7 +1,7 @@
 import whiteboard_client as wbc
 import helper_functions as helper
 import spacy
-import json
+import csv
 # from movies import movies_nlu_functions, movie_dataparser
 import nlu_helper_functions as nlu_helper
 import food.food_dataparser as food_dataparser
@@ -45,7 +45,7 @@ def inform_comfort(document, voc_no, voc_comfort):
     comfort, negation = False, False
     for token in document:
         if token.lemma_ in voc_comfort:
-            healthy = True
+            comfort = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
     if comfort:
@@ -128,12 +128,41 @@ def inform_intolerance(document, voc_no, voc_intolerances):
     else:
         return False
 
+def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, food_list):
+    # print("in get_intent_depending_on_conversation_stage, stage = " + stage)
+    f = None
+    if stage == "greeting":
+        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no'])
+    elif stage == "request(filling)":
+        f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
+    elif stage == "request(healthy)":
+        f = inform_healthy(document, voc_no=voc["no"], voc_healthy=voc["healthy"])
+    elif stage == "request(diet)":
+        f = inform_vegan(document, voc_no=voc["no"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        if not f:
+            f = inform_intolerance(document, voc_no=voc["no"], voc_intolerances=voc["spoonacular_intolerances"])
+        if not f:
+            f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+    elif stage == "request(time)":
+        f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"])
+    elif stage == "inform(food)":
+        f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+        if not f:
+            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+        if not f:
+            f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
+    else:
+        f = get_intent_default(document, utterance, voc, food_list)
 
-def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
+    if not f:
+        f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+    if not f:
+        f = "IDK", None, None, None
 
-    utterance = nlu_helper.preprocess(utterance)
-    document = spacy_nlp(utterance)
-    capitalized_document = spacy_nlp(utterance.title())
+    return f
+
+def get_intent_default(document, utterance, voc, food_list):
+    # print("in get_intent_default")
     f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
     if not f:
         f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
@@ -160,6 +189,12 @@ def rule_based_nlu(utterance, spacy_nlp, voc, food_list):
     return f
 
 
+def rule_based_nlu(utterance, spacy_nlp, voc, food_list, conversation_stage):
+
+    utterance = nlu_helper.preprocess(utterance)
+    document = spacy_nlp(utterance)
+    capitalized_document = spacy_nlp(utterance.title())
+    return get_intent_depending_on_conversation_stage(stage=conversation_stage, document=document, utterance=utterance, voc=voc, food_list=food_list)
 
 ####################################################################################################
 ##                                     rule-based NLU Module                                      ##
@@ -173,6 +208,26 @@ class NLU(wbc.WhiteBoardClient):
         self.voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
         self.food_list = food_dataparser.get_food_names()
+        self.conversation_stages = self.read_convesation_stages()
+        self.current_stage = self.conversation_stages.pop(0)
+        # self.next_conversation_stage()
+
+    def read_convesation_stages(self):
+        path = "food/resources/dm/model.csv"
+        with open(path, 'r') as f:
+            content = csv.reader(f)
+            conversation_stages = list()
+            for row in content:
+                conversation_stages.append(row[0])
+            return conversation_stages
+
+    def next_conversation_stage(self):
+        if self.current_stage == "default":
+            return
+        if self.current_stage != "inform(food)":
+            self.current_stage = self.conversation_stages.pop(0)
+        else:
+            self.current_stage = "default"
 
     def treat_message(self, msg, topic):
         super(NLU, self).treat_message(msg,topic)
@@ -180,10 +235,14 @@ class NLU(wbc.WhiteBoardClient):
 
         # Todo Distinguish actors and directors
 
-        intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list)
+        intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list, conversation_stage=self.current_stage)
+        print(intent, entitytype, entity, polarity)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
+
         self.publish(new_msg)
+
+        self.next_conversation_stage()
 
     def msg_to_json(self, intent, entity, entity_type, polarity):
         frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}

@@ -39,7 +39,7 @@ class DM(wbc.WhiteBoardClient):
         self.nodes = {}
 
         state_values = {fc.healthiness: 0, fc.food_fillingness: 0, fc.comfort: 0}
-        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
+        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
         self.use_local_recipe_DB = False
@@ -144,6 +144,9 @@ class DM(wbc.WhiteBoardClient):
                     print(colored("user is vegan", "green"))
                     self.user_model[fc.special_diet].append(fc.vegan)
                     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
+                if fc.intolerances in self.from_NLU[fc.entity_type]:
+                    self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
+                    self.user_model[fc.intolerances] = self.from_NLU[fc.entity]
                 if fc.food in self.from_NLU[fc.entity_type]:
                     ingredients_list = self.from_NLU[fc.entity]
                     if "+" in self.from_NLU[fc.polarity] or self.currState == "request(food)":
@@ -377,9 +380,10 @@ class DM(wbc.WhiteBoardClient):
             max_time = 5000
         time_str = fc.SPOONACULAR_API_MAX_TIME + str(max_time)
         diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
+        intolerances_str = fc.SPOONACULAR_API_INTOLERANCES + self.user_model[fc.intolerances] if self.user_model[fc.intolerances] else ""
         # liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
         exclude_ingredients_str = fc.SPOONACULAR_API_EXCLUDE_INGREDIENTS + ",".join(self.user_model[fc.disliked_food]) if self.user_model[fc.disliked_food] else ""
-        query = ingredients_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        query = ingredients_str + time_str + diet_str + intolerances_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
         log.debug(query)
         recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
 

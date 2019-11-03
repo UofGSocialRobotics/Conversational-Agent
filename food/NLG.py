@@ -135,6 +135,7 @@ class NLG(wbc.WhiteBoardClient):
         start = time.time()
         super(NLG, self).treat_message(message, topic)
 
+
         if topic == self.subscribes[1]:
             log.debug("Will start fetching recipe cards!")
             self.get_create_all_cards(message)
@@ -144,6 +145,7 @@ class NLG(wbc.WhiteBoardClient):
             # message = json.loads(msg)
             recipe_card = None
             self.user_model = message['user_model']
+            # print(self.user_model)
             self.user_intent = message['user_intent']
             self.situation = self.user_model['situation']
 
@@ -320,6 +322,10 @@ class NLG(wbc.WhiteBoardClient):
                 features_list.append("feel hungry")
             if "health" in self.user_model['liked_features']:
                 features_list.append("want to eat healthy")
+            if self.user_model[fc.intolerances]:
+                features_list.append("are intolerant to " + self.user_model[fc.intolerances])
+            if self.user_model[fc.special_diet]:
+                features_list.append("are vegan")
             if "time" in self.user_model['liked_features']:
                 features_list.append("don't have much time to cook")
             else:

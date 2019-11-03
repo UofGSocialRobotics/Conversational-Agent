@@ -6,8 +6,13 @@ def get_food_names(f = "./food/resources/dm/food_ratings.csv"):
     with open(f) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
-            food_list.append(row[2])
-
+            ingredient = row[2]
+            ingredient = ingredient.replace("dish", "")
+            ingredient = ingredient.replace("side", "")
+            ingredient = ingredient.replace("meal", "")
+            ingredient = ingredient.replace("(only)", "")
+            ingredient = ingredient.strip()
+            food_list.append(ingredient)
     return food_list[1:]
 
 
