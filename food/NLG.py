@@ -16,7 +16,7 @@ SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], resp_time=False):
+    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes, resp_time)
@@ -35,6 +35,8 @@ class NLG(wbc.WhiteBoardClient):
         self.load_sentence_model(fc.NLG_SENTENCE_DB)
         self.load_ack_model(fc.NLG_ACK_DB)
         self.timeit_details = False
+
+        self.cs = cs
 
         self.recipe_cards = dict()
 
@@ -89,6 +91,8 @@ class NLG(wbc.WhiteBoardClient):
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
         # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()
         #               + ", " + current_intent.__str__()))
+        CS = self.cs
+
         start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]

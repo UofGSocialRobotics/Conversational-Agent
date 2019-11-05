@@ -22,6 +22,11 @@ exp_type_opinion = "opinion"
 exp_type_feature = "feature"
 EXPLANATION_TYPE = [exp_type_food]
 
+exp_cs_human = "human"
+exp_cs_robot = "robot"
+exp_cs_control = "NONE"
+USR_CS = exp_cs_robot
+
 
 ####################################################################################################
 ##                                        Firebase config                                         ##
@@ -184,7 +189,7 @@ class Modules:
         elif domain == "food":
             NLU_config = {"module": food_NLU.NLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
             DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
-            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE}
+            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE, "cs": exp_cs_human}
             SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
