@@ -23,6 +23,7 @@ def stream_handler_users_ref(message):
 def filter_client_id_data(message):
     data = message["data"]
     path = message["path"]
+    print(data, path)
     if data:
         try:
             if config.FIREBASE_KEY_SOURCE in data.keys() and data[config.FIREBASE_KEY_SOURCE] == config.FIREBASE_VALUE_SOURCE_AGENT:
