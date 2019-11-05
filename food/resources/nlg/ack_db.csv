@@ -1,6 +1,6 @@
 previous_intent,CS,ack,valence,current_intent_is_NOT, current_intent_is
 greeting,NONE,Lovely! I'm glad to hear that.,yes,NONE,NONE
-greeting,human,Lovely! I'm having a reat day and I'm in a very good mood myself.,yes,NONE,NONE
+greeting,human,Lovely! I'm having a great day and I'm in a very good mood myself.,yes,NONE,NONE
 greeting,robot,"Lovely! As a robot, I don't have feelings, but it's great you feel good.",yes,NONE,NONE
 greeting,NONE,I'm sorry to hear that. I'll try to find something to cheer you up then!,no,NONE,NONE
 greeting,fuman,"I'm sorry to hear that. Whenever I feel bad myself, I find comfort in a great dinner.",no,NONE,NONE
