@@ -1,6 +1,7 @@
 import whiteboard_client as wbc
 from ca_logging import log
 import helper_functions as helper
+import food.food_config as fc
 
 
 
@@ -44,7 +45,7 @@ class HealthDiagnostic(wbc.WhiteBoardClient):
             h, f, c = float(h) / 50, float(f) / 50, float(c) / 50
             log.info("Food diagnostic, user trait values are: healthiness %.3f, fillingness %.3f, confort %.3f" % (h, f, c))
             self.food_diagnostic_score = [h, f, c]
-            data = {"health_diagnostic_score": self.food_diagnostic_score}
+            data = {fc.food_scores_trait: {fc.healthiness: h, fc.food_fillingness: f, fc.comfort: c}}
             self.publish(data)
         else:
             log.debug("Already calculated health score (%.2f)" % self.food_diagnostic_score)
