@@ -116,6 +116,13 @@
             "not at all"
         ]
     },
+    "constraint" : [
+        "constraint",
+        "limit",
+        "restriction",
+        "limitation",
+        "restrain"
+    ],
     "greetings": [
         "hi",
         "hey",
@@ -168,5 +175,34 @@
         "other",
         "else",
         "different"
-    ]
+    ],
+    "duration_units": {
+        "m": ["m", "min", "minute"],
+        "h": ["h", "hour"]
+    },
+    "duration_unit_division": {
+        "quarter": [
+            "1/4",
+            "quarter"
+        ],
+        "half": [
+            "1/2",
+            "half"
+        ]
+    },
+    "numbers": {
+        "1": ["1", "a", "an", "one"],
+        "2": ["2", "two"],
+        "3": ["3", "three"],
+        "4": ["4", "four"],
+        "5": ["5", "five"],
+        "10": ["10", "ten"],
+        "15": ["15", "fifteen"],
+        "20": ["20", "twenty"],
+        "25": ["25", "twentyfive", "twenty five", "twenty-five"],
+        "30": ["30", "thirty"],
+        "40": ["40", "forty", "fourty"],
+        "45": ["45", "forty five", "fortyfive", "forty-five", "fourty five", "fourtyfive", "fourty-five"],
+        "50": ["50", "fifty"]
+    }
 }

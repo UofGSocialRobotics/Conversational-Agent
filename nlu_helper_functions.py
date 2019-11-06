@@ -11,7 +11,18 @@ from ca_logging import log
 def preprocess(sentence):
     s = sentence.lower()
     s = s.replace(" don t ", " don't ")
+
+    if "1/2" in s:
+        s_splited = s.split("1/2")
+        s = " 1/2 ".join([re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", sub_s).strip() for sub_s in s_splited])
+    elif "1/4" in s:
+        s_splited = s.split("1/4")
+        s = " 1/4 ".join([re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", sub_s).strip() for sub_s in s_splited])
+    else:
+        s = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", s).strip()
     # s = s.replace("'s", " 's")
+    s = ' '.join(s.split())
+
     return s
 
 
@@ -256,6 +267,144 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     if is_positive == True:
         return res["yes"]
 
+def is_number(s, voc_numbers):
+    for key in reversed(list(voc_numbers.keys())):
+        value = voc_numbers[key]
+        if s in value:
+            return key
+    return False
+
+
+def is_duration_unit(s, voc_units):
+    for key in reversed(list(voc_units.keys())):
+        value = voc_units[key]
+        if s in value:
+            return key
+    return False
+
+def find_unit_immediately_after_number(n_idx, units, units_idx):
+    for i, u in enumerate(units):
+        u_idx = units_idx[i]
+        if u_idx >= n_idx:
+            return u, u_idx
+    return False, False
+
+def is_duration(document, sentence, voc_numbers, voc_duration, voc_fractions):
+    units, units_idx = list(), list()
+    numbers, numbers_idx = list(), list()
+    fraction, index_fraction = False, -1
+
+    w_few, w_to, w_to_idx, duration_2 = False, False, False, 0
+
+    # find fractions and "few"
+    for i, token in enumerate(document):
+        if token.text == "few":
+            w_few = True
+        if token.text == "to":
+            w_to, w_to_idx = True, i
+        if token.text in voc_fractions['half'] or token.lemma_ in voc_fractions['half']:
+            fraction, index_fraction = 30, i
+        elif token.text in voc_fractions['quarter'] or token.lemma_ in voc_fractions['quarter']:
+            fraction, index_fraction = 15, i
+    if not fraction:
+        for i, word in enumerate(sentence.split()):
+            if word in voc_fractions['half']:
+                fraction, index_fraction = 30, i
+            elif word in voc_fractions['quarter']:
+                fraction, index_fraction = 15, i
+
+    # find numbers in bigrams (e.g. forty five)
+    if len(sentence) > 2:
+        bigrams = nltk.bigrams(sentence.split())
+
+        for i_bg, bg in enumerate(bigrams):
+            bg_str = " ".join(bg)
+            n = is_number(bg_str, voc_numbers)
+            if n:
+                numbers.append(int(n))
+                numbers_idx.append(i_bg)
+                numbers_idx.append(i_bg + 1)
+
+    # find other numbers
+    for i, token in enumerate(document):
+        if i not in numbers_idx:
+            n = is_number(token.text, voc_numbers)
+            if n:
+                numbers.append(int(n))
+                numbers_idx.append(i)
+        u = is_duration_unit(token.text, voc_duration)
+        if not u:
+            u = is_duration_unit(token.lemma_, voc_duration)
+        if u:
+            units.append(u)
+            units_idx.append(i)
+
+    if w_few:
+        if units:
+            if units[0] == "h":
+                return "inform", "duration", 120, None
+            elif units[0] == "m":
+                return "inform", "duration", 20, None
+
+    if fraction:
+        if not numbers or numbers[0] == 1:
+            if list(set(voc_duration["h"]) & set(sentence.split()[index_fraction:])):
+                return "inform", "duration", fraction, None
+            elif list(set(voc_duration["h"]) & set(sentence.split()[:index_fraction])):
+                return "inform", "duration", 60+fraction, None
+        else:
+            if units:
+                if numbers_idx[0] < index_fraction and units[0] == "h":
+                    return "inform", "duration", 60*numbers[0] + fraction
+        return False
+
+
+    duration = 0
+
+    if numbers:
+        if not units:
+            log.debug("No units!")
+            return False
+        else:
+            # parse stuff like 30, 40 min
+            if len(numbers) == 2 and len(units) == 1 and units_idx[0] > numbers_idx[1]:
+                max_n = max(numbers)
+                duration = max_n * 60 if units[0] == 'h' else max_n
+            else:
+                # parse stuff like 1h30
+                found_h_unit = False
+                for i, n in enumerate(numbers):
+                    n_idx = numbers_idx[i]
+                    d, found_h_unit = calculate_duration(found_h_unit, n, n_idx, units, units_idx)
+                    if d == False and found_h_unit == False:
+                        return False
+                    if w_to and w_to_idx < n_idx and duration > 0:
+                        duration_2 += d
+                    else:
+                        duration += d
+
+        if duration_2 > 0:
+            return "inform", "duration", duration_2, None
+
+        return "inform", "duration", duration, None
+
+
+def calculate_duration(found_h_unit, n, n_idx, units, units_idx):
+    u_just_after, u_just_after_idx = find_unit_immediately_after_number(n_idx, units, units_idx)
+    duration = 0
+    if u_just_after == "h":
+        found_h_unit = True
+    if not u_just_after and not found_h_unit:
+        log.debug("Can't find proper units")
+        return False, False
+    elif u_just_after:
+        if u_just_after == "m":
+            duration = n
+        elif u_just_after == "h":
+            duration = n * 60
+    elif not u_just_after and found_h_unit:
+        duration = n
+    return duration, found_h_unit
 
 def format_formula(formula):
     intent, entity, entitytype, polarity = "", "", "", ""

@@ -54,8 +54,8 @@ def inform_comfort(document, voc_no, voc_comfort):
         else:
             return ("inform", "comfort", True, None)
 
-def inform_time(document, voc_no, voc_time, voc_no_time):
-    time, no_time, negation = False, False, False
+def inform_time(document, voc_no, voc_time, voc_no_time, voc_constraint):
+    time, no_time, negation, constraint = False, False, False, False
     for token in document:
         if token.lemma_ in voc_time:
             time = True
@@ -63,6 +63,9 @@ def inform_time(document, voc_no, voc_time, voc_no_time):
             no_time = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
+
+    if constraint and negation:
+        return ("inform", "time", True, None)
     if time:
         if negation:
             return ("inform", "time", False, None)
@@ -144,7 +147,9 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         if not f:
             f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
     elif stage == "request(time)":
-        f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"])
+        f = nlu_helper.is_duration(document, utterance, voc["numbers"], voc["duration_units"], voc["duration_unit_division"])
+        if not f:
+            f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     elif stage == "inform(food)":
         f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
         if not f:
@@ -169,7 +174,7 @@ def get_intent_default(document, utterance, voc, food_list):
     if not f:
         f = inform_healthy(document, voc_no=voc["no"], voc_healthy=voc["healthy"])
     if not f:
-        f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"])
+        f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     if not f:
         f = inform_vegan(document, voc_no=voc["no"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
     if not f:
@@ -184,6 +189,8 @@ def get_intent_default(document, utterance, voc, food_list):
         f = nlu_helper.is_greeting(document, voc_greetings=voc["greetings"])
     if not f:
         f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
+    if not f:
+        f = nlu_helper.is_duration(document, utterance, voc_numbers=voc["numbers"], voc_duration=voc["duration_units"], voc_fractions=voc["duration_unit_division"])
     if not f:
         f = "IDK", None, None, None
     return f
