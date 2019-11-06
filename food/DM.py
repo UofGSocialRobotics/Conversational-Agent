@@ -87,6 +87,8 @@ class DM(wbc.WhiteBoardClient):
         if fc.yes in self.from_NLU[fc.intent]:
             self.user_model[fc.liked_recipe].append(self.current_recipe_list.pop(0))
             self.n_accepted_recommendations += 1
+            return True
+        return False
 
     def check_if_previous_recommendation_is_disliked(self):
         user_says_no = fc.no in self.from_NLU[fc.intent]
@@ -94,6 +96,8 @@ class DM(wbc.WhiteBoardClient):
         user_says_want_more = fc.request in self.from_NLU[fc.intent] and fc.more in self.from_NLU[fc.entity_type]
         if user_says_no or user_says_dislike_ingredient or user_says_want_more:
             self.user_model[fc.disliked_recipe].append(self.current_recipe_list.pop(0))
+            return True
+        return False
 
     def treat_message(self, msg, topic):
 
@@ -116,8 +120,10 @@ class DM(wbc.WhiteBoardClient):
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
             if fc.inform_food in self.currState:
-                self.check_if_previous_recommendation_is_liked()
-                self.check_if_previous_recommendation_is_disliked()
+                liked_bool = self.check_if_previous_recommendation_is_liked()
+                disliked_bool = self.check_if_previous_recommendation_is_disliked()
+                if not liked_bool and not disliked_bool:
+                    self.current_recipe_list.pop(0)
 
             if self.currState == "greeting":
                 if fc.yes in self.from_NLU[fc.intent]:
