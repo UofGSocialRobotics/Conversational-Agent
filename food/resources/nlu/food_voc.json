@@ -156,5 +156,33 @@
         "soy",
         "sulfite",
         "wheat"
+    ],
+    "like": [
+        "delicious",
+        "tasty",
+        "yummy",
+        "rich",
+        "sweet",
+        "delish",
+        "nummy",
+        "savoury",
+        "appetizing",
+        "exquisite",
+        "delectable",
+        "lovely",
+        "delightful",
+        "succulent",
+        "flavoursome",
+        "flavourful",
+        "flavourous",
+        "scrummy",
+        "savoury",
+        "luscious",
+        "tasteful",
+        "tempting",
+        "mouthwatering",
+        "divine",
+        "heavenly",
+        "toothsome"
     ]
 }

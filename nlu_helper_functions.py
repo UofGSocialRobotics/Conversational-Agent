@@ -167,8 +167,6 @@ def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_ti
     else:
         return None
 
-
-
 def is_requestmore(document, voc_request_more):
     '''
     Determines if intent is request more

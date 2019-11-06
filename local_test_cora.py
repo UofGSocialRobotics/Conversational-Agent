@@ -80,7 +80,7 @@ class TestCora():
             log.critical("Not implemented yet")
 
     def subscribe_whiteboard(self, topic):
-        log.debug("%s subsdribing to %s" %(self.name, topic))
+        log.debug("%s subscribing to %s" %(self.name, topic))
         whiteboard.subscribe(subscriber=self, topic=topic)
 
 

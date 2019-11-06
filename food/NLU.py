@@ -131,6 +131,26 @@ def inform_intolerance(document, voc_no, voc_intolerances):
     else:
         return False
 
+def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
+    res = {"yes": ("yes", None, None, None), "no": ("no", None, None, None)}
+    like_bool, dislike_bool, negation = False, False, False
+    for token in document:
+        if token.lemma_ in voc_like or token.text in voc_like:
+            like_bool = True
+        elif token.lemma_ in voc_dislike or token.text in voc_dislike:
+            dislike_bool = True
+        elif nlu_helper.is_negation(token, voc_no):
+            negation = True
+    if like_bool and negation:
+        return res['no']
+    elif like_bool:
+        return res['yes']
+    elif dislike_bool and negation:
+        return res['yes']
+    elif dislike_bool:
+        return res['no']
+    return None
+
 def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, food_list):
     # print("in get_intent_depending_on_conversation_stage, stage = " + stage)
     f = None
@@ -152,6 +172,8 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     elif stage == "inform(food)":
         f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+        if not f:
+            f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no'])
         if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
         if not f:
@@ -191,6 +213,8 @@ def get_intent_default(document, utterance, voc, food_list):
         f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
     if not f:
         f = nlu_helper.is_duration(document, utterance, voc_numbers=voc["numbers"], voc_duration=voc["duration_units"], voc_fractions=voc["duration_unit_division"])
+    if not f:
+        f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no'])
     if not f:
         f = "IDK", None, None, None
     return f
