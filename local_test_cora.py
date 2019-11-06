@@ -136,7 +136,7 @@ if __name__ == "__main__":
     # autotest_scripts["hungry_nodiet_healthy_notime_carrots"] = ["hello", "Great", "I m super hungry", "Yeah healthy is better obviously", "No special diet", "I am in a rush", "carrots", "OK", "nop"]
     # autotest_scripts["hungry_nococonut_nothealthy_time_parsnip"] = ["hello", "I've been better", "I m not on a diet and i m hungry", "I don t care", "I don t like coconut", "I have time", "parsnip", "why not", "sure", "thanks"]
     # autotest_scripts["recommend_squid_to_vegan"] = ["hello", "i had a good night and i feel great this morning!", " not too hungry", "testy, not healthy", "i am vegan", "I have plenty of time", "no", "no", "no", "no", "yes", "thanks"]
-    autotest_scripts["error_pop_from_empty_list"] = ["hiya", "exhausted", "i am hungry", "very healthy", 'i dont eat dairy', "I have pabout 20 min", "yes", "sure", "i don t like salad", "something else with no beef", "something else", "no", "no", "no"]
+    autotest_scripts["error_pop_from_empty_list"] = ["hiya", "exhausted", "i am hungry", "very healthy", 'i dont eat dairy', "I have pabout 20 min", "lalala", "sure", "i don t like salad", "something else with no beef", "something else", "no", "no", "no"]
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False

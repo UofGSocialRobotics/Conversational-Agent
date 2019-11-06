@@ -4,7 +4,7 @@ request(filling),request(healthy),TRUE,,
 request(healthy),request(diet),TRUE,,
 request(diet),request(time),TRUE,,
 request(time),inform(food),TRUE,,
-inform(food),bye,TRUE,yes-request(another),request(more)-inform(food),inform(vegan)-inform(food),no-inform(food),inform(food)-inform(food)
+inform(food),bye,TRUE,yes-request(another),IDK-request(another),request(more)-inform(food),inform(vegan)-inform(food),no-inform(food),inform(food)-inform(food)
 request(another),inform(food),TRUE,bye-bye,yes-inform(food),no-bye
 greet_back,request_back(last_movie),TRUE,,
 request_back(last_movie),inform(opinion_last_movie),FALSE,,
