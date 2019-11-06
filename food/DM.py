@@ -39,7 +39,7 @@ class DM(wbc.WhiteBoardClient):
         self.nodes = {}
 
         state_values = {fc.healthiness: 0, fc.food_fillingness: 0, fc.comfort: 0}
-        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
+        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.time_to_cook: False, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
         self.use_local_recipe_DB = False
@@ -140,6 +140,8 @@ class DM(wbc.WhiteBoardClient):
                         self.user_model[fc.food_scores_state][fc.food_fillingness] = -1
                 if fc.time in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is False:
                     self.user_model[fc.liked_features].append(fc.time)
+                if fc.duration in self.from_NLU[fc.entity_type]:
+                    self.user_model[fc.time_to_cook] = self.from_NLU[fc.entity]
                 if fc.vegan in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
                     print(colored("user is vegan", "green"))
                     self.user_model[fc.special_diet].append(fc.vegan)
@@ -369,10 +371,13 @@ class DM(wbc.WhiteBoardClient):
     def get_recipe_from_spoonacular_with_specific_food_request(self):
         ingredients_str = self.list_sorted_ingredients.pop(0)[0]
         self.used_seed_ingredients.append(ingredients_str)
-        if fc.time in self.user_model[fc.liked_features]:
-            max_time = 21
+        if self.user_model[fc.time_to_cook]:
+            max_time = self.user_model[fc.time_to_cook] + 1
         else:
-            max_time = 5000
+            if fc.time in self.user_model[fc.liked_features]:
+                max_time = 21
+            else:
+                max_time = 5000
         time_str = fc.SPOONACULAR_API_MAX_TIME + str(max_time)
         diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
         intolerances_str = fc.SPOONACULAR_API_INTOLERANCES + self.user_model[fc.intolerances] if self.user_model[fc.intolerances] else ""

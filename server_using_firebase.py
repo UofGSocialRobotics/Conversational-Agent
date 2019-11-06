@@ -7,6 +7,8 @@ import config_data_collection
 from ca_logging import log
 import helper_functions as helper
 import pyrebase_multiple_refs
+import math
+from termcolor import colored
 
 ####################################################################################################
 ##                                          Stream handlers                                       ##
@@ -94,6 +96,7 @@ class ServerUsingFirebase:
 
             self.name = "Server"
             self.clients_services = dict()
+            self.n_clients = 0
             self.clients_threads = dict()
             self.timer_threads = dict()
             self.server_started = False
@@ -136,7 +139,7 @@ class ServerUsingFirebase:
         log.debug("In publish_for_client")
         if client_id in self.clients_services:
             # ref = self.firebase_db.child(config.FIREBASE_KEY_SESSIONS).child(client_id)
-            if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK:
+            if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND:
                 timestamp = datetime.datetime.now().__str__()
                 if firebase_key == config.FIREBASE_KEY_DIALOG:
                     message[config.FIREBASE_KEY_DATETIME] = timestamp
@@ -148,7 +151,7 @@ class ServerUsingFirebase:
                     for_data_col[config_data_collection.DIALOG] = message
                     whiteboard.publish(message=for_data_col, topic=topic)
 
-                elif isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys():
+                elif firebase_key == config.FIREBASE_KEY_XP_COND or (isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys()):
                     self.firebase_root_ref.update_at(message, path=get_path_in_sessions(client_id))
 
                 else:
@@ -240,10 +243,25 @@ class ServerUsingFirebase:
     def create_services(self, client_id):
         self.clients_services[client_id] = list()
         for module_config in config.modules.modules:
-            args = list(module_config.values())[1:]
-            new_module = module_config["module"](client_id, *args)
+            args = list(module_config.values())[2:]
+            print(module_config)
+            new_module_name = module_config["name"]
+            if new_module_name == "NLG":
+                if config.aamas_study_CS:
+                    cs = config.possible_CS[self.n_clients % len(config.possible_CS)]
+                    self.publish_for_client({config.FIREBASE_KEY_XP_COND: cs}, client_id, config.FIREBASE_KEY_XP_COND)
+                    self.publish_whiteboard({config.FIREBASE_KEY_XP_COND: cs}, config.MSG_DATACOL_IN+client_id)
+                    msg = "XP condition, cs = " + cs
+                    print(colored(msg, "cyan"))
+                    log.debug(msg)
+                else:
+                    cs = config.exp_cs_control
+                args.append(cs)
+            new_module = module_config["module"](client_id, *args)                
+            
             self.clients_services[client_id].append(new_module)
 
+        self.n_clients += 1
         for s in self.clients_services[client_id]:
             s.start_service()
 

@@ -15,6 +15,8 @@ pip install fuzzywuzzy
 pip install pandas
 pip install pyrebase #https://github.com/thisbejim/Pyrebase
 pip install cryptography==2.5
+pip install inflect
+pip install termcolor
 ```
 
 Run in your python environment:

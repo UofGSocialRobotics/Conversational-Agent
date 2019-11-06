@@ -10,7 +10,7 @@ request(situation),NONE,Sure.,no,NONE,NONE
 request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NONE
 request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE,NONE
 request(filling),NONE,Let's get something light then.,"no, not_hungry",NONE,NONE
-request(filling),human,Sure. I think I'll follow you lead and have something light too.,"no, not_hungry",NONE,NONE
+request(filling),human,Sure. I think I'll follow your lead and have something light too.,"no, not_hungry",NONE,NONE
 request(filling),robot,Yeah� robots are never hungry either.,"no, not_hungry",NONE,NONE
 request(filling),NONE,I'm hungry too!,"yes, hungry",NONE,NONE
 request(filling),NONE,Same here! I'm starving...,"yes, hungry",NONE,NONE
@@ -34,7 +34,7 @@ request(diet),human,Okay.,no,NONE,NONE
 request(diet),robot,Noted.,NONE,NONE,NONE
 request(healthy),NONE,"Ya, taste first and healthiness second right? I totally agree.","no, not_healthy",NONE,NONE
 request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE,NONE
-request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much have a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
+request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
 request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to have so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
 inform(food),NONE,I'm happy you like it.,yes,NONE,NONE
 inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE,NONE

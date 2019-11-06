@@ -3,12 +3,15 @@ import json
 import random
 import re
 import copy
+import inflect
 
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:
         json.dump(dictionary, fp, indent=4)
     log.debug('Wrote in '+file_name)
 
+def int_to_word(n):
+    return inflect.engine().number_to_words(n)
 
 def print_message(name,action,msg_txt,topic):
     msg_to_print = copy.deepcopy(msg_txt)

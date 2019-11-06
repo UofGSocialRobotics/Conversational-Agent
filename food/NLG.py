@@ -11,6 +11,7 @@ import csv
 from collections import namedtuple
 import time
 import threading
+import math
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
@@ -330,7 +331,28 @@ class NLG(wbc.WhiteBoardClient):
                 features_list.append("are intolerant to " + self.user_model[fc.intolerances])
             if self.user_model[fc.special_diet]:
                 features_list.append("are vegan")
-            if "time" in self.user_model['liked_features']:
+            if self.user_model[fc.time_to_cook]:
+                hours = math.floor(self.user_model[fc.time_to_cook] / 60)
+                hours_str = "" if hours == 0 else helper.int_to_word(hours)
+                if hours == 0:
+                    hours_str += ""
+                elif hours == 1:
+                    hours_str += " hour"
+                else :
+                    hours_str += " hours"
+                minutes = self.user_model[fc.time_to_cook] % 60
+                minutes_str = "" if minutes == 0 else helper.int_to_word(minutes)
+                if hours:
+                    minutes_str = " " + minutes_str
+                if minutes == 0:
+                    minutes_str += ""
+                elif minutes == 1:
+                    minutes_str += " minute"
+                else :
+                    minutes_str += " minutes"
+                duration_str = hours_str + minutes_str
+                features_list.append("don't want to spend more than %s to cook" % duration_str)
+            elif "time" in self.user_model['liked_features']:
                 features_list.append("don't have much time to cook")
             else:
                 features_list.append("have time to cook")

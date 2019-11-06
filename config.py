@@ -25,7 +25,8 @@ EXPLANATION_TYPE = [exp_type_food]
 exp_cs_human = "human"
 exp_cs_robot = "robot"
 exp_cs_control = "NONE"
-USR_CS = exp_cs_robot
+aamas_study_CS = True
+possible_CS = [exp_cs_human, exp_cs_robot, exp_cs_control]
 
 
 ####################################################################################################
@@ -140,6 +141,7 @@ FIREBASE_KEY_AMTID = "amt_id"
 FIREBASE_KEY_DATACOLLECTION = "data_collection"
 FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS = "food_diagnosis_answers"
 FIREBASE_KEY_DATA_RECO = "data_recommendation"
+FIREBASE_KEY_XP_COND = "xp_condition"
 
 
 ####################################################################################################
@@ -174,24 +176,24 @@ class Modules:
             # self.SentimentAnalysis = None
             # self.NLG = None
             # self.DataCollector = data_collection.DataCollector
-            dataCollector_config = {"module": data_collection.DataCollector, "subscribes": DataCollector_subscribes, "publishes": DataCollector_publishes, "ack_msg": FIREBASE_KEY_ACK}
+            dataCollector_config = {"module": data_collection.DataCollector, "name": "DataCollector", "subscribes": DataCollector_subscribes, "publishes": DataCollector_publishes, "ack_msg": FIREBASE_KEY_ACK}
             self.modules = list()
             self.modules.append(dataCollector_config)
 
     def set_domain(self, domain):
         if domain == "movies":
-            NLU_config = {"module": movies_NLU.RuleBasedNLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
-            DM_config = {"module": movies_DM.DM, "subscribes": DM_subscribes, "publishes": DM_publishes}
-            NLG_config = {"module": movies_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes}
-            SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
+            NLU_config = {"module": movies_NLU.RuleBasedNLU, "name": "NLU", "subscribes": NLU_subscribes, "publishes": NLU_publishes}
+            DM_config = {"module": movies_DM.DM, "name": "DM", "subscribes": DM_subscribes, "publishes": DM_publishes}
+            NLG_config = {"module": movies_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes}
+            SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA",  "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, SA_config]
             logging.log.info("(config.py) Set domain as movies.")
         elif domain == "food":
-            NLU_config = {"module": food_NLU.NLU, "subscribes": NLU_subscribes, "publishes": NLU_publishes}
-            DM_config = {"module": food_DM.DM, "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
-            NLG_config = {"module": food_NLG.NLG, "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE, "cs": exp_cs_human}
-            SA_config = {"module": movies_SA.SentimentAnalysis, "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
-            HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
+            NLU_config = {"module": food_NLU.NLU, "name": "NLU", "subscribes": NLU_subscribes, "publishes": NLU_publishes}
+            DM_config = {"module": food_DM.DM, "name": "DM", "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
+            NLG_config = {"module": food_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE}
+            SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
+            HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
             logging.log.info("(config.py) Set domain as food.")
         else:
