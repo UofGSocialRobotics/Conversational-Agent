@@ -343,7 +343,7 @@ class DM(wbc.WhiteBoardClient):
             trait_values = {fc.healthiness: np.random.uniform(-1,1), fc.food_fillingness: np.random.uniform(-1,1), fc.comfort: np.random.uniform(-1,1)}
         print(colored((trait_values, state_values), "blue"))
 
-        return max(1,((trait_values[fc.healthiness] + state_values[fc.healthiness]) / float(2)) + 0.5) , (trait_values[fc.food_fillingness] + state_values[fc.food_fillingness]) / float(2), (trait_values[fc.comfort] + state_values[fc.comfort]) / float(2)
+        return min(1,((trait_values[fc.healthiness] + state_values[fc.healthiness]) / float(2)) + 0.5) , (trait_values[fc.food_fillingness] + state_values[fc.food_fillingness]) / float(2), (trait_values[fc.comfort] + state_values[fc.comfort]) / float(2)
         
         # return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
         # return 0.413, -.603, -2.016
