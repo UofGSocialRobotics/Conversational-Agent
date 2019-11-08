@@ -11,7 +11,7 @@ request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NON
 request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE,NONE
 request(filling),NONE,Let's get something light then.,"no, not_hungry",NONE,NONE
 request(filling),human,Sure. I think I'll follow your lead and have something light too.,"no, not_hungry",NONE,NONE
-request(filling),robot,Yeah� robots are never hungry either.,"no, not_hungry",NONE,NONE
+request(filling),robot,Yeah robots are never hungry either.,"no, not_hungry",NONE,NONE
 request(filling),NONE,I'm hungry too!,"yes, hungry",NONE,NONE
 request(filling),NONE,Same here! I'm starving...,"yes, hungry",NONE,NONE
 request(filling),human,I'm hungry too!,"yes, hungry",NONE,NONE
@@ -24,7 +24,7 @@ request(time),NONE,Great! Cooking can be so much fun when you have time for it!,
 request(time),NONE,No time constraint. Good to know.,"yes, time",NONE,NONE
 request(time),human,Great! I love spending time cooking myself.,"yes, time",NONE,NONE
 request(time),robot,"Great! Robots like me can't cook, but it definitely seems fun to spend time cooking.","yes, time",NONE,NONE
-request(healthy),NONE,Nice. I'm sure the both of us will get along well!,"yes, healthy",NONE,NONE
+request(healthy),NONE,Nice. I'm sure we will get along well!,"yes, healthy",NONE,NONE
 request(healthy),NONE,"Sure! Health is the real wealth, you're a smart person!","yes, healthy",NONE,NONE
 request(healthy),human,Nice. I myself try to eat as healthy as I can.,"yes, healthy",NONE,NONE
 request(healthy),robot,"Sure! For you humans, health is the real wealth, you're a smart person!","yes, healthy",NONE,NONE
@@ -35,7 +35,7 @@ request(diet),robot,Noted.,NONE,NONE,NONE
 request(healthy),NONE,"Ya, taste first and healthiness second right? I totally agree.","no, not_healthy",NONE,NONE
 request(healthy),NONE,"Same here! We're not on a diet, so taste first!","no, not_healthy",NONE,NONE
 request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
-request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to have so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
+request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
 inform(food),NONE,I'm happy you like it.,yes,NONE,NONE
 inform(food),NONE,I'm so glad you like my recommendation.,yes,NONE,NONE
 inform(food),human,I'm happy you like it.,yes,NONE,NONE
@@ -49,11 +49,11 @@ inform(food),human,"Really? It's one of my favorites, but I can recommend someth
 inform(food),human,I personally find it delicious. But I have something else for you.,no,bye,NONE
 inform(food),human,Oh we must have very different tastes then. Let me find something else.,no,bye,NONE
 inform(food),robot,"My algorithm could be improved, but I have something else for you.",no,bye,NONE
-inform(food),robot,You are supposed to like it. Humans are such a mystery to me. Give me another chance.,no,bye,NONE
+inform(food),robot,I though you would like it. Humans are such a mystery to me. Give me another chance.,no,bye,NONE
 inform(food),robot,Let me find something else in my internal database.,no,bye,NONE
 inform(food),robot,My programmers need to do better job if you don't like it. I will pass on the message. Let me find something else.,no,bye,NONE
-inform(food),NONE,I'm sorry I have nothing else to recommend that fit your criteria.,no,NONE,bye
-inform(food),human,"I'm sorry I have nothing else to recommend that fit your criteria, but I had a great time chatting with you. I think we have a lot in common.",liked_at_least_one,NONE,bye
+inform(food),NONE,I'm sorry I have nothing else to recommend that fits your criteria.,no,NONE,bye
+inform(food),human,"I'm sorry I have nothing else to recommend that fits your criteria, but I had a great time chatting with you. I think we have a lot in common.",liked_at_least_one,NONE,bye
 inform(food),robot,I'm sorry I can't find anything that correspond to your criteria. I had more success with the 856 other people I recommended recipe to in the last hour.,no,NONE,bye
 NONE,NONE,Okay.,NONE,NONE,NONE
 NONE,NONE,Alright.,NONE,NONE,NONE
