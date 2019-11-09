@@ -223,6 +223,8 @@ class DM(wbc.WhiteBoardClient):
         data_reco["n_reco"] = self.n_recommendations
         data_reco["n_accepted_reco"] = self.n_accepted_recommendations
         data_reco["food_values"] = self.food_values
+        data_reco["food_val_trait"] = self.user_model[fc.food_scores_trait]
+        data_reco["food_val_state"] = self.user_model[fc.food_scores_state]
         print(colored(data_reco, "blue"))
         data = {"data_recommendation": data_reco}
         self.publish(data, topic=self.publishes[2])
