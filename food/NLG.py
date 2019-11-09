@@ -303,6 +303,8 @@ class NLG(wbc.WhiteBoardClient):
     def get_random_ingredient_from_recipe(self, recipe):
         start = time.time()
         ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] #+ recipe["unusedIngredients"]
+        if 'ingredients' in recipe.keys():
+            ingredients += recipe["ingredients"]
         # chosen_ingredient = random.choice(ingredients)
         for ingredient in ingredients:
             if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
@@ -310,9 +312,13 @@ class NLG(wbc.WhiteBoardClient):
         try:
             chosen_ingredient = random.choice(ingredients)
         except IndexError as e:
-            print("recipe", "ingredients")
-            print(recipe, ingredients)
-            raise e
+            # print("recipe", "ingredients")
+            # print(recipe, ingredients)
+            error_msg = "Can't find ingredients in recipe"
+            log.warn(error_msg)
+            print(colored(error_msg,"blue"))
+            return recipe["seed_ingredient"]
+            # raise e
         if self.timeit_details:
             print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
         return chosen_ingredient["name"]

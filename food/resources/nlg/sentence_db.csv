@@ -1,4 +1,4 @@
-greeting,NONE,NONE,Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+greeting,NONE,NONE,"Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?"
 greet_back,NONE,NONE,Welcome back! How are you doing today?
 request_back(last_movie),NONE,NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!
 inform(opinion_last_movie),NONE,NONE,Oh. can you tell me why?
