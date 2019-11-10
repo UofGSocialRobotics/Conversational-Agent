@@ -65,22 +65,34 @@ class NLG(wbc.WhiteBoardClient):
         # print(self.ackDB)
 
     def choose_sentence(self, intent, cs=None, tags_list=None):
+        cs = self.cs
+        # print(self.sentenceDB)
         start = time.time()
         # for sentence_params, sentences_list in self.sentenceDB.items():
         # print((intent, cs.__str__(), tags_list.__str__()))
         sentences_params_list = self.sentenceDB.keys()
         key_res = [s for s in sentences_params_list if s.intent == intent]
+        # print(key_res)
+        key_res_tmp = key_res
         if cs:
             key_res = [s for s in key_res if cs in s.cs]
+        if not key_res:
+            key_res = key_res_tmp
+            key_res = [s for s in key_res if (cs in s.cs or s.cs == "NONE")]
+        # print(key_res)
         if tags_list:
             for tag in tags_list:
                 key_res = [s for s in key_res if tag in s.tags]
-
+        # print(key_res)
         if key_res and len(key_res) > 0:
-            sentences_to_choose_from = list()
-            for key in key_res:
-                sentences_to_choose_from += self.sentenceDB[key]
-            return random.choice(sentences_to_choose_from)
+            # sentences_to_choose_from = list()
+            # for key in key_res:
+            #     sentences_to_choose_from += self.sentenceDB[key]
+            # print("sentences_to_choose_from", sentences_to_choose_from)
+            # return random.choice(sentences_to_choose_from)
+            to_return = random.choice(self.sentenceDB[key_res[0]])
+            # print("to_return", to_return)
+            return to_return
         else:
             error_message = "Can't find a sentence for %s, %s, %s" % (intent, cs.__str__(), tags_list.__str__())
             print(colored(error_message, "blue"))
@@ -90,20 +102,30 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time choose_sentence: %.3f sec" % (time.time() - start))
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
-        # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()
-        #               + ", " + current_intent.__str__()))
+        # print(self.ackDB)
+        # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()  + ", " + current_intent.__str__(),"blue"))
         CS = self.cs
 
         start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
+        # print(key_res)
+
         if CS:
             key_res = [ack_params for ack_params in key_res if ack_params.cs == CS]
+        # print(key_res)
+        key_res_tmp = key_res
         if valence:
-            key_res = [ack_params for ack_params in key_res if valence in ack_params.valence]
+            key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence)]
+        if not key_res:
+            key_res = key_res_tmp
+            key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence or ack_params.valence == "NONE")]
+        # print(key_res)
         if current_intent:
             key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent_should_not_be]
             key_res = [ack_params for ack_params in key_res if (ack_params.current_intent_should_be == 'NONE' or current_intent in ack_params.current_intent_should_be)]
+
+        # print(key_res)
 
         if key_res and len(key_res) > 0:
             to_return = random.choice(self.ackDB[key_res[0]])
@@ -114,6 +136,7 @@ class NLG(wbc.WhiteBoardClient):
             to_return = ""
         if self.timeit_details:
             print("Response time choose_ack: %.3f sec" % (time.time() - start))
+        # print(to_return)
         return to_return
 
     def get_create_all_cards(self, recipe_list):
@@ -183,6 +206,9 @@ class NLG(wbc.WhiteBoardClient):
             # else:
                 # sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
             sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
+            # print("\n------\n")
+            # print(sentence)
+            # print("\n------\n")
 
             if fc.NLG_USE_ACKS:
                 if message['user_intent']['intent'] in ["yes", "no"]:

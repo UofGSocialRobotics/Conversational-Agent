@@ -101,6 +101,8 @@ class DM(wbc.WhiteBoardClient):
 
     def treat_message(self, msg, topic):
 
+        # print(self.currState)
+
         super(DM, self).treat_message(msg, topic)
 
         # Todo: Second interaction

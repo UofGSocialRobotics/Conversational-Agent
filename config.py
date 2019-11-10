@@ -26,7 +26,7 @@ exp_cs_human = "human"
 exp_cs_robot = "robot"
 exp_cs_control = "NONE"
 aamas_study_CS = True
-possible_CS = [exp_cs_human, exp_cs_robot, exp_cs_control]
+possible_CS = [exp_cs_robot, exp_cs_control]
 
 
 ####################################################################################################
@@ -191,7 +191,7 @@ class Modules:
         elif domain == "food":
             NLU_config = {"module": food_NLU.NLU, "name": "NLU", "subscribes": NLU_subscribes, "publishes": NLU_publishes}
             DM_config = {"module": food_DM.DM, "name": "DM", "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
-            NLG_config = {"module": food_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE}
+            NLG_config = {"module": food_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE, "cs": exp_cs_robot}
             SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
