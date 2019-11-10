@@ -6,6 +6,12 @@ greeting,NONE,I'm sorry to hear that. I'll try to find something to cheer you up
 greeting,fuman,"I'm sorry to hear that. Whenever I feel bad myself, I find comfort in a great dinner.",no,NONE,NONE
 greeting,robot,"I'm sorry to hear that. As a robot, I don't have feelings, but I know life can be tough for you humans.",no,NONE,NONE
 greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
+request(usual_dinner),NONE,Okay.,NONE,NONE,NONE
+request(usual_dinner),human,I see. Personally, I love eating salmon for dinner.,NONE,NONE,NONE
+request(usual_dinner),robot,I see.,NONE,NONE,NONE
+request(why_dinner),NONE,Good to know.,NONE,NONE,NONE
+request(why_dinner),human,Good to know. I have to admit that I don't usually like fish, but salmon .,NONE,NONE,NONE
+request(why_dinner),robot,I see.,NONE,NONE,NONE
 request(situation),NONE,Sure.,no,NONE,NONE
 request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NONE
 request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE,NONE

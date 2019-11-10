@@ -1,4 +1,8 @@
-greeting,NONE,NONE,"Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?"
+greeting,NONE,NONE,"Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?"
+greeting,robot,NONE,"Hi there! I'm Cora. I've been created by a team of researchers in Scotland to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?"
+greeting,NONE,NONE,"Hi there! My name is Cora. I recently moved to Scotland to work with a team of researchers on eating behaviors. Before that, I had a similar job in the United States but I really wanted to come back to Europe, where I come from. So tell me, how are you doing today? Is everything alright?"
+request(usual_dinner),NONE,NONE,"Tell me. What do you usually eat for dinner?"
+request(why_dinner),NONE,NONE,"Could you tell me why you usually eat that for dinner?
 greet_back,NONE,NONE,Welcome back! How are you doing today?
 request_back(last_movie),NONE,NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!
 inform(opinion_last_movie),NONE,NONE,Oh. can you tell me why?

@@ -1,5 +1,7 @@
 start,greeting,FALSE,,
-greeting,request(filling),TRUE,,
+greeting,request(city),TRUE,,
+request(city),request(usual_dinner),TRUE,,
+request(usual_dinner),request(filling),TRUE,,
 request(filling),request(healthy),TRUE,,
 request(healthy),request(diet),TRUE,,
 request(diet),request(time),TRUE,,
