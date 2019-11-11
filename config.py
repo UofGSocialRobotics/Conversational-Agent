@@ -26,7 +26,7 @@ exp_cs_human = "human"
 exp_cs_robot = "robot"
 exp_cs_control = "NONE"
 aamas_study_CS = True
-possible_CS = [exp_cs_robot, exp_cs_control]
+possible_CS = [exp_cs_robot, exp_cs_control, exp_cs_human]
 
 
 ####################################################################################################
