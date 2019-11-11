@@ -38,7 +38,7 @@ class DM(wbc.WhiteBoardClient):
         self.current_food_options = {fc.meal: "", fc.dessert: "", fc.drink: "", fc.meat: "", fc.side: ""}
         self.nodes = {}
 
-        state_values = {fc.healthiness: 0, fc.food_fillingness: 0, fc.comfort: 0}
+        state_values = {fc.healthiness: 0, fc.food_fillingness: 0}
         self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.time_to_cook: False, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
@@ -127,11 +127,11 @@ class DM(wbc.WhiteBoardClient):
                 if not liked_bool and not disliked_bool:
                     self.current_recipe_list.pop(0)
 
-            if self.currState == "greeting":
-                if fc.yes in self.from_NLU[fc.intent]:
-                    self.user_model[fc.food_scores_state][fc.comfort] = -1
-                elif fc.no in self.from_NLU[fc.intent]:
-                    self.user_model[fc.food_scores_state][fc.comfort] = 1
+            # if self.currState == "greeting":
+            #     if fc.yes in self.from_NLU[fc.intent]:
+            #         self.user_model[fc.food_scores_state][fc.comfort] = -1
+            #     elif fc.no in self.from_NLU[fc.intent]:
+            #         self.user_model[fc.food_scores_state][fc.comfort] = 1
 
             if fc.inform in self.from_NLU[fc.intent]:
                 if fc.health in self.from_NLU[fc.entity_type]:
@@ -170,9 +170,9 @@ class DM(wbc.WhiteBoardClient):
             if fc.healthy in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.health)
-            elif fc.greeting in self.currState:
-                if fc.no in self.from_NLU[fc.intent]:
-                    self.user_model[fc.liked_features].append(fc.comfort)
+            # elif fc.greeting in self.currState:
+            #     if fc.no in self.from_NLU[fc.intent]:
+            #         self.user_model[fc.liked_features].append(fc.comfort)
             elif fc.filling in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.filling)
@@ -344,10 +344,10 @@ class DM(wbc.WhiteBoardClient):
             waning_msg = "No trait values for food diagnostic. Generating random values!"
             print(colored(waning_msg, "green"))
             log.warn(waning_msg)
-            trait_values = {fc.healthiness: np.random.uniform(-1,1), fc.food_fillingness: np.random.uniform(-1,1), fc.comfort: np.random.uniform(-1,1)}
+            trait_values = {fc.healthiness: np.random.uniform(-1,1), fc.food_fillingness: np.random.uniform(-1,1)}
         print(colored((trait_values, state_values), "blue"))
 
-        return min(1,((trait_values[fc.healthiness] + state_values[fc.healthiness]) / float(2)) + 0.5) , (trait_values[fc.food_fillingness] + state_values[fc.food_fillingness]) / float(2), (trait_values[fc.comfort] + state_values[fc.comfort]) / float(2)
+        return min(1,((trait_values[fc.healthiness] + state_values[fc.healthiness]) / float(2)) + 0.5), (trait_values[fc.food_fillingness] + state_values[fc.food_fillingness]) / float(2)
         
         # return np.random.uniform(-2, 2), np.random.uniform(-2, 2), np.random.uniform(-2, 2)
         # return 0.413, -.603, -2.016
@@ -357,14 +357,14 @@ class DM(wbc.WhiteBoardClient):
             expected_food_type = ["meal", "side"]
         else:
             expected_food_type = ["meal", "meat", "side"]
-        d_h, d_f, d_c = self.get_desired_food_values()
-        self.food_values = {fc.healthiness: d_h, fc.food_fillingness: d_f, fc.comfort: d_c}
+        d_h, d_f = self.get_desired_food_values()
+        self.food_values = {fc.healthiness: d_h, fc.food_fillingness: d_f}
         all_foods = list()
         for index, row in self.situated_food_matrix.iterrows():
             if row[fc.food_type] in expected_food_type:
                 h, f, c = row[fc.healthiness], row[fc.food_fillingness], row[fc.emotional_satisfaction]
-                distance = abs(h - d_h) + abs(f - d_f) + abs(c - d_c)
-                all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f, c)))
+                distance = abs(h - d_h) + abs(f - d_f)
+                all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f)))
         self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
 
     def preprocess_ingredient_name(self, ingredient):
