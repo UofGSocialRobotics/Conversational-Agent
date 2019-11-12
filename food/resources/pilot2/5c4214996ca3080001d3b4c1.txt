@@ -1,0 +1,30 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Hi, I'm Vivien
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes, thank you for asking
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+I live in the capital city of Hungary
+Good. Tell me. What do you usually eat for dinner?
+I usually ate pizza, pastas, boiled or scrambled eggs
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I would rather have a light dinner
+Something light for you, noted. How healthy do you want your meal to be?
+as healthy as possible
+Okay. Any specific diet or intolerances I should be aware of?
+I don't like fish
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have around 30 minutes to cook
+Great! What about Creamy Broccoli Spinach Soup | A Bowl of Green? It contains broccoli, which seems perfect for you!
+It sounds delicious
+Okay. Would you like another recipe?
+sure
+ If you like broccoli, how about lemon garlic broccoli?
+it sounds interesting
+Okay. Would you like another recipe?
+yes, maybe without broccoli
+ Garlic Parmesan Roasted Broccoli has broccoli florets in it, hopefully you will like it.
+I like it the best
+Okay. Would you like another recipe?
+No,thank you
+ Enjoy whatever you end up cooking and see you soon!

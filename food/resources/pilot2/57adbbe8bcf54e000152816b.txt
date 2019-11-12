@@ -1,0 +1,24 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Leanne
+Nice to meet you. And how are you doing today? Is everything alright?
+A little stressed as I'm Stuck in traffic and running late 
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+Birmingham
+Good. Tell me. What do you usually eat for dinner?
+Burger and fries 
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Light dinner 
+Let's get something light then. How healthy do you want your meal to be?
+Very healthy 
+Okay. Any specific diet or intolerances I should be aware of?
+Vegan
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Quick to prepare 
+Of course, you're a busy person.  If you like broccoli crown, how about Lemon-Garlic Broccoli?
+No
+I can recommend something else. If you like red potatoes, how about EASY Oven Roasted Veggies?
+Yes
+Okay. Would you like another recipe?
+No
+ Enjoy whatever you end up cooking and see you soon!

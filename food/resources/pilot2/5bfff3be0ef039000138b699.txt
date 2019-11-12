@@ -1,0 +1,32 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Nadia
+Nice to meet you. And how are you doing today? Is everything alright?
+Sure, what about you?
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+the Netherlands
+Good. Tell me. What do you usually eat for dinner?
+Vegetables, potatoes, pasta
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Hungry
+Let's get something to ease your hunger then. How healthy do you want your meal to be?
+Very healthy
+Okay. Any specific diet or intolerances I should be aware of?
+Apples and nuts
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick
+Of course, you're a busy person.  What about Poached Salmon? It contains salmon fillets, which seems perfect for you!
+That would be nice, but I'm more hungry than that. And it's pretty expensive...'
+Okay. Would you like another recipe?
+Yes
+ Simple Herb Crusted Salmon has salmon fillets in it, hopefully you will like it.
+Nice thank you, still a pretty expensive recipe
+Okay. Would you like another recipe?
+Yes
+ What about Maple Glazed Salmon? It contains maple syrup, which seems perfect for you!
+Can you give me something other than salmon please
+Okay. Whole30 grilled salmon with avocado salsa has avocado in it, hopefully you will like it.
+This is still salmon
+Okay. What about Baked Mustard-Crusted Salmon With Asparagus and Tarragon? It contains asparagus, which seems perfect for you!
+Come on...
+Okay. Enjoy whatever you end up cooking and see you soon!

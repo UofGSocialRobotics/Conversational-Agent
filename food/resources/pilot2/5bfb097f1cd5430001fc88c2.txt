@@ -1,0 +1,32 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Peta
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes fine
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+Gateshead
+Good. Tell me. What do you usually eat for dinner?
+Chicken
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Light dinner
+Something light for you, noted. How healthy do you want your meal to be?
+Quite healthy
+Okay. Any specific diet or intolerances I should be aware of?
+No
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Quick
+Of course, you're a busy person.  If you like broccoli, how about Easy Stir-Fry Broccoli and Red Bell Pepper?
+No dont like peppers
+Let me find something else. If you like broccoli florets, how about Garlic Parmesan Roasted Broccoli?
+Like to add chicken
+Okay. Would you like another recipe?
+Yes please
+ If you like broccoli florets, how about Garlic Parmesan Broccoli?
+Ok
+Okay. Would you like another recipe?
+Yes 
+ Mango Spinach Green Smoothie has baby spinach leaves in it, hopefully you will like it.
+Ok
+Okay. Would you like another recipe?
+No thanks
+ Enjoy whatever you end up cooking and see you soon!

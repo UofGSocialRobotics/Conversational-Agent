@@ -1,0 +1,30 @@
+hi
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+yvonne
+Nice to meet you. And how are you doing today? Is everything alright?
+all good thanks, not up to much I'm off work today
+I'm sorry to hear that. I'll try to find something to cheer you up then! I'd like to know you a bit better. Can you tell me where you live?
+north west
+Good. Tell me. What do you usually eat for dinner?
+meat and veg and some carbs 
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Let's get something light then. How healthy do you want your meal to be?
+very healthy
+Okay. Any specific diet or intolerances I should be aware of?
+no lactose 
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+time to cook 
+Great! Creamy Broccoli Spinach Soup | A Bowl of Green has broccoli in it, hopefully you will like it.
+too easy
+Okay. Would you like another recipe?
+yes
+ lemon garlic broccoli has broccoli in it, hopefully you will like it.
+too plain
+Okay. Would you like another recipe?
+yes
+ Garlic Parmesan Roasted Broccoli has broccoli florets in it, hopefully you will like it.
+sounds tasty
+Okay. Would you like another recipe?
+no that's ok
+ Enjoy whatever you end up cooking and see you soon!

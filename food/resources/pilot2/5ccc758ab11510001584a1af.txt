@@ -1,0 +1,30 @@
+Hello cora
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+My name is Paulo
+Nice to meet you. And how are you doing today? Is everything alright?
+everything is fine
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+I live in portugal
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+Usually i eat meat and pasta
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+yes, i'm kinda hungry right now
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+100% healthy
+Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again! Any specific diet or intolerances I should be aware of?
+No
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+something quick
+Of course. Main advantage of being a computer program: I have all the time in the world! What about Poached Salmon? It contains salmon fillets, which seems perfect for you!
+I don't want any fish
+My programmers need to do a better job if you don't like it. I will pass on the information. Let me find something else. What about Avocado chickpea salad (and a giveaway!)? It contains avocado, which seems perfect for you!
+i don't have any avocado. Any other vegetarian ideias?
+My programmers need to do a better job if you don't like it. I will pass on the information. Let me find something else. What about Melt In Your Mouth Kale Salad? It contains kale, which seems perfect for you!
+yes, that seems pretty good
+My programmers will be happy you like it. Would you like another recipe?
+i want a recipe for a cold drink
+ Simple Massaged Kale Salad with Lemon Dressing has lemon juice in it, hopefully you will like it.
+seems fins
+My programmers will be happy you like it. Would you like another recipe?
+no, i'm all good for now, thanks
+ Enjoy whatever you end up cooking and see you soon!
