@@ -18,7 +18,7 @@ def parse_voc(f_voc_shared = "./shared_resources/nlu/voc.json", f_domain_voc = N
     # get all no words in a single list
     all_no_words = list()
     for values in data["no"].values():
-        all_no_words.append(values)
+        all_no_words += values
     data["no"]["all_no_words"] = all_no_words
     all_bye_words = list()
     for values in data["bye"].values():

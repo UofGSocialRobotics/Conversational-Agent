@@ -86,6 +86,7 @@ class Extensive_food_DBs:
         self.post_processing()
         for category, foods in self.category_to_foods.items():
             self.all_foods_list += foods
+        # print(self.all_foods_list)
 
     def save_to_extensive_foods_DBs(self, food_name, category):
         food_name_words_list = food_name.split()
@@ -115,8 +116,9 @@ class Extensive_food_DBs:
                             self.category_to_foods[category].append(second_word)
 
     def remove_foods_from_list(self, to_remove_list, list_to_remove_from):
-        for elt in list_to_remove_from:
-            list_to_remove_from.remove(elt)
+        for elt in to_remove_list:
+            if elt in list_to_remove_from:
+                list_to_remove_from.remove(elt)
 
     def add_foods_to_list(self, to_add_to_list, list_to_add_to):
         for elt in to_add_to_list:

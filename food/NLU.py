@@ -11,6 +11,7 @@ from ca_logging import log
 
 
 def inform_food(document, sentence, food_list, voc_no, voc_dislike):
+    # print(voc_no)
     ingredients_list = list()
     negation = False
     if len(sentence) > 1:
@@ -163,25 +164,25 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     # print("in get_intent_depending_on_conversation_stage, stage = " + stage)
     f = None
     if stage == "greeting":
-        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no'])
+        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
     elif stage == "request(filling)":
-        f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
+        f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     elif stage == "request(healthy)":
-        f = inform_healthy(document, voc_no=voc["no"], voc_healthy=voc["healthy"])
+        f = inform_healthy(document, voc_no=voc["no"]["all_no_words"], voc_healthy=voc["healthy"])
     elif stage == "request(diet)":
-        f = inform_vegan(document, voc_no=voc["no"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
         if not f:
-            f = inform_intolerance(document, voc_no=voc["no"], voc_intolerances=voc["spoonacular_intolerances"])
+            f = inform_intolerance(document, voc_no=voc["no"]["all_no_words"], voc_intolerances=voc["spoonacular_intolerances"])
         if not f:
-            f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+            f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
     elif stage == "request(time)":
         f = nlu_helper.is_duration(document, utterance, voc["numbers"], voc["duration_units"], voc["duration_unit_division"])
         if not f:
-            f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
+            f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     elif stage == "inform(food)":
-        f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+        f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
         if not f:
-            f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no'])
+            f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
         if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
         if not f:
@@ -198,21 +199,21 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
 
 def get_intent_default(document, utterance, voc, food_list):
     # print("in get_intent_default")
-    f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+    f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
     if not f:
-        f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
+        f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     if not f:
-        f = inform_healthy(document, voc_no=voc["no"], voc_healthy=voc["healthy"])
+        f = inform_healthy(document, voc_no=voc["no"]["all_no_words"], voc_healthy=voc["healthy"])
     if not f:
-        f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
+        f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     if not f:
-        f = inform_vegan(document, voc_no=voc["no"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
     if not f:
-        f = inform_intolerance(document, voc_no=voc["no"], voc_intolerances=voc["spoonacular_intolerances"])
+        f = inform_intolerance(document, voc_no=voc["no"]["all_no_words"], voc_intolerances=voc["spoonacular_intolerances"])
     if not f:
         f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
     if not f:
-        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no'])
+        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
     if not f:
         f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
     if not f:
@@ -222,7 +223,7 @@ def get_intent_default(document, utterance, voc, food_list):
     if not f:
         f = nlu_helper.is_duration(document, utterance, voc_numbers=voc["numbers"], voc_duration=voc["duration_units"], voc_fractions=voc["duration_unit_division"])
     if not f:
-        f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no'])
+        f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
     if not f:
         f = "IDK", None, None, None
     return f
@@ -281,7 +282,7 @@ class NLU(wbc.WhiteBoardClient):
         # Todo Distinguish actors and directors
 
         intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list, conversation_stage=self.current_stage)
-        print(intent, entitytype, entity, polarity)
+        log.info(intent, entitytype, entity, polarity)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
 
