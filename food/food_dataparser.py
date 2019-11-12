@@ -86,6 +86,7 @@ class Extensive_food_DBs:
         self.post_processing()
         for category, foods in self.category_to_foods.items():
             self.all_foods_list += foods
+            self.all_foods_list.append(category)
         # print(self.all_foods_list)
 
     def save_to_extensive_foods_DBs(self, food_name, category):

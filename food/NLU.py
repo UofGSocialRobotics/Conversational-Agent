@@ -163,7 +163,7 @@ def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
 def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, food_list):
     # print("in get_intent_depending_on_conversation_stage, stage = " + stage)
     f = None
-    if stage == "greeting":
+    if stage == "request(mood)":
         f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
     elif stage == "request(filling)":
         f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
