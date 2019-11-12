@@ -6,16 +6,24 @@ import csv
 import nlu_helper_functions as nlu_helper
 import food.food_dataparser as food_dataparser
 import dataparser
+import nltk
 from ca_logging import log
 
 
-def inform_food(document, food_list, voc_no, voc_dislike):
+def inform_food(document, sentence, food_list, voc_no, voc_dislike):
     ingredients_list = list()
     negation = False
+    if len(sentence) > 1:
+        bigrams = nltk.bigrams(sentence.split())
+        for bg in bigrams:
+            bg_text = ' '.join(bg)
+            if bg_text in food_list:
+                ingredients_list.append(bg_text)
+
     for token in document:
-        if token.text in food_list:
+        if token.text in food_list and not any(token.text in bg_text for bg_text in ingredients_list):
             ingredients_list.append(token.text)
-        elif token.lemma_ in food_list:
+        elif token.lemma_ in food_list and not any(token.lemma_ in bg_text for bg_text in ingredients_list):
             ingredients_list.append(token.lemma_)
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -165,13 +173,13 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         if not f:
             f = inform_intolerance(document, voc_no=voc["no"], voc_intolerances=voc["spoonacular_intolerances"])
         if not f:
-            f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+            f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
     elif stage == "request(time)":
         f = nlu_helper.is_duration(document, utterance, voc["numbers"], voc["duration_units"], voc["duration_unit_division"])
         if not f:
             f = inform_time(document, voc_no=voc["no"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     elif stage == "inform(food)":
-        f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+        f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
         if not f:
             f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no'])
         if not f:
@@ -190,7 +198,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
 
 def get_intent_default(document, utterance, voc, food_list):
     # print("in get_intent_default")
-    f = inform_food(document, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
+    f = inform_food(document, utterance, food_list, voc_no=voc["no"], voc_dislike=voc["dislike"])
     if not f:
         f = inform_hungry(document, voc_no=voc["no"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     if not f:
@@ -238,10 +246,16 @@ class NLU(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, name="NLU"+clientid, subscribes=subscribes, publishes=publishes, resp_time=resp_time)
         self.voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
         self.spacy_nlp = spacy.load("en_core_web_sm")
-        self.food_list = food_dataparser.get_food_names()
+        self.food_list = food_dataparser.extensive_food_DBs.all_foods_list
+        # print(self.food_list)
+
         self.conversation_stages = self.read_convesation_stages()
         self.current_stage = self.conversation_stages.pop(0)
         # self.next_conversation_stage()
+
+
+
+
 
     def read_convesation_stages(self):
         path = "food/resources/dm/model.csv"
@@ -267,7 +281,7 @@ class NLU(wbc.WhiteBoardClient):
         # Todo Distinguish actors and directors
 
         intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list, conversation_stage=self.current_stage)
-        # print(intent, entitytype, entity, polarity)
+        print(intent, entitytype, entity, polarity)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
 

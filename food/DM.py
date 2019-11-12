@@ -14,6 +14,7 @@ import copy
 import numpy as np
 import operator
 import multiprocessing
+from food.food_dataparser import extensive_food_DBs
 
 class DM(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -287,6 +288,16 @@ class DM(wbc.WhiteBoardClient):
                     msg = "Removing recipe %s because it has disliked ingredient (%s)" % (recipe['title'], disliked_i)
                     print(colored(msg, "green"))
                     break
+                # if disliked ingredient is a category (e.g. fish), check each word of recipe title
+                elif extensive_food_DBs.is_category(disliked_i):
+                    for word in recipe["title"].lower().split():
+                        if extensive_food_DBs.is_food_in_category(word, disliked_i):
+                            disliked_ingredient_in_recipe_title = True
+                            msg = "Removing recipe %s because it has a disliked ingredient (%s)" % (recipe['title'], disliked_i)
+                            print(colored(msg, "green"))
+                            break
+                        if disliked_ingredient_in_recipe_title:
+                            break
             # Check disliked ingredients are not in ingredients list
             disliked_ingredient_in_recipe = False
             if not disliked_ingredient_in_recipe_title:
@@ -298,6 +309,15 @@ class DM(wbc.WhiteBoardClient):
                             print(colored(msg, "green"))
                             disliked_ingredient_in_recipe = True
                             break
+                        # if disliked ingredient is a category, check that ingredients are not in disliked category
+                        elif extensive_food_DBs.is_category(disliked_i):
+                            for word in ingredient.lower().split():
+                                # print(word, disliked_i)
+                                if extensive_food_DBs.is_food_in_category(word, disliked_i):
+                                    msg = "Removing recipe %s because it has an ingredient %s in disliked category %s" % (recipe['title'], ingredient, disliked_i)
+                                    print(colored(msg, "green"))
+                                    disliked_ingredient_in_recipe = True
+                                    break
                     if disliked_ingredient_in_recipe:
                         break
             if not disliked_ingredient_in_recipe and not disliked_ingredient_in_recipe_title:
@@ -365,6 +385,7 @@ class DM(wbc.WhiteBoardClient):
                 h, f, c = row[fc.healthiness], row[fc.food_fillingness], row[fc.emotional_satisfaction]
                 distance = abs(h - d_h) + abs(f - d_f)
                 all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f)))
+        # all_foods.append(("salmon", 0, (1, 1)))
         self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
 
     def preprocess_ingredient_name(self, ingredient):

@@ -17,7 +17,7 @@ def test_nlu(domain):
         actors_dicts = movies_dataparser.get_all_actors()
     elif domain == "food":
         voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
-        food_list = food_dataparser.get_food_names()
+        food_list = food_dataparser.extensive_food_DBs.all_foods_list
     while(not q):
         utterance = input("Enter conversation_stage // utterance (q to quit): ")
         if utterance == 'q':
@@ -46,7 +46,7 @@ def evaluate(domain, to_print="wrong"):
         exit(0)
     elif domain == "food":
         voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
-        food_list = food_dataparser.get_food_names()
+        food_list = food_dataparser.extensive_food_DBs.all_foods_list
         dataset = food_dataparser.get_dataset()
     got_right = 0
     for utterance, formula in dataset:
