@@ -2,10 +2,10 @@ previous_intent,CS,ack,valence,current_intent_is_NOT, current_intent_is
 greeting,NONE,Nice to meet you.,NONE,NONE,NONE
 greeting,human,Nice to meet you.,NONE,NONE,NONE
 greeting,robot,Nice to meet you.,NONE,NONE,NONE
-request(mood),NONE,Lovely! I'm glad to hear that.,yes,NONE,NONE
+request(mood),NONE,Lovely!,yes,NONE,NONE
 request(mood),human,Lovely! I'm having a great day and I'm in a very good mood myself.,yes,NONE,NONE
 request(mood),robot,"Lovely! As a computer program, I don't have feelings, but it's great you feel good.",yes,NONE,NONE
-request(mood),NONE,I'm sorry to hear that. I'll try to find something to cheer you up then!,no,NONE,NONE
+request(mood),NONE,I'm sorry to hear that.,no,NONE,NONE
 request(mood),human,"I'm sorry to hear that. Whenever I feel bad myself, I find comfort in a great dinner.",no,NONE,NONE
 request(mood),robot,"I'm sorry to hear that. As a computer program, I don't have feelings, but I know life can be tough for you humans.",no,NONE,NONE
 request(from),NONE,Good.,NONE,NONE,NONE
@@ -50,10 +50,10 @@ inform(food),NONE,Give me another chance.,no,bye,NONE
 inform(food),NONE,I can recommend something else.,no,bye,NONE
 inform(food),NONE,I have something else for you.,no,bye,NONE
 inform(food),NONE,Let me find something else.,no,bye,NONE
-inform(food),human,Really? I think it's good. Give me another chance.,no,bye,NONE
-inform(food),human,"Really? It's one of my favorites, but I can recommend something else.",no,bye,NONE
-inform(food),human,I personally find it delicious. But I have something else for you.,no,bye,NONE
-inform(food),human,Oh we must have very different tastes then. Let me find something else.,no,bye,NONE
+inform(food),human,Oh I'm sorry. Give me another chance.,no,bye,NONE
+inform(food),human,"My apologies. It's one of my favorites, but I can recommend something else.",no,bye,NONE
+inform(food),human,"Okay, my mistake. But I have something else for you.",no,bye,NONE
+inform(food),human,Noted. Let me find something else for you.,no,bye,NONE
 inform(food),robot,"My algorithm could be improved, but I have something else for you.",no,bye,NONE
 inform(food),robot,I though you would like it. Humans are such a mystery to me. Give me another chance.,no,bye,NONE
 inform(food),robot,Let me find something else in my database.,no,bye,NONE
