@@ -1,0 +1,32 @@
+Hello
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Alex
+Nice to meet you. And how are you doing today? Is everything alright?
+Everything is great, thanks. How are you?
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+Essex, England.
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+Pasta arrabiata, vegetarian sausages with mash and vegetables, mexican (burritos, fajitas or tacos), jacket potatoes with beans, salads, pies,
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Hungry!
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+Very healthy.
+Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again! Any specific diet or intolerances I should be aware of?
+I'm vegetarian.
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time to cook.
+Great! I have to admit that I spend most of my time doing complex calculations and improving my english skills. Chipotle Lime Grilled Shrimp Salad in Cilantro Lime Dressing has lime in it, hopefully you will like it.
+I don't eat shrimp.
+Let me find something else in my database. What about Brussel Sprouts Salad with Orange Ginger Dressing? It contains brussel sprouts, which seems perfect for you!
+That looks lovely.
+My programmers will be happy you like it. Would you like another recipe?
+Yes please!
+ If you like avocado, how about Avocado chickpea salad (and a giveaway!)?
+Looks great! Thanks, Cora.
+My programmers will be happy you like it. Would you like another recipe?
+Yes please!
+ What about Mexican Salad with Lime Dressing? It contains yellow onion, which seems perfect for you!
+That looks nice. Not very filling, though!
+My algorithm could be improved, but I have something else for you. What about Spinach Strawberry Salad with Strawberry Vinaigrette? It contains baby spinach, which seems perfect for you!
+I like baby spinach, but I'm not a fan of putting fruit, such as strawberries, into salads.
+I'm sorry I can't find anything that correspond to your criteria in my database. I had more success with the 856 other people I recommended recipe to in the last hour. Enjoy whatever you end up cooking and see you soon!

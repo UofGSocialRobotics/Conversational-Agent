@@ -1,0 +1,22 @@
+Hello Cora
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+I'm fine but a bit peckish
+Lovely! I'm glad to hear that. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm very hungry
+Same here! I'm starving... How healthy do you want your meal to be?
+moderately healthy
+Nice. I'm sure we will get along well! Any specific diet or intolerances I should be aware of?
+not at all
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+something quick please
+Of course, you're a busy person.  If you like salmon fillets, how about Poached Salmon?
+i dont really like salmon
+I'm happy you like it. You told me that you feel hungry, want to eat healthy and don't have much time to cook, so how do you feel about Simple Herb Crusted Salmon? It contains salmon fillets.
+i don't like salmon
+Let me find something else. Shelby's Take on the Bacon, Egg and Cheese has cheese in it, I think you should like it.
+no
+Let me find something else. Kale would work perfectly for you if you feel hungry, want to eat healthy and don't have much time to cook, so how about Kale & feta egg bake?
+i prefer something with rice
+I'm happy you like it. What about Egg White Omelette? This meal contains egg whites which is great if you feel hungry, want to eat healthy and don't have much time to cook.
+no
+I'm sorry I have nothing else to recommend that fits your criteria. Enjoy your meal and see you soon!

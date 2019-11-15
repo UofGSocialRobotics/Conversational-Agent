@@ -1,0 +1,30 @@
+Hello
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Alexandra
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes, everything's okay
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+Edinburgh, United Kingdom
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+I usually eat some type of chicken with sides such as salad
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Feeling hungry
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+I want it to be quite healthy
+Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again! Any specific diet or intolerances I should be aware of?
+Nope
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have some time
+Great! I have to admit that I spend most of my time doing complex calculations and improving my english skills. What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+That seems great
+My programmers will be happy you like it. Would you like another recipe?
+Sure
+ If you like maple syrup, how about Maple Glazed Salmon?
+Not sure about that
+Let me find something else in my database. What about Salmon and Summer Veggies in Foil? It contains salmon fillets, which seems perfect for you!
+Do you have anything not salmon based?
+Let me find something else in my database. If you like avocado, how about Avocado chickpea salad (and a giveaway!)?
+That looks great
+My programmers will be happy you like it. Would you like another recipe?
+No that's okay
+ Enjoy whatever you end up cooking and see you soon!

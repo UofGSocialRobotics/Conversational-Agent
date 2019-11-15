@@ -1,0 +1,30 @@
+Hello
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+Its everything ok! :)
+Lovely! As a robot, I don't have feelings, but it's great you feel good. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Yeah robots are never hungry either. How healthy do you want your meal to be?
+I want it to be healthy.
+Sure! For you humans, health is the real wealth, you're a smart person! Any specific diet or intolerances I should be aware of?
+No diet or intolerances. I can eat everything. 
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have some time.
+Great! Robots like me can't cook, but it definitely seems fun to spend time cooking. You told me that you want to eat healthy and have time to cook, so how do you feel about Mango Spinach Green Smoothie? It contains baby spinach leaves.
+It seems great!
+My programmers will be happy you like it. Would you like another recipe?
+Yes
+ You told me that you want to eat healthy and have time to cook, so how do you feel about Creamy Broccoli Spinach Soup | A Bowl of Green? It contains broccoli.
+I love it.
+My programmers will be happy you like it. Would you like another recipe?
+Do you have something more solid?
+ You told me that you want to eat healthy and have time to cook, so how do you feel about Spinach Pesto Quinoa Bowl? It contains baby spinach.
+I like it
+My programmers will be happy you like it. Would you like another recipe?
+Some dessert?
+ Avocado Toast with Eggs, Spinach, and Tomatoes has avocado in it, I think you should like it.
+Do you have a dessert recipe?
+My programmers will be happy you like it. Would you like another recipe?
+Yes, from a dessert, please.
+ Low Calorie Peanut Butter Banana Spinach Smoothie has banana in it, I think you should like it.
+Thanks
+My programmers will be happy you like it. Enjoy your meal and see you soon!

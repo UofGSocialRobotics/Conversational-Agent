@@ -1,0 +1,30 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Gonçalo
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes, and you?
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+Portugal
+Good. Tell me. What do you usually eat for dinner?
+mostly rice and pasta with all kinds of meat and some begetables
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+im hungry
+Let's get something to ease your hunger then. How healthy do you want your meal to be?
+A lot healthy
+Okay. Any specific diet or intolerances I should be aware of?
+No
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Quick to prepare
+Of course, you're a busy person.  What about Poached Salmon? It contains salmon fillets, which seems perfect for you!
+Seems good
+Okay. Would you like another recipe?
+Sure
+ If you like salmon fillets, how about Simple Herb Crusted Salmon?
+Looks delicious
+Okay. Would you like another recipe?
+Sure
+ What about Maple Glazed Salmon? It contains maple syrup, which seems perfect for you!
+What about other thing than salmon?
+Okay. Whole30 grilled salmon with avocado salsa has avocado in it, hopefully you will like it.
+cool
+Okay. Enjoy whatever you end up cooking and see you soon!

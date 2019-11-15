@@ -1,0 +1,20 @@
+hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+hungry
+ How healthy do you want your meal to be?
+pretty healthy
+ Any specific diet or intolerances I should be aware of?
+gluten free
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+cook
+ What about Butternut Squash Soup? It contains butternut squash, which seems perfect for you!
+sure
+ Would you like another recipe?
+yes
+ If you like broccoli, how about Creamy Broccoli Spinach Soup | A Bowl of Green?
+no
+ What about Chicken Tortilla Soup? It contains chicken stock, which seems perfect for you!
+yes
+ Would you like another recipe?
+no
+ Enjoy whatever you end up cooking and see you soon!

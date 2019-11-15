@@ -1,0 +1,26 @@
+hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+ How healthy do you want your meal to be?
+pretty healthy
+ Any specific diet or intolerances I should be aware of?
+I have PCOS so potatoes I would prefer without
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time
+ If you like garlic, how about Kale, Garlic and Caramelized Onion Paninis?
+No thanks, I don't like garlic
+ What about Avocado, Tomato, Kale & Onion Salad? It contains kale, which seems perfect for you!
+sounds alright
+ Would you like another recipe?
+yes
+ If you like red onion, how about Tomato, Onion, Avocado Salad?
+Now I'm feeling hungry, do you have any dinner recipies
+ Would you like another recipe?
+yes
+ Sauteed Spinach with Bacon and Onions has baby spinach in it, hopefully you will like it.
+sounds really nice
+ Would you like another recipe?
+yes
+ What about Massaged Kale Salad with Avocado and Pickled Red Onions? It contains avocado, which seems perfect for you!
+Got anything with Chicken, or Turkey in?
+ Enjoy whatever you end up cooking and see you soon!

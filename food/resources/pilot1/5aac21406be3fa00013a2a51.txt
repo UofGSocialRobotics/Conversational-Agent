@@ -1,0 +1,24 @@
+hello
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+yes I'm doing good
+Lovely! As a robot, I don't have feelings, but it's great you feel good. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm hungry
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+pretty healthy
+Sure! For you humans, health is the real wealth, you're a smart person! Any specific diet or intolerances I should be aware of?
+no
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time
+Great! Robots like me can't cook, but it definitely seems fun to spend time cooking. What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+that sounds great
+My programmers will be happy you like it. Would you like another recipe?
+sure
+ maple syrup would work perfectly for you if you feel hungry, want to eat healthy and have time to cook, so how about Maple Glazed Salmon?
+looks nice
+My programmers will be happy you like it. Would you like another recipe?
+yes please
+ salmon fillets would work perfectly for you if you feel hungry, want to eat healthy and have time to cook, so how about Salmon and Summer Veggies in Foil?
+nice
+My programmers will be happy you like it. Would you like another recipe?
+no thank you
+ Enjoy your meal and see you soon!

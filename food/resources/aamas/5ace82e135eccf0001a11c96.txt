@@ -1,0 +1,28 @@
+hello cora
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+debbie
+Nice to meet you. And how are you doing today? Is everything alright?
+yes, everything's fine
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+Leeds
+Good. Tell me. What do you usually eat for dinner?
+a green juice followed by vegetarian sausages and beans
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+a light dinner
+Something light for you, noted. How healthy do you want your meal to be?
+fairly healthy
+Okay. Any specific diet or intolerances I should be aware of?
+vegetarian
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+quick
+Of course, you're a busy person.  What about Lemon-Garlic Broccoli? It contains broccoli crown, which seems perfect for you!
+i don't like garlic or lemon in a dinner
+Give me another chance. If you like sesame seeds, how about Asian Sesame Spinach Salad (Power Foods)?
+ok
+Okay. Would you like another recipe?
+yes
+ Mango Spinach Green Smoothie has baby spinach leaves in it, hopefully you will like it.
+yes, that's better
+Okay. Would you like another recipe?
+no thank you
+ Enjoy whatever you end up cooking and see you soon!

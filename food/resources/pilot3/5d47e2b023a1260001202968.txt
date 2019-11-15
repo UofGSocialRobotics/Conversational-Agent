@@ -1,0 +1,30 @@
+Hello, can you help me figure out what to have for dinner tonight?
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Sara
+Nice to meet you. And how are you doing today? Is everything alright?
+Everything is OK.
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+Copenhagen, in Denmark.
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+Usually one protein (chicken, fish, pork, beef...), some carbs (pasta, rice, potatoes) and a side of salad
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Very hungry!
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+Moderately healthy.
+Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again! Any specific diet or intolerances I should be aware of?
+None.
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time!
+Great! I have to admit that I spend most of my time doing complex calculations and improving my english skills. What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+I don't have salmon at home, sadly. Can you recommend me something specific for the things that I have in my fridge? At the moment I only have chicken breasts and meatballs.
+I though you would like it. Humans are such a mystery to me. Give me another chance. Avocado chickpea salad (and a giveaway!) has avocado in it, hopefully you will like it.
+I don't have avocado, but I have apples. Do you have any recipes that include chicken breasts and apple?
+Let me find something else in my database. If you like kale, how about Melt In Your Mouth Kale Salad?
+I don't have Kale, but I do have chicken and spring onions and carrots. Do you have any recipe with those?
+I though you would like it. Humans are such a mystery to me. Give me another chance. Tuscan-style Tuna Salad has light tuna in it, hopefully you will like it.
+OK I think I'm lii
+My programmers will be happy you like it. Would you like another recipe?
+*limiting you too much. Do you have any recipe with chicken and carrots?
+ What about Butternut Squash Soup? It contains butternut squash, which seems perfect for you!
+But there's no chicken, nor carrots.
+I'm sorry I can't find anything that correspond to your criteria in my database. I had more success with the 856 other people I recommended recipe to in the last hour. Enjoy whatever you end up cooking and see you soon!

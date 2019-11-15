@@ -1,0 +1,26 @@
+hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Natasha
+Nice to meet you. And how are you doing today? Is everything alright?
+great
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+south east
+Good. Tell me. What do you usually eat for dinner?
+A varied diet
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Let's get something light then. How healthy do you want your meal to be?
+fairly 
+Okay. Any specific diet or intolerances I should be aware of?
+none
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time
+Great! What about Avocado, Tomato, Kale & Onion Salad? It contains kale, which seems perfect for you!
+great
+Okay. Would you like another recipe?
+yes
+ What about Quinoa Salad with Roasted Sweet Potatoes, Kale, Dried Cranberries, & Red Onion? It contains black quinoa, which seems perfect for you!
+perfect
+Okay. Would you like another recipe?
+no thank you
+ Enjoy whatever you end up cooking and see you soon!

@@ -12,7 +12,7 @@ def format_data(path_read_from, path_write_to):
     task_perf_q = ("q9", "q10", "q11", "q12", "q13", "q14", "q15", "q16")
     questions_list = [esthers_q, rapport_q, task_perf_q]
     files_names = {esthers_q: "intiont_to_cook", rapport_q: "rapport", task_perf_q: "task performance"}
-    conditions = ["NONE", "robot", "human"]
+    conditions = ["robot", "human", "NONE", "no_ack"]
 
     for _q in questions_list:
         cols = [prolific_id, cond_str] + list(_q)

@@ -72,6 +72,7 @@ class DM(wbc.WhiteBoardClient):
                     if "-" in line_input[i]:
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
+        print(self.nodes)
 
     def save_user_model(self):
         file = fc.USER_MODELS + self.client_id + ".prefs"

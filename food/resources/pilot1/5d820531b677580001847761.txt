@@ -1,0 +1,20 @@
+hello
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+Everything's fine thank you!
+Lovely! I'm glad to hear that. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I would rather have a light dinner.
+Something light for you, noted. How healthy do you want your meal to be?
+I want it healthy enough but delicious as well
+Nice. I'm sure we will get along well! Any specific diet or intolerances I should be aware of?
+No I can eat everything, I don't like feta cheese though.
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick to prepare.
+Don't worry. I'll find something quick to prepare. You told me that you want to eat healthy and don't have much time to cook, so how do you feel about Asian Sesame Spinach Salad (Power Foods)? It contains sesame seeds.
+It's perfect!
+I'm so glad you like my recommendation. Would you like another recipe?
+Yes what about a healthy dessert?
+ Mango Spinach Green Smoothie has baby spinach leaves in it, I think you should like it.
+perfect, thank you!
+I'm so glad you like my recommendation. Would you like another recipe?
+No thank you.
+ Enjoy your meal and see you soon!

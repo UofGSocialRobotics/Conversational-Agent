@@ -1,0 +1,18 @@
+hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+ How healthy do you want your meal to be?
+moderately
+ Any specific diet or intolerances I should be aware of?
+no dairy and no sulfites
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+i have time
+ Avocado, Tomato, Kale & Onion Salad has kale in it, hopefully you will like it.
+I can't eat kale or onions
+ What about Quinoa Salad with Roasted Sweet Potatoes, Kale, Dried Cranberries, & Red Onion? It contains black quinoa, which seems perfect for you!
+I can't eat kale, onions or cranberries
+ What about Baked Snapper with Harissa, New Potatoes, and Spring Onions? It contains snapper fillets, which seems perfect for you!
+this will work, I'll just leave out the oninos
+ Would you like another recipe?
+no thank you
+ Enjoy whatever you end up cooking and see you soon!

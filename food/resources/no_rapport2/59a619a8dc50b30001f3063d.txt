@@ -1,0 +1,20 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Light dinner please.
+ How healthy do you want your meal to be?
+It doesn't have to be healthy.
+ Any specific diet or intolerances I should be aware of?
+No
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Quick
+ What about Avocado, Tomato, Kale & Onion Salad? It contains kale, which seems perfect for you!
+Pass. I don't care for avocados or onions.
+ If you like kale, how about Sweet Potato Kale Pizza with Rosemary & Red Onion?
+Can I have something unhealthy please?
+ Would you like another recipe?
+Yes
+ Sauteed Spinach with Bacon and Onions has baby spinach in it, hopefully you will like it.
+Thanks
+ Would you like another recipe?
+No
+ Enjoy whatever you end up cooking and see you soon!

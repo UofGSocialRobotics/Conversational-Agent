@@ -1,0 +1,22 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Felling hungry
+ How healthy do you want your meal to be?
+Moderately 
+ Any specific diet or intolerances I should be aware of?
+no
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+i have tim
+ Butternut Squash Soup has butternut squash in it, hopefully you will like it.
+i wont like that
+ Creamy Broccoli Spinach Soup | A Bowl of Green has broccoli in it, hopefully you will like it.
+that looks nice
+ Would you like another recipe?
+yes
+ What about Chicken Tortilla Soup? It contains chicken stock, which seems perfect for you!
+no thanks
+ Cleansing Detox Soup has red onion in it, hopefully you will like it.
+no
+ Mexican Fava Bean Soup (Sopa de Habas) has dried fava beans in it, hopefully you will like it.
+yum
+ Enjoy whatever you end up cooking and see you soon!

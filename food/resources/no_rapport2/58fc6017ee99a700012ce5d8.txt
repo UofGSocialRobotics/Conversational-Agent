@@ -1,0 +1,22 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I feel hungry
+ How healthy do you want your meal to be?
+Fairly healthy
+ Any specific diet or intolerances I should be aware of?
+None
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick
+ What about Creamy Broccoli-white Bean Soup? It contains canned cannellini beans, which seems perfect for you!
+I don't have those ingredients
+ If you like kale, how about African Kale & Yam Soup?
+I don't have any kale
+ If you like broccoli, how about Creamy Broccoli Spinach Soup | A Bowl of Green?
+Can I replace some of the ingredients?
+ Would you like another recipe?
+I think so, yes
+ If you like butternut squash, how about Apple Butternut Squash Soup?
+I could make that, yes
+ Would you like another recipe?
+No thanks
+ Enjoy whatever you end up cooking and see you soon!

@@ -1,0 +1,22 @@
+Hello
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+I
+Lovely! As a robot, I don't have feelings, but it's great you feel good. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Yeah robots are never hungry either. How healthy do you want your meal to be?
+not particularly healthy
+Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it. Any specific diet or intolerances I should be aware of?
+i should avoid high fat foods
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+something quick
+Of course. Main advantage of being a robot: I have all the time in the world! If you like kale, how about Avocado, Tomato, Kale & Onion Salad?
+no thanks
+I though you would like it. Humans are such a mystery to me. Give me another chance. If you like kale, how about Sweet Potato Kale Pizza with Rosemary & Red Onion?
+No thanks
+Let me find something else in my internal database. You told me that you don't have much time to cook, so how do you feel about Sauteed Spinach with Bacon and Onions? It contains baby spinach.
+no thanks
+I though you would like it. Humans are such a mystery to me. Give me another chance. What about Massaged Kale Salad with Avocado and Pickled Red Onions? This meal contains avocado which is great if you don't have much time to cook.
+no thanks
+My programmers need to do better job if you don't like it. I will pass on the message. Let me find something else. Broccolini would work perfectly for you if you don't have much time to cook, so how about Broccolini and mushroom stir-fry?
+I want something easy to prepare
+My programmers will be happy you like it. Enjoy your meal and see you soon!

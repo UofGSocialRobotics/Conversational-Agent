@@ -1,0 +1,20 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm hungry
+ How healthy do you want your meal to be?
+not necesserily 
+ Any specific diet or intolerances I should be aware of?
+I don't eat nuts and almonds
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+not much
+ If you like kale, how about African Kale & Yam Soup?
+Can you offer something else?
+ Would you like another recipe?
+well yeah
+ What about 15-Minute Miso Soup with Greens and Tofu? It contains tofu, which seems perfect for you!
+I don't have tofu
+ If you like broccoli, how about Creamy Broccoli Spinach Soup | A Bowl of Green?
+That's nice
+ Would you like another recipe?
+no
+ Enjoy whatever you end up cooking and see you soon!

@@ -12,7 +12,7 @@ def format_date_splited_at_separator(date_val, separator):
         date_splited_at_slash[1] = '0' + date_splited_at_slash[1]
     return date_splited_at_slash
 
-def parse_datetime(value):
+def format_date(value):
     # print(value)
     # print("new datetime", len(value))
     if 'à' in value:
@@ -20,6 +20,9 @@ def parse_datetime(value):
     elif ',' in value:
         splited_at_comma = value.split(",")
     else:
+        if len(value.split(' ')) > 1:
+            value_splited_at_sapce = value.split()
+            value = "".join(value_splited_at_sapce[:-1]) + " " + value_splited_at_sapce[-1]
         splited_at_comma = value.split(" ")
     value = ','.join(splited_at_comma)
     # print(value.split(' '))
@@ -38,21 +41,42 @@ def parse_datetime(value):
         date_splited_at_slash = format_date_splited_at_separator(splited_at_comma[0], '-')
     else:
         date_splited_at_slash = format_date_splited_at_separator(splited_at_comma[0], '.')
-    time_splited_at_semicolumn = splited_at_comma[1].split(':')
+    # print(value)
+    if ":" in splited_at_comma[1]:
+        time_splited_at_semicolumn = splited_at_comma[1].split(':')
+    elif "." in splited_at_comma[1]:
+        time_splited_at_semicolumn = splited_at_comma[1].split('.')
+    else:
+        raise "error, cannot split time for %s" % value
     if len(time_splited_at_semicolumn[0]) == 1:
         time_splited_at_semicolumn[0] = '0' + time_splited_at_semicolumn[0].strip()
     if len(time_splited_at_semicolumn[1]) == 1:
         time_splited_at_semicolumn[1] = '0' + time_splited_at_semicolumn[1].strip()
     new_value = ("/".join(date_splited_at_slash)).strip() + "," + ":".join(time_splited_at_semicolumn)
-    if len(new_value) == len("09/11/2019,14:45:33"):
-        return datetime.datetime.strptime(new_value, '%d/%m/%Y,%H:%M:%S')
-    else:
-        if len(new_value) == len("11/09/2019,10:12:06AM") or len(new_value) == len("11/9/2019,4:14:04PM"):
-            return datetime.datetime.strptime(new_value, '%m/%d/%Y,%H:%M:%S%p')
+    return new_value
+
+def parse_datetime(value):
+    try:
+        new_value = format_date(value)
+        if len(new_value) == len("09/11/2019,14:45:33"):
+            return datetime.datetime.strptime(new_value, '%d/%m/%Y,%H:%M:%S')
         else:
-            print('error', new_value)
-            print(len("09/11/2019,14:45:33"), len("11/9/2019,10:12:06AM"), len(new_value))
-            raise "error"
+            if len(new_value) == len("11/09/2019,10:12:06AM") or len(new_value) == len("11/9/2019,4:14:04PM"):
+                return datetime.datetime.strptime(new_value, '%m/%d/%Y,%H:%M:%S%p')
+            else:
+                print('error', value, new_value)
+                print(len("09/11/2019,14:45:33"), len("11/9/2019,10:12:06AM"), len(new_value))
+                return False
+    except ValueError as e:
+        new_value = format_date(value)
+        new_value_splited_at_slash = new_value.split("/")
+        day = int(new_value_splited_at_slash[1])
+        month = int(new_value_splited_at_slash[0])
+        if month > 12 and day < 12:
+            new_value = new_value_splited_at_slash[1] + "/" + new_value_splited_at_slash[0] + "/" + "/".join(new_value_splited_at_slash[2:])
+            parse_datetime(new_value)
+        else:
+            return False
 
 def json_to_csv(path_read_from, path_write_to):
     with open(path_read_from, 'r') as f:
@@ -75,6 +99,8 @@ def json_to_csv(path_read_from, path_write_to):
                     data_participant = list()
                     if data["data_collection"] and "amt_id" in data["data_collection"].keys() and data["data_collection"]["amt_id"]:
                         prolific_id = data["data_collection"]["amt_id"]["value"]
+                        if "/" in prolific_id:
+                            prolific_id = prolific_id.split(".")[2].split("/")[2]
                         data_participant.append(prolific_id)
                         if first_line_bool:
                             first_line.append("prolific_id")

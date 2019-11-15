@@ -1,0 +1,26 @@
+hello Cora
+ Hi there! My name is Cora. I've been  working with a team of researchers on eating behaviors for a few months now, and I'm here to help you change your dinner habits. So tell me, what's your name?
+Jane
+Nice to meet you. And how are you doing today? Is everything alright?
+perfect
+Lovely! I'm having a great day and I'm in a very good mood myself. I'd like us to know each other a bit better. I've just moved to Glasgow, Scotland a few months ago, I used to live in Pittsburgh, USA before that. It's raining a lot but I like it here. Can you tell me where you live?
+The Netherlands
+What a coincidence! I spent some time there on vacation a few years ago. I loved that place! Tell me. What do you usually eat for dinner?
+Chicken, potatoes, veg, 
+I see. When I was young, my mom used to prepare various types of food. Now I try to have light and healthy dinners with lots of vegetables. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+hungry
+I'm hungry too! How healthy do you want your meal to be?
+healthy
+Nice. I myself try to eat as healthy as I can. Any specific diet or intolerances I should be aware of?
+no
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+i have time
+Great! I love spending time cooking myself. That's one of my hobbies. What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+looks good
+I'm happy you like it. Would you like another recipe?
+yes
+ Maple Glazed Salmon has maple syrup in it, hopefully you will like it.
+yum
+I'm happy you like it. Would you like another recipe?
+no thanks
+ Enjoy whatever you end up cooking and see you soon!

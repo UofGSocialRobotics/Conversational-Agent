@@ -1,0 +1,30 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Emir
+Nice to meet you. And how are you doing today? Is everything alright?
+Yeah everything is perfect
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+I live in Germany
+Good. Tell me. What do you usually eat for dinner?
+I usually eat meat with some salad, and maybe mashed potatoes on the side
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm not really hungry at the moment but I might be hungry in about half an hour
+Let's get something light then. How healthy do you want your meal to be?
+Just a little bit
+Okay. Any specific diet or intolerances I should be aware of?
+Nah
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I don't have much time
+Of course, you're a busy person.  What about Avocado, Tomato, Kale & Onion Salad? It contains kale, which seems perfect for you!
+I don't really like avocado
+I can recommend something else. What about Sweet Potato Kale Pizza with Rosemary & Red Onion? It contains kale, which seems perfect for you!
+I don't want to eat onions since I have a meeting later and don't want my breath to smell like onions
+I have something else for you. What about Fennel With Turnip Greens? It contains fennel bulb, which seems perfect for you!
+That seems nice
+Okay. Would you like another recipe?
+Sure
+ If you like chicken cutlets, how about Chicken With Fennel-orange Salad Recipe?
+Maybe something without oranges`?
+Okay. What about Seared Salmon with Oranges and Fennel? It contains fennel bulb, which seems perfect for you!
+I don't want to eat oranges
+I can't find anything else to recommend that fits your criteria. Enjoy whatever you end up cooking and see you soon!

@@ -1,0 +1,24 @@
+hello
+ Hi there! I'm Cora. I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, how are you doing today? Is everything alright?
+I'm doing good
+Lovely! I'm glad to hear that. So before I recommend something let me ask you a few questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm feeling hungry
+I'm hungry too! How healthy do you want your meal to be?
+it does not need to be healthy
+Same here! We're not on a diet, so taste first! Any specific diet or intolerances I should be aware of?
+I don't eat red meat
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+I have time to cook
+No time constraint. Good to know. What about The ultimate makeover: Moussaka? It contains cornflour, which seems perfect for you!
+what is moussaka
+I'm so glad you like my recommendation. Lighter moussaka with crunchy feta & oregano has oregano in it, I think you should like it.
+I don't eat lamb
+I can recommend something else. If you like beef, how about Must-make moussaka?
+I don't eat red meat
+I can recommend something else. What about Jerk chicken burger? It contains chicken breasts, which seems perfect for you!
+that is a good idea
+I'm so glad you like my recommendation. Would you like another recipe?
+I would like another chicken recipe
+ You told me that you feel hungry and have time to cook, so how do you feel about BBQ pulled pork sandwich? It contains pork shoulder.
+I don't eat pork
+I'm sorry I have nothing else to recommend that fits your criteria. Enjoy your meal and see you soon!

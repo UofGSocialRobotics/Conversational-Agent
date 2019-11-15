@@ -1,0 +1,22 @@
+hello
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+kamil
+Nice to meet you. And how are you doing today? Is everything alright?
+yea 
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+Poland
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+meat
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Yeah. As a computer program, I am never hungry either. How healthy do you want your meal to be?
+i dont really care about that
+Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it. Any specific diet or intolerances I should be aware of?
+Nope
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick
+Of course. Main advantage of being a computer program: I have all the time in the world! What about Avocado, Tomato, Kale & Onion Salad? It contains kale, which seems perfect for you!
+avocado
+My programmers will be happy you like it. If you like kale, how about Sweet Potato Kale Pizza with Rosemary & Red Onion?
+cool 
+My programmers will be happy you like it. Enjoy whatever you end up cooking and see you soon!

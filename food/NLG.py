@@ -39,6 +39,7 @@ class NLG(wbc.WhiteBoardClient):
         self.timeit_details = False
 
         self.cs = cs
+        print("NLG, cs", cs)
 
         self.recipe_cards = dict()
 
@@ -67,6 +68,8 @@ class NLG(wbc.WhiteBoardClient):
 
     def choose_sentence(self, intent, cs=None, tags_list=None):
         cs = self.cs
+        if self.cs == "no_ack":
+            cs = "NONE"
         # print(self.sentenceDB)
         start = time.time()
         # for sentence_params, sentences_list in self.sentenceDB.items():
@@ -106,6 +109,11 @@ class NLG(wbc.WhiteBoardClient):
         # print(self.ackDB)
         # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()  + ", " + current_intent.__str__(),"blue"))
         CS = self.cs
+
+        print("self.cs",self.cs)
+
+        if self.cs == "no_ack":
+            return ""
 
         start = time.time()
         ack_params_list = self.ackDB.keys()

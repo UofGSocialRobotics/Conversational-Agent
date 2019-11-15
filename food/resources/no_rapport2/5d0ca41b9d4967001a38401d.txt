@@ -1,0 +1,14 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'd rather have a light dinner
+ How healthy do you want your meal to be?
+Really healthy
+ Any specific diet or intolerances I should be aware of?
+none
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Rather quick to prepare
+ Avocado, Tomato, Kale & Onion Salad has kale in it, hopefully you will like it.
+Thanks
+ Would you like another recipe?
+No
+ Enjoy whatever you end up cooking and see you soon!

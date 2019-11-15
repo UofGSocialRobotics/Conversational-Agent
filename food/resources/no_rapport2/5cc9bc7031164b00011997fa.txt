@@ -1,0 +1,24 @@
+hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+i'm hungry
+ How healthy do you want your meal to be?
+fairly healthy
+ Any specific diet or intolerances I should be aware of?
+I don't like beans or pulses
+ We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+quick
+ What about African Kale & Yam Soup? It contains kale, which seems perfect for you!
+that looks good
+ Would you like another recipe?
+yes please
+ If you like tofu, how about 15-Minute Miso Soup with Greens and Tofu?
+no, taht's not for me
+ What about Creamy Broccoli Spinach Soup | A Bowl of Green? It contains broccoli, which seems perfect for you!
+ok
+ Would you like another recipe?
+ok
+ If you like butternut squash, how about Apple Butternut Squash Soup?
+no thanks
+ Green Curry Vegetable Soup has thai red curry paste in it, hopefully you will like it.
+that one looks good
+ Enjoy whatever you end up cooking and see you soon!

@@ -1,0 +1,22 @@
+hello
+ Hi there! My name is Cora. I've been  working with a team of researchers on eating behaviors for a few months now, and I'm here to help you change your dinner habits. So tell me, what's your name?
+Louise
+Nice to meet you. And how are you doing today? Is everything alright?
+all good
+Lovely! I'm having a great day and I'm in a very good mood myself. I'd like us to know each other a bit better. I've just moved to Glasgow, Scotland a few months ago, I used to live in Pittsburgh, USA before that. It's raining a lot but I like it here. Can you tell me where you live?
+northern ireland
+What a coincidence! I spent some time there on vacation a few years ago. I loved that place! Tell me. What do you usually eat for dinner?
+pasta dishes, rice dishes, I mostly eat vegetarian meals and no dairy
+I see. When I was young, my mom used to prepare various types of food. Now I try to have light and healthy dinners with lots of vegetables. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light
+Sure. As I said before,  I mostly eat light dinners myself. How healthy do you want your meal to be?
+very
+Nice. I myself try to eat as healthy as I can. Any specific diet or intolerances I should be aware of?
+dairy intolerant and vegetarian
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+i have time to prepare
+Great! I love spending time cooking myself. That's one of my hobbies. What about Avocado chickpea salad (and a giveaway!)? It contains avocado, which seems perfect for you!
+i dont really like avocados
+Really? It's one of my favorites, but I can recommend something else. Masala tea powder, how to make masala tea powder or chai masala has ginger in it, hopefully you will like it.
+no I dont have many of the spices
+I'm sorry I have nothing else to recommend that fits your criteria, but I had a great time chatting with you. I think we have a lot in common. Enjoy whatever you end up cooking and see you soon!

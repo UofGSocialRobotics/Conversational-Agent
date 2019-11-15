@@ -1,0 +1,28 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Mandee
+Nice to meet you. And how are you doing today? Is everything alright?
+Fine thank you
+Lovely! I'm glad to hear that. I'd like to know you a bit better. Can you tell me where you live?
+Liverpool 
+Good. Tell me. What do you usually eat for dinner?
+Chicken rice and brocoli 
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+Hungry
+Let's get something to ease your hunger then. How healthy do you want your meal to be?
+Very healthy 
+Okay. Any specific diet or intolerances I should be aware of?
+No
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Quick 
+Of course, you're a busy person.  If you like salmon fillets, how about Poached Salmon?
+I don't like fish 
+I have something else for you. What about Avocado chickpea salad (and a giveaway!)? It contains avocado, which seems perfect for you!
+Don't like avacado 
+I can recommend something else. If you like avocado, how about Chopped Kale Salad with Pomegranate & Avocado?
+I don't like avacado 
+I can recommend something else. If you like kale, how about Melt In Your Mouth Kale Salad?
+No thank you
+I can recommend something else. If you like lemon juice, how about Simple Massaged Kale Salad with Lemon Dressing?
+I don't like kale 
+I can't find anything else to recommend that fits your criteria. Enjoy whatever you end up cooking and see you soon!

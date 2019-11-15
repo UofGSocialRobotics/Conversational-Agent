@@ -1,0 +1,32 @@
+hello cora, what should i have for dinner tonight
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+john
+Nice to meet you. And how are you doing today? Is everything alright?
+yes fine thanks
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+uk
+Good. Tell me. What do you usually eat for dinner?
+spaghetti bolognese, chicken pasta, pie and mash, sausages, mash and vegetables
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+hungry
+Let's get something to ease your hunger then. How healthy do you want your meal to be?
+quite healthy
+Okay. Any specific diet or intolerances I should be aware of?
+no
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+quick
+Of course, you're a busy person.  If you like salmon fillets, how about Poached Salmon?
+lovely, but what would i have with it?
+Okay. Would you like another recipe?
+yes
+ What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+ooh nice
+Okay. Would you like another recipe?
+yes please- not salmon
+ Avocado chickpea salad (and a giveaway!) has avocado in it, hopefully you will like it.
+hmmm i like meat
+Okay. If you like corn kernels, how about Mexican Salad with Lime Dressing?
+its not going to fill me up
+I have something else for you. What about Chopped Kale Salad with Pomegranate & Avocado? It contains avocado, which seems perfect for you!
+no thanks
+I can't find anything else to recommend that fits your criteria. Enjoy whatever you end up cooking and see you soon!

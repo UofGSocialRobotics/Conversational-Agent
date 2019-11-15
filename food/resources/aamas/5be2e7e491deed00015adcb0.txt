@@ -1,0 +1,26 @@
+Hello
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Kevin
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?
+USA
+I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it. Tell me. What do you usually eat for dinner?
+Tuna salad
+I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+hungry
+I don't know what it feels like to be hungry, but I'll remember to find something filling for you! How healthy do you want your meal to be?
+healthy
+Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again! Any specific diet or intolerances I should be aware of?
+no
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+quick
+Of course. Main advantage of being a computer program: I have all the time in the world! If you like salmon fillets, how about Poached Salmon?
+yes
+My programmers will be happy you like it. Would you like another recipe?
+yes
+ What about Simple Herb Crusted Salmon? It contains salmon fillets, which seems perfect for you!
+yes
+My programmers will be happy you like it. Would you like another recipe?
+no
+ Enjoy whatever you end up cooking and see you soon!

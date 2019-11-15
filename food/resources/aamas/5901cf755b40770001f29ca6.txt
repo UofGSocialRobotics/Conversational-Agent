@@ -1,0 +1,26 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Dan
+Nice to meet you. And how are you doing today? Is everything alright?
+yes
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+france
+Good. Tell me. What do you usually eat for dinner?
+rice and meat and veggies
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+light dinner
+Let's get something light then. How healthy do you want your meal to be?
+very healthy
+Okay. Any specific diet or intolerances I should be aware of?
+no
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+quick
+Of course, you're a busy person.  Easy Stir-Fry Broccoli and Red Bell Pepper has broccoli in it, hopefully you will like it.
+thank you
+Okay. Would you like another recipe?
+yes please with meat
+ What about Creamy Broccoli Spinach Soup | A Bowl of Green? It contains broccoli, which seems perfect for you!
+thanks
+Okay. Would you like another recipe?
+no thanks
+ Enjoy whatever you end up cooking and see you soon!
