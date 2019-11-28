@@ -1,0 +1,26 @@
+hello!
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Coisa
+Nice to meet you. And how are you doing today? Is everything alright?
+I'm feeling fine, thank you!
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+Portugal
+Good. Tell me. What do you usually eat for dinner?
+it depends but it has to be vegetarian
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+I'm feeling hungry
+Let's get something to ease your hunger then. How healthy do you want your meal to be?
+Very healthy
+Okay. Any specific diet or intolerances I should be aware of?
+Vegetarian
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick
+Of course, you're a busy person.  Chipotle Lime Grilled Shrimp Salad in Cilantro Lime Dressing has lime in it, hopefully you will like it.
+Sounds great, thank you!
+Okay. Would you like another recipe?
+Yes pleae
+ If you like brussel sprouts, how about Brussel Sprouts Salad with Orange Ginger Dressing?
+Lovely, thank you!
+Okay. Would you like another recipe?
+No
+ Enjoy whatever you end up cooking and see you soon!

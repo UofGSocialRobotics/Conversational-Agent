@@ -1,0 +1,34 @@
+hello!
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+jennifer
+Nice to meet you. And how are you doing today? Is everything alright?
+very well thanks
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+Bristol
+Good. Tell me. What do you usually eat for dinner?
+something with vegetables in
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+feeling very hungruy
+Something light for you, noted. How healthy do you want your meal to be?
+quite healthy please
+Okay. Any specific diet or intolerances I should be aware of?
+no
+Okay. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+yes I have plenty of time to cook today
+Great! If you like carrot, how about Carrot Cake Smoothie?
+sounds nice
+Okay. Would you like another recipe?
+yes please how about something savoury
+ If you like carrots, how about Raw Kale Salad with Apples, Carrots & Purple Cabbage?
+this sounds delicious
+Okay. Would you like another recipe?
+yes please have you got anything more substantial
+ What about Sexy Cabbage (+ Cilantro-Lime Carrot and Cabbage Spring Rolls)? It contains green cabbage, which seems perfect for you!
+not sure how 'sexy' cabbage is to be honest have you got anything else
+Give me another chance. If you like carrot, how about Spicy thai carrot and kale salad?
+ok this sounds goog
+Okay. Would you like another recipe?
+yes please how about something with chicken
+ Brown Sugar Garlic Pork with Carrots & Potatoes has carrots in it, hopefully you will like it.
+no thanks
+I can't find anything else to recommend that fits your criteria. Enjoy whatever you end up cooking and see you soon!

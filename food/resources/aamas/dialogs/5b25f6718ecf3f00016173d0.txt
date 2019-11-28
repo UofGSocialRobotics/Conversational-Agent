@@ -1,0 +1,6 @@
+hello
+ Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+adam
+Nice to meet you. And how are you doing today? Is everything alright?
+im fine thanks for asking
+Lovely! As a computer program, I don't have feelings, but it's great you feel good. My programmers would like to know you a bit better. I was created in Glasgow, United Kindgom. Can you tell me where you live?

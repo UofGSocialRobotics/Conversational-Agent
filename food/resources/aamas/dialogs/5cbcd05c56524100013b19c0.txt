@@ -1,0 +1,30 @@
+Hallo!
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Ieva
+Nice to meet you. And how are you doing today? Is everything alright?
+Yes, everything is fine. How about You?
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+Latvia
+Good. Tell me. What do you usually eat for dinner?
+Chicken with rice, soup, potatoes with some kind of meeat
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+A light dinner
+Let's get something light then. How healthy do you want your meal to be?
+Not too healthy
+Ya, taste first and healthiness second right?  Any specific diet or intolerances I should be aware of?
+No
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick
+Of course, you're a busy person.  Avocado With Bell Pepper And Tomatoes has avocado in it, hopefully you will like it.
+Love avocado
+Okay. What about Easy Stir-Fry Broccoli and Red Bell Pepper? It contains broccoli, which seems perfect for you!
+Can I have something with chicken in it?
+Okay. Would you like another recipe?
+Yes
+ If you like light tuna, how about Sweet and Tangy Tuna Stuffed Peppers?
+I don't know if I would like this
+Give me another chance. What about Spinach Artichoke Hummus with Shamrock Shaped Green Peppers? It contains green bell peppers, which seems perfect for you!
+No
+Let me find something else. How to Make Pickled Peppers has garlic in it, hopefully you will like it.
+Not really something i would eat for dinner! Something with chicken please!
+I can't find anything else to recommend that fits your criteria. Enjoy whatever you end up cooking and see you soon!

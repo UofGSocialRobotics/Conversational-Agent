@@ -1,0 +1,28 @@
+Hello
+ Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?
+Sandy
+Nice to meet you. And how are you doing today? Is everything alright?
+I am fine,thank you
+Lovely! I'd like to know you a bit better. Can you tell me where you live?
+West Scotland
+Good. Tell me. What do you usually eat for dinner?
+Rice and curry
+Okay. So before I recommend something let me ask you a few more questions. First things first: are you feeling hungry or would you rather have a light dinner?
+a light dinner please
+Something light for you, noted. How healthy do you want your meal to be?
+Moderately
+Okay. Any specific diet or intolerances I should be aware of?
+No beef
+Noted. We're almost there. Would you have some time to cook tonight or would you rather have something quick to prepare?
+Something quick for today
+Of course, you're a busy person.  Avocado, Tomato, Kale & Onion Salad has kale in it, hopefully you will like it.
+that sounds good but do you have any substitutes for kale?
+Okay. Sweet Potato Kale Pizza with Rosemary & Red Onion has kale in it, hopefully you will like it.
+Thanks
+Okay. Would you like another recipe?
+Sounds good
+ If you like tomatoes, how about Tomato, Onion, Avocado Salad?
+Thanks
+Okay. Would you like another recipe?
+No thank you
+ Enjoy whatever you end up cooking and see you soon!
