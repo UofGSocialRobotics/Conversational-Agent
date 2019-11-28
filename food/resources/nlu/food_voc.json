@@ -146,7 +146,10 @@
         "disgust",
         "disgusting",
         "detestable",
-        "disapprove"
+        "disapprove",
+        "too",
+        "but",
+        "complicated"
     ],
     "spoonacular_intolerances": [
         "dairy",
@@ -165,6 +168,7 @@
         "delicious",
         "tasty",
         "yummy",
+        "yum",
         "rich",
         "sweet",
         "delish",
@@ -187,6 +191,7 @@
         "mouthwatering",
         "divine",
         "heavenly",
-        "toothsome"
+        "toothsome",
+        "worth"
     ]
 }

@@ -127,3 +127,11 @@ def norm_pandas_matrix(matrix):
                 normed_matrix.iat[i - i_init, j] = v
 
     return normed_matrix
+
+def remove_duplicate_consecutive_char_from_string(s):
+    new_s = " "
+    for c in s:
+        if new_s[-1] != c:
+            new_s += c
+    new_s = new_s.strip()
+    return new_s

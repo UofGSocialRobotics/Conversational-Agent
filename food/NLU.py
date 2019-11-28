@@ -29,7 +29,8 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
             ingredients_list.append(token.lemma_)
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
-        elif token.text in voc_dislike or token.lemma_ in voc_dislike:
+        # elif token.text in voc_dislike or token.lemma_ in voc_dislike:
+        elif nlu_helper.NLU_word_in_list(token, voc_dislike):
             negation = True
     if ingredients_list:
         valence = "-" if negation else "+"
@@ -41,7 +42,7 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
 def inform_healthy(document, voc_no, voc_healthy):
     healthy, negation = False, False
     for token in document:
-        if token.lemma_ in voc_healthy:
+        if nlu_helper.NLU_word_in_list(token, voc_healthy):# token.lemma_ in voc_healthy:
             healthy = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -54,7 +55,7 @@ def inform_healthy(document, voc_no, voc_healthy):
 def inform_comfort(document, voc_no, voc_comfort):
     comfort, negation = False, False
     for token in document:
-        if token.lemma_ in voc_comfort:
+        if nlu_helper.NLU_word_in_list(token, voc_comfort):# token.lemma_ in voc_comfort:
             comfort = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -67,9 +68,10 @@ def inform_comfort(document, voc_no, voc_comfort):
 def inform_time(document, voc_no, voc_time, voc_no_time, voc_constraint):
     time, no_time, negation, constraint = False, False, False, False
     for token in document:
-        if token.lemma_ in voc_time:
+        # if token.lemma_ in voc_time:
+        if nlu_helper.NLU_word_in_list(token, voc_time):
             time = True
-        elif token.lemma_ in voc_no_time:
+        elif nlu_helper.NLU_word_in_list(token, voc_no_time): #token.lemma_ in voc_no_time:
             no_time = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -90,7 +92,8 @@ def inform_time(document, voc_no, voc_time, voc_no_time, voc_constraint):
 def inform_hungry(document, voc_no, voc_hungry, voc_light):
     positive, hungry, empty, stomach, light = True, None, False, False, False
     for token in document:
-        if token.lemma_ in voc_hungry:
+        # if token.lemma_ in voc_hungry:
+        if nlu_helper.NLU_word_in_list(token, voc_hungry):
             hungry = True
         elif nlu_helper.is_negation(token, voc_no=voc_no):
             positive = False
@@ -98,7 +101,8 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
             stomach = True
         elif token.lemma_ == "empty":
             empty = True
-        elif token.lemma_ in voc_light:
+        # elif token.lemma_ in voc_light:
+        elif nlu_helper.NLU_word_in_list(token, voc_light):
             light = True
     if (hungry or (empty and stomach)) and positive:
         return ("inform", "hungry", True, None)
@@ -111,9 +115,11 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
 def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
     vegan, no_vegan, negation = False, False, False
     for token in document:
-        if token.lemma_ in voc_vegan:
+        # if token.lemma_ in voc_vegan:
+        if nlu_helper.NLU_word_in_list(token, voc_vegan):
             vegan = True
-        elif token.lemma_ in voc_no_vegan:
+        # elif token.lemma_ in voc_no_vegan:
+        elif nlu_helper.NLU_word_in_list(token, voc_no_vegan):
             no_vegan = False
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -145,9 +151,11 @@ def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
     res = {"yes": ("yes", None, None, None), "no": ("no", None, None, None)}
     like_bool, dislike_bool, negation = False, False, False
     for token in document:
-        if token.lemma_ in voc_like or token.text in voc_like:
+        # if token.lemma_ in voc_like or token.text in voc_like or helper.remove_duplicate_consecutive_char_from_string(token.text) in voc_like:
+        if nlu_helper.NLU_word_in_list(token, voc_like):
             like_bool = True
-        elif token.lemma_ in voc_dislike or token.text in voc_dislike:
+        # elif token.lemma_ in voc_dislike or token.text in voc_dislike:
+        elif nlu_helper.NLU_word_in_list(token, voc_dislike):
             dislike_bool = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True

@@ -3,6 +3,7 @@ import re
 import nltk
 from fuzzywuzzy import fuzz
 from ca_logging import log
+import helper_functions as helper
 ####################################################################################################
 ##                                          Preprocesss                                           ##
 ####################################################################################################
@@ -40,6 +41,11 @@ def flatten_sentence(sentence):
 ##                                      Helper functions                                          ##
 ####################################################################################################
 
+def NLU_word_in_list(token, my_list):
+    if token.text in my_list or token.lemma_ in my_list or helper.remove_duplicate_consecutive_char_from_string(token.text) in my_list:
+        return True
+    return False
+
 
 def is_verb(token):
     '''
@@ -54,7 +60,8 @@ def is_verb(token):
 
 
 def is_negation(token, voc_no):
-    return (token.lemma_ in voc_no or (token.tag_ == "RB" and token.dep_ == "neg"))
+    # return (token.lemma_ in voc_no or (token.tag_ == "RB" and token.dep_ == "neg"))
+    return (NLU_word_in_list(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg"))
 
 
 def find_key_in_dict_with_fuzzy_matching(k,d):
@@ -147,21 +154,23 @@ def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_ti
     if "under the weather" in sentence:
         return res["no"]
     for token in document:
-        if token.lemma_ in voc_feel_good or token.text in voc_feel_good:
+        # if token.lemma_ in voc_feel_good or token.text in voc_feel_good:
+        if NLU_word_in_list(token, voc_feel_good):
             feel_good = True
-        elif token.lemma_ in voc_feel_bad + voc_feel_tired or token.text in voc_feel_bad+voc_feel_tired:
+        # elif token.lemma_ in voc_feel_bad + voc_feel_tired or token.text in voc_feel_bad+voc_feel_tired:
+        elif NLU_word_in_list(token, voc_feel_bad+voc_feel_tired):
             feel_bad = True
         elif is_negation(token, voc_no):
             negation = True
     # print(feel_good, feel_bad, negation)
-    if feel_good:
-        if not negation:
-            return res['yes']
-        else:
-            return res["no"]
-    elif feel_bad:
+    if feel_bad:
         if negation:
             return res["yes"]
+        else:
+            return res["no"]
+    elif feel_good:
+        if not negation:
+            return res['yes']
         else:
             return res["no"]
     else:
@@ -258,7 +267,8 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
                 return res["no"]
     is_positive = None
     for token in document:
-        if (token.text in voc_yes["all_yes_words"] or token.text in voc_yes["yes_vb"]) and is_positive == None:
+        # if (token.text in voc_yes["all_yes_words"] or token.text in voc_yes["yes_vb"]) and is_positive == None:
+        if (NLU_word_in_list(token, voc_yes["all_yes_words"]) or NLU_word_in_list(token,voc_yes["yes_vb"])) and is_positive == None:
             is_positive = True
         elif is_negation(token, voc_no=voc_no["all_no_words"]):
             return res["no"]
