@@ -1,0 +1,230 @@
+
+[
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": -1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": -1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": -1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": 1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 1},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": 0, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": -1, "healthiness": 0},
+{"food_fillingness": 1, "healthiness": 0}
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
