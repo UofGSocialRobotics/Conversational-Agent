@@ -8,6 +8,7 @@ import food.food_dataparser as food_dataparser
 import dataparser
 import nltk
 from ca_logging import log
+import food.food_config as fc
 
 
 def inform_food(document, sentence, food_list, voc_no, voc_dislike):
@@ -259,7 +260,7 @@ class NLU(wbc.WhiteBoardClient):
 
 
     def read_convesation_stages(self):
-        path = "food/resources/dm/model.csv"
+        path = fc.DM_MODEL
         with open(path, 'r') as f:
             content = csv.reader(f)
             conversation_stages = list()

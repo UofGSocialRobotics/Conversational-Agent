@@ -6,7 +6,8 @@
         "hunger",
         "hunger",
         "crave",
-        "heavy"
+        "heavy",
+        "peckish"
     ],
     "light": [
         "light",
@@ -24,6 +25,7 @@
     ],
     "no_time": [
         "quick",
+        "quickish",
         "hurry",
         "fast",
         "busy"

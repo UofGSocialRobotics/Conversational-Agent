@@ -42,7 +42,7 @@ class HealthDiagnostic(wbc.WhiteBoardClient):
                     f -= value
                     c -= value
 
-            h, f, c = float(h) / 50, float(f) / 50, float(c) / 60
+            h, f, c = float(h) / 24, float(f) / 24, float(c) / 24
             log.info("Food diagnostic, user trait values are: healthiness %.3f, fillingness %.3f, confort %.3f" % (h, f, c))
             self.food_diagnostic_score = [h, f, c]
             data = {fc.food_scores_trait: {fc.healthiness: h, fc.food_fillingness: f, fc.comfort: c}}
