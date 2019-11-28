@@ -215,6 +215,7 @@ class DM(wbc.WhiteBoardClient):
             new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe)
             self.from_NLU = None
             self.from_SA = None
+            self.publish({"current_state": self.currState}, topic=self.publishes[4])
             self.publish(new_msg, topic=self.publishes[0])
 
     def save_reco_data(self):

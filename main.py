@@ -2,6 +2,7 @@ from ca_logging import log
 import config
 import argparse
 import threading
+import config_modules
 
 import server_using_firebase
 
@@ -33,9 +34,9 @@ if __name__ == '__main__':
     args = argp.parse_args()
 
     if args.movies:
-        config.modules.set_domain("movies")
+        config_modules.modules.set_domain("movies")
     elif args.food:
-        config.modules.set_domain("food")
+        config_modules.modules.set_domain("food")
     else:
         argp.print_help()
         exit(0)

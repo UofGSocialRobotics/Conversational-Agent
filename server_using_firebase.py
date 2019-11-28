@@ -9,6 +9,7 @@ import helper_functions as helper
 import pyrebase_multiple_refs
 import math
 from termcolor import colored
+import config_modules
 
 ####################################################################################################
 ##                                          Stream handlers                                       ##
@@ -242,7 +243,7 @@ class ServerUsingFirebase:
 
     def create_services(self, client_id):
         self.clients_services[client_id] = list()
-        for module_config in config.modules.modules:
+        for module_config in config_modules.modules.modules:
             args = list(module_config.values())[2:]
             print(module_config)
             new_module_name = module_config["name"]

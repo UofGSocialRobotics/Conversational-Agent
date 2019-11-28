@@ -1,17 +1,6 @@
 import cryptography.fernet as fernet
 import json
-import movies
-from movies import NLU as movies_NLU
-from movies import DM as movies_DM
-from movies import NLG as movies_NLG
-from movies import dum_sentiment_analysis as movies_SA
-import food
-from food import DM as food_DM
-from food import NLG as food_NLG
-from food import NLU as food_NLU
-from food import heath_diagnostic
-import ca_logging as logging
-import data_collection
+
 
 
 ####################################################################################################
@@ -69,6 +58,8 @@ MSG_SA = "SA/"
 ## For NLG, DM published on
 MSG_DM = "DM/"
 MSG_DM_RECIPE_LIST = "DMrecipes/"
+## For NLU, DM publishes on
+MSG_DM_CONV_STATE = "DMstate/"
 
 ## For main server, NLG publishes on
 MSG_NLG = "NLG/"
@@ -94,12 +85,12 @@ MSG_ACK_CONNECTION = "ack new connection"
 
 
 ## NLU
-NLU_subscribes = [MSG_SERVER_IN]
+NLU_subscribes = [MSG_SERVER_IN, MSG_DM_CONV_STATE]
 NLU_publishes = MSG_NLU
 
 ## DM
 DM_subscribes = [MSG_NLU, MSG_SA]
-DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT]
+DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT, MSG_DM_CONV_STATE]
 
 ## NLG
 NLG_subscribes = [MSG_DM, MSG_DM_RECIPE_LIST]
@@ -145,63 +136,7 @@ FIREBASE_KEY_DATA_RECO = "data_recommendation"
 FIREBASE_KEY_XP_COND = "xp_condition"
 
 
-####################################################################################################
-##                                          Modules                                               ##
-####################################################################################################
 
-class Modules:
-    """Singleton class"""
-    __instance = None
-
-    @staticmethod
-    def getInstance():
-        """
-        :return: the unique whiteboard object
-        """
-        if Modules.__instance == None:
-            Modules()
-        return  Modules.__instance
-
-
-    def __init__(self):
-        """
-        This constructor in virtually private.
-        :param domain:
-        """
-        if Modules.__instance != None:
-            logging.log.error("Singleton Class: contructor should not be called. Use Modules.getInstance()")
-        else:
-            Modules.__instance = self
-            # self.NLU = None
-            # self.DM = None
-            # self.SentimentAnalysis = None
-            # self.NLG = None
-            # self.DataCollector = data_collection.DataCollector
-            dataCollector_config = {"module": data_collection.DataCollector, "name": "DataCollector", "subscribes": DataCollector_subscribes, "publishes": DataCollector_publishes, "ack_msg": FIREBASE_KEY_ACK}
-            self.modules = list()
-            self.modules.append(dataCollector_config)
-
-    def set_domain(self, domain):
-        if domain == "movies":
-            NLU_config = {"module": movies_NLU.RuleBasedNLU, "name": "NLU", "subscribes": NLU_subscribes, "publishes": NLU_publishes}
-            DM_config = {"module": movies_DM.DM, "name": "DM", "subscribes": DM_subscribes, "publishes": DM_publishes}
-            NLG_config = {"module": movies_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes}
-            SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA",  "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
-            self.modules += [NLU_config, DM_config, NLG_config, SA_config]
-            logging.log.info("(config.py) Set domain as movies.")
-        elif domain == "food":
-            NLU_config = {"module": food_NLU.NLU, "name": "NLU", "subscribes": NLU_subscribes, "publishes": NLU_publishes}
-            DM_config = {"module": food_DM.DM, "name": "DM", "subscribes": DM_subscribes+[MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": DM_publishes}
-            NLG_config = {"module": food_NLG.NLG, "name": "NLG", "subscribes": NLG_subscribes, "publishes": NLG_publishes, "tags_explanation_types": EXPLANATION_TYPE}
-            SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": SentimentAnalysis_subscribes, "publishes": SentimentAnalysis_publishes}
-            HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": HealthDiagnostic_subscribes, "publishes": HealthDiagnostic_publishes}
-            self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
-            logging.log.info("(config.py) Set domain as food.")
-        else:
-            logging.log.error("No %s domain" % domain)
-            exit(0)
-
-modules = Modules.getInstance()
 
 
 

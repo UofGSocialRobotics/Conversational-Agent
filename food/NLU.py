@@ -9,6 +9,7 @@ import dataparser
 import nltk
 from ca_logging import log
 import food.food_config as fc
+import config
 
 
 def inform_food(document, sentence, food_list, voc_no, voc_dislike):
@@ -276,16 +277,22 @@ class NLU(wbc.WhiteBoardClient):
                 conversation_stages.append(row[0])
             return conversation_stages
 
-    def next_conversation_stage(self):
-        if self.current_stage == "default":
-            return
-        if self.current_stage != "inform(food)":
-            self.current_stage = self.conversation_stages.pop(0)
-        else:
-            self.current_stage = "default"
+    # def next_conversation_stage(self):
+    #     if self.current_stage == "default":
+    #         return
+    #     if self.current_stage != "inform(food)":
+    #         self.current_stage = self.conversation_stages.pop(0)
+    #     else:
+    #         self.current_stage = "default"
 
     def treat_message(self, msg, topic):
+        print(msg, topic)
         super(NLU, self).treat_message(msg,topic)
+
+        if topic[:len(config.MSG_DM_CONV_STATE)] == config.MSG_DM_CONV_STATE:
+            self.current_stage = msg["current_state"]
+            return True
+
         msg_lower = msg.lower()
 
         # Todo Distinguish actors and directors
@@ -297,7 +304,7 @@ class NLU(wbc.WhiteBoardClient):
 
         self.publish(new_msg)
 
-        self.next_conversation_stage()
+        # self.next_conversation_stage()
 
     def msg_to_json(self, intent, entity, entity_type, polarity):
         frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}
