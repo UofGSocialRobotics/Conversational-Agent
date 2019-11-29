@@ -90,11 +90,6 @@ class NLG(wbc.WhiteBoardClient):
                 key_res = [s for s in key_res if tag in s.tags]
         # print(key_res)
         if key_res and len(key_res) > 0:
-            # sentences_to_choose_from = list()
-            # for key in key_res:
-            #     sentences_to_choose_from += self.sentenceDB[key]
-            # print("sentences_to_choose_from", sentences_to_choose_from)
-            # return random.choice(sentences_to_choose_from)
             to_return = random.choice(self.sentenceDB[key_res[0]])
             # print("to_return", to_return)
             return to_return
@@ -107,12 +102,7 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time choose_sentence: %.3f sec" % (time.time() - start))
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
-        # print(self.ackDB)
-        # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()  + ", " + current_intent.__str__(),"blue"))
         CS = self.cs
-
-        # print("self.cs",self.cs)
-
         if self.cs == "no_ack":
             return ""
 
@@ -430,8 +420,6 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = sentence.replace("#user_name", self.user_model[fc.user_name])
             else:
                 sentence = sentence.replace(" #user_name", "")
-                # if sentence[-1] in set(string.punctuation) and sentence[-2] == " ":
-                #     sentence = sentence[:-2] + sentence[-1]
         if self.timeit_details:
             print("Response time replace: %.3f sec" % (time.time() - start))
         return sentence
