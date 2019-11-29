@@ -12,6 +12,10 @@ import helper_functions as helper
 def preprocess(sentence):
     s = sentence.lower()
     s = s.replace(" don t ", " don't ")
+    s = s.replace(" dont ", " don't ")
+
+    # exclude = set(string.punctuation)
+    # s = ''.join(ch for ch in s if ch not in exclude)
 
     if "1/2" in s:
         s_splited = s.split("1/2")
@@ -413,6 +417,23 @@ def calculate_duration(found_h_unit, n, n_idx, units, units_idx):
     elif not u_just_after and found_h_unit:
         duration = n
     return duration, found_h_unit
+
+
+def name_in_one_word_sentence(document):
+    if len(document) == 1:
+        return ("inform", document[0].text.title(), "name", None)
+    return False
+
+
+def name_in_my_name_is_sentence(document):
+    for token in document:
+        print(token.text, token.lemma_, token.tag_)
+    # print(document)
+    if len(document) == 4:
+        if document[0].text == "my" or document[1].text == "name" or (document[2].text == "is" or document[2].tag_ == "VBZ" or document[2].tag_ == "POS"):
+            return ("inform", document[3].text.title(), "name", None)
+    return False
+
 
 def format_formula(formula):
     intent, entity, entitytype, polarity = "", "", "", ""

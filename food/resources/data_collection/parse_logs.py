@@ -76,7 +76,7 @@ def logs_to_csv():
                 csv_writer.writerow(line)
 
 
-
+    print("Wrote data for %d conversations" % len(dict_for_csv.keys()))
 
 def print_logs_for_client(client_id):
 

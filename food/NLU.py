@@ -175,6 +175,10 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     f = None
     if stage == "request(mood)":
         f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
+    elif stage == "greeting":
+        f = nlu_helper.name_in_my_name_is_sentence(document)
+        if not f:
+            f = nlu_helper.name_in_one_word_sentence(document)
     elif stage == "request(filling)":
         f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     elif stage == "request(healthy)":
