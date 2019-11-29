@@ -1,7 +1,7 @@
 previous_intent,CS,ack,valence,current_intent_is_NOT, current_intent_is
-greeting,NONE,Nice to meet you.,NONE,NONE,NONE
-greeting,human,Nice to meet you.,NONE,NONE,NONE
-greeting,robot,Nice to meet you.,NONE,NONE,NONE
+greeting,NONE,Nice to meet you #user_name.,NONE,NONE,NONE
+greeting,human,Nice to meet you #user_name.,NONE,NONE,NONE
+greeting,robot,Nice to meet you #user_name.,NONE,NONE,NONE
 request(mood),NONE,Lovely!,yes,NONE,NONE
 request(mood),human,Lovely! I'm having a great day and I'm in a very good mood myself.,yes,NONE,NONE
 request(mood),robot,"Lovely! As a computer program, I don't have feelings, but it's great you feel good.",yes,NONE,NONE

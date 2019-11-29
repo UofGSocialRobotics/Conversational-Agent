@@ -421,17 +421,23 @@ def calculate_duration(found_h_unit, n, n_idx, units, units_idx):
 
 def name_in_one_word_sentence(document):
     if len(document) == 1:
-        return ("inform", document[0].text.title(), "name", None)
+        return ("inform", "user_name", document[0].text.title(), None)
     return False
 
 
 def name_in_my_name_is_sentence(document):
-    for token in document:
-        print(token.text, token.lemma_, token.tag_)
+    # for token in document:
+        # print(token.text, token.lemma_, token.tag_)
     # print(document)
     if len(document) == 4:
         if document[0].text == "my" or document[1].text == "name" or (document[2].text == "is" or document[2].tag_ == "VBZ" or document[2].tag_ == "POS"):
-            return ("inform", document[3].text.title(), "name", None)
+            return ("inform", "user_name", document[3].text.title(), None)
+    return False
+
+
+def question_in_sentence(document, sentence):
+    if "?" in sentence:
+        return ("question", None, None, None)
     return False
 
 

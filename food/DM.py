@@ -40,7 +40,7 @@ class DM(wbc.WhiteBoardClient):
         self.nodes = {}
 
         state_values = {fc.healthiness: 0, fc.food_fillingness: 0}
-        self.user_model = {fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.time_to_cook: False, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
+        self.user_model = {fc.user_name: None, fc.liked_features: [], fc.disliked_features: [], fc.liked_food: [], fc.disliked_food: [], fc.liked_recipe: [], fc.disliked_recipe: [], fc.special_diet: [], fc.intolerances: None, fc.time_to_cook: False, fc.situation: "Usual Dinner", fc.food_scores_trait: None, fc.food_scores_state: state_values}
         self.load_model(fc.DM_MODEL)
         self.load_user_model(fc.USER_MODELS, clientid)
         self.use_local_recipe_DB = False
@@ -136,6 +136,10 @@ class DM(wbc.WhiteBoardClient):
             #         self.user_model[fc.food_scores_state][fc.comfort] = 1
 
             if fc.inform in self.from_NLU[fc.intent]:
+                # print(self.from_NLU)
+                if fc.user_name in self.from_NLU[fc.entity_type]:
+                    # print("DM here user_name")
+                    self.user_model[fc.user_name] = self.from_NLU[fc.entity]
                 if fc.health in self.from_NLU[fc.entity_type]:
                     if self.from_NLU[fc.entity] is True:
                         self.user_model[fc.liked_features].append(fc.health)

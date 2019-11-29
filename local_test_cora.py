@@ -1,4 +1,5 @@
 import config
+import config_modules
 from whiteboard import whiteboard
 from ca_logging import log
 import logging
@@ -51,7 +52,7 @@ class TestCora():
 
     def create_services(self):
         self.services = list()
-        for module_config in config.modules.modules:
+        for module_config in config_modules.modules.modules:
             args = list(module_config.values())[2:]
             args.append(self.timeit)
             # print(*args)
@@ -146,7 +147,7 @@ if __name__ == "__main__":
     try:
         test = None
         if(args.domain in ["movies", "food"]):
-            config.modules.set_domain(args.domain)
+            config_modules.modules.set_domain(args.domain)
             if args.autotest and autotest_scripts:
                 for script_name, script in autotest_scripts.items():
                     print(colored(script_name, "blue"))

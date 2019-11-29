@@ -13,6 +13,7 @@ import time
 import threading
 import math
 import pandas
+import string
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
@@ -110,7 +111,7 @@ class NLG(wbc.WhiteBoardClient):
         # print(colored("trying to find ack for "+ previous_intent+ ", " + valence.__str__() + ", " + CS.__str__()  + ", " + current_intent.__str__(),"blue"))
         CS = self.cs
 
-        print("self.cs",self.cs)
+        # print("self.cs",self.cs)
 
         if self.cs == "no_ack":
             return ""
@@ -423,6 +424,14 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = sentence.replace("#last_food", self.user_model['liked_food'][-1]['main'])
             else:
                 sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
+        if "#user_name" in sentence:
+            # print("NLG here")
+            if self.user_model[fc.user_name]:
+                sentence = sentence.replace("#user_name", self.user_model[fc.user_name])
+            else:
+                sentence = sentence.replace(" #user_name", "")
+                # if sentence[-1] in set(string.punctuation) and sentence[-2] == " ":
+                #     sentence = sentence[:-2] + sentence[-1]
         if self.timeit_details:
             print("Response time replace: %.3f sec" % (time.time() - start))
         return sentence

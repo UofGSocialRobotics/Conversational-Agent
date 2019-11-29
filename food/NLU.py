@@ -290,7 +290,7 @@ class NLU(wbc.WhiteBoardClient):
     #         self.current_stage = "default"
 
     def treat_message(self, msg, topic):
-        print(msg, topic)
+        # print(msg, topic)
         super(NLU, self).treat_message(msg,topic)
 
         if topic[:len(config.MSG_DM_CONV_STATE)] == config.MSG_DM_CONV_STATE:
@@ -302,7 +302,7 @@ class NLU(wbc.WhiteBoardClient):
         # Todo Distinguish actors and directors
 
         intent, entitytype, entity, polarity = rule_based_nlu(utterance=msg_lower, spacy_nlp=self.spacy_nlp, voc=self.voc, food_list=self.food_list, conversation_stage=self.current_stage)
-        # log.info(intent, entitytype, entity, polarity)
+        print(intent, entitytype, entity, polarity)
 
         new_msg = self.msg_to_json(intent, entity, entitytype, polarity)
 
