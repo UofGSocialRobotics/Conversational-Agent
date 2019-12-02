@@ -136,6 +136,12 @@ def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
             return ("inform", "vegan", False, None)
 
 
+def is_but_no_inform_food(sentence):
+    if "but" in sentence:
+        return ("no", None, None, None)
+    return False
+
+
 def inform_intolerance(document, voc_no, voc_intolerances):
     intolerances = list()
     for token in document:
@@ -198,9 +204,15 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         if not f:
             f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
         if not f:
+            f = is_but_no_inform_food(utterance)
+        if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
         if not f:
             f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
+    elif stage == "request(another)":
+        f = nlu_helper.is_iamgood_no_to_more(document, voc_yes=voc["yes"])
+        if not f:
+            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
     else:
         f = get_intent_default(document, utterance, voc, food_list)
 
@@ -209,7 +221,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     if not f:
         f = "IDK", None, None, None
 
-    return f
+    return f[0], f[2], f[1], f[3]
 
 def get_intent_default(document, utterance, voc, food_list):
     # print("in get_intent_default")

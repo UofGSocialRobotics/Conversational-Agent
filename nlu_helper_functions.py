@@ -279,6 +279,13 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     if is_positive == True:
         return res["yes"]
 
+def is_iamgood_no_to_more(document, voc_yes):
+    for token in document:
+        if NLU_word_in_list(token, voc_yes["yes_words"]["yes_adj"]):
+            return ("no", None, None, None)
+    return False
+
+
 def is_number(s, voc_numbers):
     for key in reversed(list(voc_numbers.keys())):
         value = voc_numbers[key]
@@ -375,7 +382,7 @@ def is_duration(document, sentence, voc_numbers, voc_duration, voc_fractions):
 
     if numbers:
         if not units:
-            log.debug("No units!")
+            # log.debug("No units!")
             return False
         else:
             # parse stuff like 30, 40 min
@@ -420,18 +427,23 @@ def calculate_duration(found_h_unit, n, n_idx, units, units_idx):
 
 
 def name_in_one_word_sentence(document):
-    if len(document) == 1:
+    if len(document) == 1 and not NLU_word_in_list(document[0], ["hello", "hi", "yes", "no"]):
         return ("inform", "user_name", document[0].text.title(), None)
     return False
 
 
 def name_in_my_name_is_sentence(document):
     # for token in document:
-        # print(token.text, token.lemma_, token.tag_)
+    #     print(token.text, token.lemma_, token.tag_)
     # print(document)
-    if len(document) == 4:
-        if document[0].text == "my" or document[1].text == "name" or (document[2].text == "is" or document[2].tag_ == "VBZ" or document[2].tag_ == "POS"):
-            return ("inform", "user_name", document[3].text.title(), None)
+    if document[0].text == "my" and document[1].text == "name" and (document[2].text == "is" or document[2].tag_ == "VBZ" or document[2].tag_ == "POS"):
+        return ("inform", "user_name", document[3].text.title(), None)
+    if len(document) == 3:
+        if document[0].tag_ == "PRP" and document[1].tag_ == "VBP" and document[1].lemma_ == "be":
+            return ("inform", "user_name", document[2].text.title(), None)
+        # else:
+        #     for token in document:
+        #         print(token.tag_)
     return False
 
 

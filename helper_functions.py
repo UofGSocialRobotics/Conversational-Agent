@@ -70,6 +70,7 @@ def merge_two_dicts(x, y):
 
 
 def identical(l1, l2):
+    # print(l1, l2)
     if len(l1) == len(l2):
         for i in range(len(l1)):
             if l1[i] != l2[i]:

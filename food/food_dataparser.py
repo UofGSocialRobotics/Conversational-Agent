@@ -1,7 +1,7 @@
 import csv
 import json
 import pandas
-from ca_logging import log
+# from ca_logging import log
 import food.food_config as fc
 
 def get_food_names(f = "./food/resources/dm/food_ratings.csv"):
@@ -19,10 +19,28 @@ def get_food_names(f = "./food/resources/dm/food_ratings.csv"):
     return food_list[1:]
 
 
-def get_dataset(f = "./food/resources/nlu/examples.json"):
+def get_dataset(f="food/resources/nlu/datacollection_examples.json"):
     with open(f) as json_file:
         data = json.load(json_file)
         return data
+
+def generate_examples_dataset_json_from_annotated_csv(csv_path):
+    json_list = list()
+    with open(csv_path, 'r') as fcsv:
+        csv_lines = csv.reader(fcsv)
+        for line in csv_lines:
+            if all(elt == '' for elt in line[4:]) and line[3]:
+                # print(line[4:])
+                str_user_intent = line[3].replace("'", '"')
+                str_user_intent = str_user_intent.replace("None", "null")
+                str_user_intent = str_user_intent.replace("True", "true")
+                str_user_intent = str_user_intent.replace("False", "false")
+                # print(str_user_intent)
+                json_user_intent = json.loads(str_user_intent)
+                json_list.append({"id": line[0], "conv_stage": line[1], "utterance": line[2], "user_intent": json_user_intent})
+    with open("food/resources/nlu/datacollection_examples.json", "w") as fjson:
+        json.dump(json_list, fjson)
+
 
 class Extensive_food_DBs:
     """Singleton class"""
@@ -44,7 +62,9 @@ class Extensive_food_DBs:
         :param domain:
         """
         if Extensive_food_DBs.__instance != None:
-            log.error("Singleton Class: contructor should not be called. Use Modules.getInstance()")
+            error_msg = "Singleton Class: contructor should not be called. Use Modules.getInstance()"
+            # log.error(error_msg)
+            print(error_msg)
         else:
             Extensive_food_DBs.__instance = self
             self.food_to_category = {}
@@ -165,4 +185,4 @@ class Extensive_food_DBs:
 extensive_food_DBs = Extensive_food_DBs.getInstance()
 
 if __name__ == "__main__":
-    print(get_food_names())
+    generate_examples_dataset_json_from_annotated_csv("food/resources/data_collection/NLU_analyzed.csv")

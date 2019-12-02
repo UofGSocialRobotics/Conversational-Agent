@@ -7,6 +7,7 @@ import movies.movies_nlu_functions as movies_NLU
 import movies.movie_dataparser as movies_dataparser
 import argparse
 import helper_functions as helper
+from ca_logging import log
 
 def test_nlu(domain):
     q= False
@@ -49,18 +50,22 @@ def evaluate(domain, to_print="wrong"):
         food_list = food_dataparser.extensive_food_DBs.all_foods_list
         dataset = food_dataparser.get_dataset()
     got_right = 0
-    for utterance, formula in dataset:
+    for elt in dataset:
+        utterance, formula, conv_stage, id = elt["utterance"], elt["user_intent"], elt["conv_stage"], elt['id']
+        formula = list(formula.values())
         if domain == "movies":
-            f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
+            # f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
+            log.critical("Changed stuff here, will not work")
+            exit(-1)
         elif domain == "food":
-            f = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list)
+            f = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list, conv_stage)
         identical = helper.identical(f, formula)
         if identical:
             got_right += 1
-        if to_print == 'all' or (not identical and to_print == "wrong"):
-            print(utterance)
-            print(formula)
-            print(f)
+        if to_print == 'all' or (not identical and to_print == "wrong" and elt["conv_stage"] != 'greeting'):
+            print(id, conv_stage, utterance)
+            print("Expected:", formula)
+            print("Got:", f)
             print()
     print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / float(len(dataset)), got_right, len(dataset)))
     if to_print == 'wrong':
