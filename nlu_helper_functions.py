@@ -453,6 +453,21 @@ def question_in_sentence(document, sentence):
     return False
 
 
+def get_quantifier(document, sentence, voc_quantifiers):
+    bigrams = nltk.bigrams(sentence.split())
+    for i_bg, bg in enumerate(bigrams):
+        bg_str = " ".join(bg)
+        for quantifier, words in voc_quantifiers.items():
+            for w in words:
+                # print(w)
+                if len(w.split()) == 2 and bg_str == w:
+                    return quantifier
+    for token in document:
+        for quantifier, words in voc_quantifiers.items():
+            if NLU_word_in_list(token, words):
+                return quantifier
+    return None
+
 def format_formula(formula):
     intent, entity, entitytype, polarity = "", "", "", ""
     if "ask" in formula or formula in ["greet", "yes", "no", "goodbye", "request_more", "alreadyWatched", "IDK"]:

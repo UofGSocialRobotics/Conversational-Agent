@@ -37,7 +37,7 @@ def test_nlu(domain):
             # print(intent, entity, entitytype, polarity)
 
 
-def evaluate(domain, to_print="wrong"):
+def evaluate(domain, intent=None, to_print="wrong"):
     spacy_nlp = spacy.load("en_core_web_sm")
     if domain == "movies":
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
@@ -50,24 +50,28 @@ def evaluate(domain, to_print="wrong"):
         food_list = food_dataparser.extensive_food_DBs.all_foods_list
         dataset = food_dataparser.get_dataset()
     got_right = 0
+    with_intent = 0
     for elt in dataset:
         utterance, formula, conv_stage, id = elt["utterance"], elt["user_intent"], elt["conv_stage"], elt['id']
-        formula = list(formula.values())
-        if domain == "movies":
-            # f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
-            log.critical("Changed stuff here, will not work")
-            exit(-1)
-        elif domain == "food":
-            f = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list, conv_stage)
-        identical = helper.identical(f, formula)
-        if identical:
-            got_right += 1
-        if to_print == 'all' or (not identical and to_print == "wrong" and elt["conv_stage"] != 'greeting'):
-            print(id, conv_stage, utterance)
-            print("Expected:", formula)
-            print("Got:", f)
-            print()
-    print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / float(len(dataset)), got_right, len(dataset)))
+        if not intent or (intent == conv_stage):
+            formula = list(formula.values())
+            if domain == "movies":
+                # f = movies_NLU.rule_based_nlu(utterance, spacy_nlp, voc=voc, directors_dicts=directors_dicts, actors_dicts=actors_dicts)
+                log.critical("Changed stuff here, will not work")
+                exit(-1)
+            elif domain == "food":
+                f = food_NLU.rule_based_nlu(utterance, spacy_nlp, voc, food_list, conv_stage)
+            identical = helper.identical(f, formula)
+            if identical:
+                got_right += 1
+            if to_print == 'all' or (not identical and to_print == "wrong" and elt["conv_stage"] == 'request(healthy)'):
+                print(id, conv_stage, utterance)
+                print("Expected:", formula)
+                print("Got:", f)
+                print()
+            with_intent += 1
+    total = float(with_intent) if intent else float(len(dataset))
+    print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / total, got_right, len(dataset)))
     if to_print == 'wrong':
         print("Printed only utterances for which we got it wrong")
 
@@ -79,6 +83,7 @@ if __name__ == "__main__":
     argp.add_argument('domain', metavar='domain', type=str, help='Domain to test (e.g. movies? food?)')
     argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
+    argp.add_argument('-intent', metavar='intent', type=str, help='Intent you want to work on')
 
     args = argp.parse_args()
 
@@ -86,4 +91,7 @@ if __name__ == "__main__":
         if (args.test):
             test_nlu(args.domain)
         elif (args.eval):
-            evaluate(args.domain)
+            if args.intent:
+                evaluate(args.domain, args.intent)
+            else:
+                evaluate(args.domain)

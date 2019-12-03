@@ -41,6 +41,19 @@ def generate_examples_dataset_json_from_annotated_csv(csv_path):
     with open("food/resources/nlu/datacollection_examples.json", "w") as fjson:
         json.dump(json_list, fjson)
 
+def parse_healthiness_quantifiers_csv(csv_path):
+    json_list = list()
+    id = 0
+    with open(csv_path, 'r') as fcsv:
+        csv_lines = csv.reader(fcsv)
+        for line in csv_lines:
+            json_user_intent = {"intent": "inform", "entity": float(line[1]), "entity_type": "healthy", "polarity": None}
+            json_list.append({"id": id, "conv_stage": "request(healthy)", "utterance": line[0], "user_intent": json_user_intent})
+            id += 1
+    with open("food/resources/nlu/datacollection_examples_quantifiers.json", "w") as fjson:
+        json.dump(json_list, fjson)
+
+
 
 class Extensive_food_DBs:
     """Singleton class"""
@@ -185,4 +198,5 @@ class Extensive_food_DBs:
 extensive_food_DBs = Extensive_food_DBs.getInstance()
 
 if __name__ == "__main__":
+    # parse_healthiness_quantifiers_csv("food/resources/nlu/quantifiers.csv")
     generate_examples_dataset_json_from_annotated_csv("food/resources/data_collection/NLU_analyzed.csv")

@@ -206,5 +206,73 @@
         "40": ["40", "forty", "fourty"],
         "45": ["45", "forty five", "fortyfive", "forty-five", "fourty five", "fourtyfive", "fourty-five"],
         "50": ["50", "fifty"]
+    },
+    "quantifiers": {
+        "0": [
+            "few",
+            "average",
+            "no preference",
+            "middle",
+            "so so",
+            "so and so",
+            "but",
+            "standard",
+            "midpoint",
+            "half"
+        ],
+        "0.75": [
+            "mostly",
+            "quite",
+            "pretty",
+            "lot",
+            "very",
+            "really",
+            "much",
+            "especially",
+            "over",
+            "overly",
+            "really",
+            "rather"
+        ],
+        "0.5": [
+            "fairly",
+            "medium",
+            "most",
+            "reasonably",
+            "moderately",
+            "moderate",
+            "healthyish"
+        ],
+        "0.25": [
+            "regular",
+            "mildly",
+            "adequately",
+            "enough",
+            "bit",
+            "little",
+            "few",
+            "somewhat",
+            "slightly",
+            "sorta",
+            "sort of",
+            "faintly",
+            "vaguely",
+            "kind of",
+            "kinda",
+            "marginally",
+            "sufficiently",
+            "relatively"
+        ],
+        "-1": [
+            "unhealthy"
+        ],
+        "1": [
+            "extremely",
+            "super",
+            "ultra",
+            "highly",
+            "extra",
+            "100%"
+        ]
     }
 }

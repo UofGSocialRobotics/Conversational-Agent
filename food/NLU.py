@@ -38,6 +38,19 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
         return ("inform", "food", ingredients_list, valence)
     return False
 
+def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
+    quantifier = nlu_helper.get_quantifier(document, sentence, voc_quantifiers)
+    negation = False
+    for token in document:
+        if nlu_helper.is_negation(token, voc_no):
+            negation = True
+    if quantifier:
+        v = float(quantifier)
+        if negation:
+            v = -1 * v
+        return ("inform", "healthy", v, None)
+    else:
+        return None
 
 
 def inform_healthy(document, voc_no, voc_healthy):
@@ -49,9 +62,9 @@ def inform_healthy(document, voc_no, voc_healthy):
             negation = True
     if healthy:
         if negation:
-            return ("inform", "healthy", False, None)
+            return ("inform", "healthy", -1, None)
         else:
-            return ("inform", "healthy", True, None)
+            return ("inform", "healthy", 1, None)
 
 def inform_comfort(document, voc_no, voc_comfort):
     comfort, negation = False, False
@@ -188,7 +201,16 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     elif stage == "request(filling)":
         f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     elif stage == "request(healthy)":
-        f = inform_healthy(document, voc_no=voc["no"]["all_no_words"], voc_healthy=voc["healthy"])
+        f = inform_healthy_with_quantifier(document, sentence=utterance, voc_no=voc["no"], voc_quantifiers=voc["quantifiers"])
+        if not f:
+            f = inform_healthy(document, voc_no=voc["no"]["all_no_words"], voc_healthy=voc["healthy"])
+        if not f:
+            f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+        if f:
+            if f[0] == "yes":
+                f = ("inform", "healthy", 0.75, None)
+            elif f[0] == "no":
+                f = ("inform", "healthy", -1, None)
     elif stage == "request(diet)":
         f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
         if not f:
