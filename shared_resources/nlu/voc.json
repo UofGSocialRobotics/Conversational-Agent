@@ -215,7 +215,6 @@
             "middle",
             "so so",
             "so and so",
-            "but",
             "standard",
             "midpoint",
             "half"
@@ -232,7 +231,8 @@
             "over",
             "overly",
             "really",
-            "rather"
+            "rather",
+            "healthy"
         ],
         "0.5": [
             "fairly",
@@ -261,7 +261,10 @@
             "kinda",
             "marginally",
             "sufficiently",
-            "relatively"
+            "relatively",
+            "tasty",
+            "taste",
+            "but"
         ],
         "-1": [
             "unhealthy"
@@ -272,7 +275,8 @@
             "ultra",
             "highly",
             "extra",
-            "100%"
+            "100%",
+            "100 %"
         ]
     }
 }

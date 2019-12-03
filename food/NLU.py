@@ -39,16 +39,27 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
     return False
 
 def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
-    quantifier = nlu_helper.get_quantifier(document, sentence, voc_quantifiers)
-    negation = False
-    for token in document:
-        if nlu_helper.is_negation(token, voc_no):
-            negation = True
-    if quantifier:
-        v = float(quantifier)
-        if negation:
-            v = -1 * v
-        return ("inform", "healthy", v, None)
+    list_quantifiers = list()
+    if nlu_helper.is_dont_know(document, voc_no) or nlu_helper.is_dont_care(document, voc_no) or nlu_helper.is_doesnt_matter(document, voc_no):
+        list_quantifiers.append(0)
+    if "so and so" in sentence:
+        list_quantifiers.append(0)
+    quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
+    list_quantifiers += quantifiers2
+    list_quantifiers_floats = [float(v) for v in list_quantifiers]
+    # print(list_quantifiers, list_quantifiers_floats)
+    if list_quantifiers_floats:
+        quantifier = min(list_quantifiers_floats)
+        # print(quantifier)
+        negation = False
+        for token in document:
+            if nlu_helper.is_negation(token, voc_no):
+                negation = True
+            if negation:
+                v = -1 * quantifier
+            else:
+                v = quantifier
+            return ("inform", "healthy", v, None)
     else:
         return None
 
@@ -64,7 +75,7 @@ def inform_healthy(document, voc_no, voc_healthy):
         if negation:
             return ("inform", "healthy", -1, None)
         else:
-            return ("inform", "healthy", 1, None)
+            return ("inform", "healthy", 0.75, None)
 
 def inform_comfort(document, voc_no, voc_comfort):
     comfort, negation = False, False
@@ -232,7 +243,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         if not f:
             f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
     elif stage == "request(another)":
-        f = nlu_helper.is_iamgood_no_to_more(document, voc_yes=voc["yes"])
+        f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
         if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
     else:

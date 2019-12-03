@@ -46,10 +46,45 @@ def flatten_sentence(sentence):
 ####################################################################################################
 
 def NLU_word_in_list(token, my_list):
-    if token.text in my_list or token.lemma_ in my_list or helper.remove_duplicate_consecutive_char_from_string(token.text) in my_list:
-        return True
+#     if NLU_word_in_list_fuzz(token.text, my_list) or NLU_word_in_list_fuzz(token.lemma_, my_list) or NLU_word_in_list_fuzz(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list):
+#         return True
+#     return False
+#
+# def NLU_word_in_list_w_fuzz_score(token, my_list):
+    s1 = NLU_word_in_list_fuzz_w_score(token.text, my_list)
+    if s1:
+        return s1
+    s2 = NLU_word_in_list_fuzz_w_score(token.lemma_, my_list)
+    if s2:
+        return s2
+    return NLU_word_in_list_fuzz_w_score(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list)
+
+
+def NLU_word_in_list_fuzz(s, my_list):
+    threshold = 80
+    for w in my_list:
+        score = fuzz.token_sort_ratio(s, w)
+        # print(s, w, score)
+        if score >= threshold:
+            print("return true for ", s, w, score)
+            return True
     return False
 
+
+def NLU_word_in_list_fuzz_w_score(s, my_list):
+    threshold = 80
+    found = False
+    for w in my_list:
+        score = fuzz.token_sort_ratio(s, w)
+        # print(s, w, score)
+        if score >= threshold:
+            # print("return true for ", s, w, score)
+            # return True, s
+            threshold = score
+            found = True
+    if found:
+        return threshold
+    return False
 
 def is_verb(token):
     '''
@@ -66,6 +101,40 @@ def is_verb(token):
 def is_negation(token, voc_no):
     # return (token.lemma_ in voc_no or (token.tag_ == "RB" and token.dep_ == "neg"))
     return (NLU_word_in_list(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg"))
+
+
+def is_dont_know(document, voc_no):
+    know, negation = False, False
+    for token in document:
+        if NLU_word_in_list(token, ["know"]):
+            know = True
+        elif is_negation(token, voc_no):
+            negation = True
+    if know and negation:
+        return True
+    return False
+
+def is_dont_care(document, voc_no):
+    care, negation = False, False
+    for token in document:
+        if NLU_word_in_list(token, ["care"]):
+            care = True
+        elif is_negation(token, voc_no):
+            negation = True
+    if care and negation:
+        return True
+    return False
+
+def is_doesnt_matter(document, voc_no):
+    matter, negation = False, False
+    for token in document:
+        if NLU_word_in_list(token, ["matter"]):
+            matter = True
+        elif is_negation(token, voc_no):
+            negation = True
+    if matter and negation:
+        return True
+    return False
 
 
 def find_key_in_dict_with_fuzzy_matching(k,d):
@@ -279,7 +348,7 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     if is_positive == True:
         return res["yes"]
 
-def is_iamgood_no_to_more(document, voc_yes):
+def iamgood_means_no(document, voc_yes):
     for token in document:
         if NLU_word_in_list(token, voc_yes["yes_words"]["yes_adj"]):
             return ("no", None, None, None)
@@ -453,7 +522,9 @@ def question_in_sentence(document, sentence):
     return False
 
 
-def get_quantifier(document, sentence, voc_quantifiers):
+def get_quantifiers(document, sentence, voc_quantifiers):
+    list_quantifiers = list()
+    score = 0
     bigrams = nltk.bigrams(sentence.split())
     for i_bg, bg in enumerate(bigrams):
         bg_str = " ".join(bg)
@@ -461,12 +532,25 @@ def get_quantifier(document, sentence, voc_quantifiers):
             for w in words:
                 # print(w)
                 if len(w.split()) == 2 and bg_str == w:
-                    return quantifier
+                    list_quantifiers.append(quantifier)
+                    score = 100
     for token in document:
         for quantifier, words in voc_quantifiers.items():
-            if NLU_word_in_list(token, words):
-                return quantifier
-    return None
+            s = NLU_word_in_list(token, words)
+            if s:
+                # print("true for ", token.text, words)
+                # print(score, s)
+                if s == score:
+                    list_quantifiers.append(quantifier)
+                    # print("append to list")
+                elif s > score:
+                    list_quantifiers = [quantifier]
+                    score = s
+                    # print("re init quantifiers list")
+                # else:
+                #     print("do nothing, lower score!")
+    # print(list_quantifiers)
+    return list_quantifiers
 
 def format_formula(formula):
     intent, entity, entitytype, polarity = "", "", "", ""
