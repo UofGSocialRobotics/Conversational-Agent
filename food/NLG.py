@@ -406,6 +406,9 @@ class NLG(wbc.WhiteBoardClient):
             sentence = sentence.replace("#situation", self.situation)
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
+        if "#usual_dinner" in sentence:
+            usual_dinner_str = ', '.join(self.user_model[fc.usual_dinner])
+            sentence = sentence.replace("#usual_dinner",  usual_dinner_str)
         if "#recipe" in sentence:
             sentence = sentence.replace("#recipe", self.recipe['title'])
         sentence = self.replace_features(sentence)
@@ -415,7 +418,7 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
         if "#user_name" in sentence:
-            # print("NLG here")
+            print("NLG here")
             if self.user_model[fc.user_name]:
                 sentence = sentence.replace("#user_name", self.user_model[fc.user_name])
             else:

@@ -345,7 +345,7 @@ class NLU(wbc.WhiteBoardClient):
         # self.next_conversation_stage()
 
     def msg_to_json(self, intent, entity, entity_type, polarity):
-        frame = {'intent': intent, 'entity': entity, 'entity_type': entity_type, 'polarity': polarity}
+        frame = {'intent': intent, 'entity_type': entity, 'entity': entity_type, 'polarity': polarity}
         # json_msg = json.dumps(frame)
         return frame
 

@@ -16,7 +16,7 @@ request(usual_dinner),NONE,Okay.,NONE,NONE,NONE
 request(usual_dinner),human,"I see. When I was young, my mom used to prepare various types of food. Now I try to have light and healthy dinners with lots of vegetables.",NONE,NONE,NONE
 request(usual_dinner),robot,"I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now.",NONE,NONE,NONE
 request(why_dinner),NONE,Good to know.,NONE,NONE,NONE
-request(why_dinner),human,Good to know. I have to admit that I don't usually like fish but salmon.,NONE,NONE,NONE
+request(why_dinner),human,Good to know.,NONE,NONE,NONE
 request(why_dinner),robot,I see.,NONE,NONE,NONE
 request(situation),NONE,Sure.,no,NONE,NONE
 request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NONE

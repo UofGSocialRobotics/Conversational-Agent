@@ -72,6 +72,7 @@ recipe = 'recipe'
 title = "title"
 
 # DM: user model
+usual_dinner = "usual_dinner"
 liked_features = "liked_features"
 disliked_features = "disliked_features"
 liked_food = "liked_food"

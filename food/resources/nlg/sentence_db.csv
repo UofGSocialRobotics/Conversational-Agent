@@ -6,7 +6,7 @@ request(from),NONE,NONE,I'd like to know you a bit better. Can you tell me where
 request(from),robot,NONE,"My programmers would like to know you a bit better. I was created in Glasgow, United Kingdom. Can you tell me where you live?"
 request(from),human,NONE,"I'd like us to know each other a bit better. I've just moved to Glasgow, Scotland a few months ago, I used to live in Pittsburgh, USA before that. It's raining a lot but I like it here. Can you tell me where you live?"
 request(usual_dinner),NONE,NONE,Tell me. What do you usually eat for dinner?
-request(why_dinner),NONE,NONE,Could you tell me why you usually eat that for dinner?
+request(why_dinner),NONE,NONE,Could you tell me why you usually eat #usual_dinner for dinner?
 greet_back,NONE,NONE,Welcome back! How are you doing today?
 request_back(last_movie),NONE,NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!
 inform(opinion_last_movie),NONE,NONE,Oh. can you tell me why?
