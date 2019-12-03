@@ -9,6 +9,7 @@ request(mood),NONE,I'm sorry to hear that.,no,NONE,NONE
 request(mood),human,"I'm sorry to hear that. Whenever I feel bad myself, I find comfort in a great dinner.",no,NONE,NONE
 request(mood),robot,"I'm sorry to hear that. As a computer program, I don't have feelings, but I know life can be tough for you humans.",no,NONE,NONE
 request(from),NONE,Good.,NONE,NONE,NONE
+request(from),NONE,Sorry about being too intrusive. I'll focus on your eating habits.,"no",NONE,NONE
 request(from),human,What a coincidence! I spent some time there on vacation a few years ago. I loved that place!,NONE,NONE,NONE
 request(from),robot,"I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it.",NONE,NONE,NONE
 greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
