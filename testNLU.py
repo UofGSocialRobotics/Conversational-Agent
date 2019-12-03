@@ -8,6 +8,7 @@ import movies.movie_dataparser as movies_dataparser
 import argparse
 import helper_functions as helper
 from ca_logging import log
+import csv
 
 def test_nlu(domain):
     q= False
@@ -37,7 +38,7 @@ def test_nlu(domain):
             # print(intent, entity, entitytype, polarity)
 
 
-def evaluate(domain, intent=None, to_print="wrong"):
+def evaluate(domain, intent=None, out_file=None, to_print="wrong"):
     spacy_nlp = spacy.load("en_core_web_sm")
     if domain == "movies":
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
@@ -51,6 +52,7 @@ def evaluate(domain, intent=None, to_print="wrong"):
         dataset = food_dataparser.get_dataset()
     got_right = 0
     with_intent = 0
+    csv_lines = list()
     for elt in dataset:
         utterance, formula, conv_stage, id = elt["utterance"], elt["user_intent"], elt["conv_stage"], elt['id']
         if not intent or (intent == conv_stage):
@@ -65,15 +67,21 @@ def evaluate(domain, intent=None, to_print="wrong"):
             if identical:
                 got_right += 1
             if to_print == 'all' or (not identical and to_print == "wrong" and elt["conv_stage"] == 'request(healthy)'):
+                csv_lines.append([id, conv_stage, utterance,f , formula])
                 print(id, conv_stage, utterance)
                 print("Expected:", formula)
                 print("Got:", f)
                 print()
             with_intent += 1
     total = float(with_intent) if intent else float(len(dataset))
-    print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / total, got_right, len(dataset)))
+    print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / total, got_right, total))
     if to_print == 'wrong':
         print("Printed only utterances for which we got it wrong")
+    if out_file:
+        with open(out_file, 'w') as fcsv:
+            csv_writer = csv.writer(fcsv)
+            for line in csv_lines:
+                csv_writer.writerow(line)
 
 
 
@@ -84,6 +92,7 @@ if __name__ == "__main__":
     argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
     argp.add_argument('-intent', metavar='intent', type=str, help='Intent you want to work on')
+    argp.add_argument('-out_file', metavar='out_file', type=str, help='CSV file to write NLU errors.')
 
     args = argp.parse_args()
 
@@ -91,7 +100,4 @@ if __name__ == "__main__":
         if (args.test):
             test_nlu(args.domain)
         elif (args.eval):
-            if args.intent:
-                evaluate(args.domain, args.intent)
-            else:
-                evaluate(args.domain)
+            evaluate(args.domain, args.intent, args.out_file)
