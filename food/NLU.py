@@ -46,9 +46,18 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
         list_quantifiers.append(0)
     quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
     list_quantifiers += quantifiers2
+    # print(list_quantifiers)
+    # if not list_quantifiers:
+    #     for token in document:
+    #         if nlu_helper.NLU_word_in_list(token, ["healthy"]):
+    #             list_quantifiers.append(0.75)
+    # print(list_quantifiers)
     list_quantifiers_floats = [float(v) for v in list_quantifiers]
     # print(list_quantifiers, list_quantifiers_floats)
     if list_quantifiers_floats:
+        if nlu_helper.NLU_word_in_sentence_fuzz("healthy", sentence):
+            if 0.75 in list_quantifiers_floats and len(list_quantifiers_floats) > 1:
+                list_quantifiers_floats.remove(0.75)
         quantifier = min(list_quantifiers_floats)
         # print(quantifier)
         negation = False

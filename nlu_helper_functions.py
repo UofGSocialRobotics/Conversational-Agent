@@ -46,11 +46,6 @@ def flatten_sentence(sentence):
 ####################################################################################################
 
 def NLU_word_in_list(token, my_list):
-#     if NLU_word_in_list_fuzz(token.text, my_list) or NLU_word_in_list_fuzz(token.lemma_, my_list) or NLU_word_in_list_fuzz(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list):
-#         return True
-#     return False
-#
-# def NLU_word_in_list_w_fuzz_score(token, my_list):
     s1 = NLU_word_in_list_fuzz_w_score(token.text, my_list)
     if s1:
         return s1
@@ -58,18 +53,6 @@ def NLU_word_in_list(token, my_list):
     if s2:
         return s2
     return NLU_word_in_list_fuzz_w_score(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list)
-
-
-def NLU_word_in_list_fuzz(s, my_list):
-    threshold = 80
-    for w in my_list:
-        score = fuzz.token_sort_ratio(s, w)
-        # print(s, w, score)
-        if score >= threshold:
-            print("return true for ", s, w, score)
-            return True
-    return False
-
 
 def NLU_word_in_list_fuzz_w_score(s, my_list):
     threshold = 80
@@ -85,6 +68,10 @@ def NLU_word_in_list_fuzz_w_score(s, my_list):
     if found:
         return threshold
     return False
+
+def NLU_word_in_sentence_fuzz(s, sentence):
+    my_list = sentence.split()
+    return NLU_word_in_list_fuzz_w_score(s, my_list)
 
 def is_verb(token):
     '''
@@ -530,7 +517,6 @@ def get_quantifiers(document, sentence, voc_quantifiers):
         bg_str = " ".join(bg)
         for quantifier, words in voc_quantifiers.items():
             for w in words:
-                # print(w)
                 if len(w.split()) == 2 and bg_str == w:
                     list_quantifiers.append(quantifier)
                     score = 100
@@ -538,18 +524,11 @@ def get_quantifiers(document, sentence, voc_quantifiers):
         for quantifier, words in voc_quantifiers.items():
             s = NLU_word_in_list(token, words)
             if s:
-                # print("true for ", token.text, words)
-                # print(score, s)
                 if s == score:
                     list_quantifiers.append(quantifier)
-                    # print("append to list")
                 elif s > score:
                     list_quantifiers = [quantifier]
                     score = s
-                    # print("re init quantifiers list")
-                # else:
-                #     print("do nothing, lower score!")
-    # print(list_quantifiers)
     return list_quantifiers
 
 def format_formula(formula):

@@ -217,7 +217,9 @@
             "so and so",
             "standard",
             "midpoint",
-            "half"
+            "half",
+            "ok",
+            "okay"
         ],
         "0.75": [
             "mostly",
@@ -264,7 +266,8 @@
             "relatively",
             "tasty",
             "taste",
-            "but"
+            "but",
+            "partly"
         ],
         "-1": [
             "unhealthy"
@@ -276,7 +279,9 @@
             "highly",
             "extra",
             "100%",
-            "100 %"
+            "100 %",
+            "absolutely",
+            "absolute"
         ]
     }
 }
