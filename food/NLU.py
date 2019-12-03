@@ -175,13 +175,15 @@ def is_but_no_inform_food(sentence):
     return False
 
 
-def inform_intolerance(document, voc_no, voc_intolerances):
+def inform_intolerance(document, uttenrance, voc_intolerances):
     intolerances = list()
     for token in document:
         if token.lemma_ in voc_intolerances:
             intolerances.append(token.lemma_)
         elif token.text in voc_intolerances:
             intolerances.append(token.text)
+    if nlu_helper.NLU_word_in_sentence_fuzz("lactose", uttenrance):
+        intolerances.append("dairy")
     if intolerances:
         return ("inform", "intolerances", ",".join(intolerances), None)
     else:
@@ -234,7 +236,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     elif stage == "request(diet)":
         f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
         if not f:
-            f = inform_intolerance(document, voc_no=voc["no"]["all_no_words"], voc_intolerances=voc["spoonacular_intolerances"])
+            f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
         if not f:
             f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
     elif stage == "request(time)":
@@ -277,7 +279,7 @@ def get_intent_default(document, utterance, voc, food_list):
     if not f:
         f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
     if not f:
-        f = inform_intolerance(document, voc_no=voc["no"]["all_no_words"], voc_intolerances=voc["spoonacular_intolerances"])
+        f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
     if not f:
         f = nlu_helper.is_goodbye(document, utterance, voc_bye=voc["bye"])
     if not f:
