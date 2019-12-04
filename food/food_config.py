@@ -124,6 +124,7 @@ SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=" + N_RESULTS.__str__()
 SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
 SPOONACULAR_API_DIET = "&diet="
+SPOONACULAR_API_TYPE = "&type=main%20course"
 SPOONACULAR_API_EXCLUDE_INGREDIENTS = "&excludeIngredients="
 SPOONACULAR_API_INTOLERANCES = "&intolerances="
 SPOONACULAR_API_SEARCH_ADDITIONAL_INFO = "&fillIngredients=true&addRecipeInformation=true"

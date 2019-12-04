@@ -407,8 +407,15 @@ class NLG(wbc.WhiteBoardClient):
         if "#entity" in sentence:
             sentence = sentence.replace("#entity", self.user_intent['entity'])
         if "#usual_dinner" in sentence:
-            usual_dinner_str = ', '.join(self.user_model[fc.usual_dinner][:-1]) + " or " + self.user_model[fc.usual_dinner][-1]
-            sentence = sentence.replace("#usual_dinner",  usual_dinner_str)
+            if len(self.user_model[fc.usual_dinner])>1:
+                usual_dinner_str = ', '.join(self.user_model[fc.usual_dinner][:-1]) + " or " + self.user_model[fc.usual_dinner][-1]
+                sentence = sentence.replace("#usual_dinner",  usual_dinner_str)
+            elif len(self.user_model[fc.usual_dinner])==1:
+                usual_dinner_str = self.user_model[fc.usual_dinner][0]
+                sentence = sentence.replace("#usual_dinner", usual_dinner_str)
+            else:
+                usual_dinner_str = "that"
+                sentence = sentence.replace("#usual_dinner", usual_dinner_str)
         if "#recipe" in sentence:
             sentence = sentence.replace("#recipe", self.recipe['title'])
         sentence = self.replace_features(sentence)

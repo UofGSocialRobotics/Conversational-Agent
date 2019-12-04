@@ -168,7 +168,7 @@ class DM(wbc.WhiteBoardClient):
                     ingredients_list = self.from_NLU[fc.entity]
                     if self.currState == "request(usual_dinner)" and "+" in self.from_NLU[fc.polarity]:
                         self.user_model[fc.usual_dinner] += ingredients_list
-                    if "+" in self.from_NLU[fc.polarity] or self.currState == "request(food)":
+                    if "+" in self.from_NLU[fc.polarity] and self.currState == "request(food)":
                         self.user_model[fc.liked_food] += ingredients_list
                     else:
                         self.user_model[fc.disliked_food] += ingredients_list
@@ -409,7 +409,10 @@ class DM(wbc.WhiteBoardClient):
         return ingredient
 
     def get_recipe_from_spoonacular_with_specific_food_request(self):
-        ingredients_str = self.list_sorted_ingredients.pop(0)[0]
+        if self.user_model[fc.liked_food]:
+            ingredients_str = self.user_model[fc.liked_food].pop(0)
+        else:
+            ingredients_str = self.list_sorted_ingredients.pop(0)[0]
         self.used_seed_ingredients.append(ingredients_str)
         if self.user_model[fc.time_to_cook]:
             max_time = self.user_model[fc.time_to_cook] + 1
