@@ -45,33 +45,41 @@ def flatten_sentence(sentence):
 ##                                      Helper functions                                          ##
 ####################################################################################################
 
-def NLU_word_in_list(token, my_list):
-    s1 = NLU_word_in_list_fuzz_w_score(token.text, my_list)
+def NLU_token_in_list_fuzz(token, my_list):
+    s1, w = NLU_string_in_list_fuzz(token.text, my_list)
     if s1:
-        return s1
-    s2 = NLU_word_in_list_fuzz_w_score(token.lemma_, my_list)
+        return s1, w
+    s2, w = NLU_string_in_list_fuzz(token.lemma_, my_list)
     if s2:
-        return s2
-    return NLU_word_in_list_fuzz_w_score(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list)
+        return s2, w
+    return NLU_string_in_list_fuzz(helper.remove_duplicate_consecutive_char_from_string(token.text), my_list)
 
-def NLU_word_in_list_fuzz_w_score(s, my_list):
-    threshold = 80
-    found = False
-    for w in my_list:
-        score = fuzz.token_sort_ratio(s, w)
-        # print(s, w, score)
-        if score >= threshold:
-            # print("return true for ", s, w, score)
-            # return True, s
-            threshold = score
-            found = True
-    if found:
-        return threshold
+def NLU_token_in_list_bool(token, my_list):
+    s, _ = NLU_token_in_list_fuzz(token, my_list)
+    if s:
+        return True
     return False
 
-def NLU_word_in_sentence_fuzz(s, sentence):
+def NLU_string_in_list_fuzz(s, my_list, threshold=80):
+    found, word = False, None
+    for w in my_list:
+        score = fuzz.token_sort_ratio(s, w)
+        if score >= threshold:
+            threshold = score
+            word = w
+            found = True
+    if found:
+        return threshold, word
+    return False, False
+
+def NLU_string_in_sentence_fuzz(s, sentence):
     my_list = sentence.split()
-    return NLU_word_in_list_fuzz_w_score(s, my_list)
+    return NLU_string_in_list_fuzz(s, my_list)
+
+def NLU_string_in_sentence_bool(s, sentence):
+    s, _ = NLU_string_in_sentence_fuzz(s, sentence)
+    if s:
+        return True
 
 def is_verb(token):
     '''
@@ -86,14 +94,13 @@ def is_verb(token):
 
 
 def is_negation(token, voc_no):
-    # return (token.lemma_ in voc_no or (token.tag_ == "RB" and token.dep_ == "neg"))
-    return (NLU_word_in_list(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg"))
+    return NLU_token_in_list_bool(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg")
 
 
 def is_dont_know(document, voc_no):
     know, negation = False, False
     for token in document:
-        if NLU_word_in_list(token, ["know"]):
+        if NLU_token_in_list_bool(token, ["know"]):
             know = True
         elif is_negation(token, voc_no):
             negation = True
@@ -104,7 +111,7 @@ def is_dont_know(document, voc_no):
 def is_dont_care(document, voc_no):
     care, negation = False, False
     for token in document:
-        if NLU_word_in_list(token, ["care"]):
+        if NLU_token_in_list_bool(token, ["care"]):
             care = True
         elif is_negation(token, voc_no):
             negation = True
@@ -115,7 +122,7 @@ def is_dont_care(document, voc_no):
 def is_doesnt_matter(document, voc_no):
     matter, negation = False, False
     for token in document:
-        if NLU_word_in_list(token, ["matter"]):
+        if NLU_token_in_list_bool(token, ["matter"]):
             matter = True
         elif is_negation(token, voc_no):
             negation = True
@@ -215,10 +222,10 @@ def user_feels_good(document, sentence, voc_feel_good, voc_feel_bad, voc_feel_ti
         return res["no"]
     for token in document:
         # if token.lemma_ in voc_feel_good or token.text in voc_feel_good:
-        if NLU_word_in_list(token, voc_feel_good):
+        if NLU_token_in_list_bool(token, voc_feel_good):
             feel_good = True
         # elif token.lemma_ in voc_feel_bad + voc_feel_tired or token.text in voc_feel_bad+voc_feel_tired:
-        elif NLU_word_in_list(token, voc_feel_bad+voc_feel_tired):
+        elif NLU_token_in_list_bool(token, voc_feel_bad+voc_feel_tired):
             feel_bad = True
         elif is_negation(token, voc_no):
             negation = True
@@ -328,7 +335,7 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
     is_positive = None
     for token in document:
         # if (token.text in voc_yes["all_yes_words"] or token.text in voc_yes["yes_vb"]) and is_positive == None:
-        if (NLU_word_in_list(token, voc_yes["all_yes_words"]) or NLU_word_in_list(token,voc_yes["yes_vb"])) and is_positive == None:
+        if (NLU_token_in_list_bool(token, voc_yes["all_yes_words"]) or NLU_token_in_list_bool(token,voc_yes["yes_vb"])) and is_positive == None:
             is_positive = True
         elif is_negation(token, voc_no=voc_no["all_no_words"]):
             return res["no"]
@@ -337,7 +344,7 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
 
 def iamgood_means_no(document, voc_yes):
     for token in document:
-        if NLU_word_in_list(token, voc_yes["yes_words"]["yes_adj"]):
+        if NLU_token_in_list_bool(token, voc_yes["yes_words"]["yes_adj"]):
             return ("no", None, None, None)
     return False
 
@@ -483,7 +490,7 @@ def calculate_duration(found_h_unit, n, n_idx, units, units_idx):
 
 
 def name_in_one_word_sentence(document):
-    if len(document) == 1 and not NLU_word_in_list(document[0], ["hello", "hi", "yes", "no"]):
+    if len(document) == 1 and not NLU_token_in_list_bool(document[0], ["hello", "hi", "yes", "no"]):
         return ("inform", "user_name", document[0].text.title(), None)
     return False
 
@@ -522,7 +529,7 @@ def get_quantifiers(document, sentence, voc_quantifiers):
                     score = 100
     for token in document:
         for quantifier, words in voc_quantifiers.items():
-            s = NLU_word_in_list(token, words)
+            s = NLU_token_in_list_bool(token, words)
             if s:
                 if s == score:
                     list_quantifiers.append(quantifier)

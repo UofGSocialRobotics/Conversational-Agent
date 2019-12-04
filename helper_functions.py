@@ -73,10 +73,44 @@ def identical(l1, l2):
     # print(l1, l2)
     if len(l1) == len(l2):
         for i in range(len(l1)):
-            if l1[i] != l2[i]:
+            if isinstance(l1[i], list) and isinstance(l2[i], list):
+                if not identical_no_order(l1[i], l2[i]):
+                    return False
+            elif l1[i] != l2[i]:
+                # if isinstance(l1[i], str) and isinstance(l2[i], str):
+                #     return is_plural(l1[i], l2[i])
                 return False
         return True
     return False
+
+def is_plural(w1, w2):
+    # print("checking for plurals")
+    l1, l2 = len(w1), len(w2)
+    if l1 > l2:
+        tmp = w2
+        w2 = w1
+        w1 = tmp
+        l1, l2 = len(w1), len(w2)
+    # l1 <= l2
+    print("pl, sing", w2, w1)
+    if l1 + 1 == l2:
+        if w2[-1] == "s" and w1 == w2[:-1]:
+            return True
+    return False
+
+def identical_no_order(l1, l2):
+    if len(l1) == len(l2):
+        for i in range(len(l1)):
+            if l1[i] not in l2:
+                # if word is plural, look for sing
+                if l1[i][-1] == "s":
+                    if l1[i][:-1] not in l2:
+                        return False
+                else:
+                # if word is sing, look for pl
+                    if l1[i]+"s" not in l2:
+                        return False
+    return True
 
 def string_contain_common_word(string1, string2):
     d = {}

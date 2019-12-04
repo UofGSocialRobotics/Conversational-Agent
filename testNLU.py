@@ -38,7 +38,7 @@ def test_nlu(domain):
             # print(intent, entity, entitytype, polarity)
 
 
-def evaluate(domain, intent=None, out_file=None, to_print="wrong"):
+def evaluate(domain, intent=None, out_file=None, get_missing_foods=False, to_print="wrong"):
     spacy_nlp = spacy.load("en_core_web_sm")
     if domain == "movies":
         voc = dataparser.parse_voc(f_domain_voc="movies/resources/nlu/movies_voc.json")
@@ -52,6 +52,7 @@ def evaluate(domain, intent=None, out_file=None, to_print="wrong"):
         dataset = food_dataparser.get_dataset()
     got_right = 0
     with_intent = 0
+    missing_foods = list()
     csv_lines = list()
     for elt in dataset:
         utterance, formula, conv_stage, id = elt["utterance"], elt["user_intent"], elt["conv_stage"], elt['id']
@@ -66,13 +67,29 @@ def evaluate(domain, intent=None, out_file=None, to_print="wrong"):
             identical = helper.identical(f, formula)
             if identical:
                 got_right += 1
-            if to_print == 'all' or (not identical and to_print == "wrong" and elt["conv_stage"] == 'request(healthy)'):
+            if to_print == 'all' or (not identical and to_print == "wrong"):
+                if not identical:
+                    if get_missing_foods:
+                        # print(formula, f)
+                        if f[1] and formula[1] and isinstance(f[1], list) and isinstance(formula[1], list):
+                            missing_list = list(set(formula[1]) - set(f[1]))
+                        elif formula[1] and isinstance(formula[1], list):
+                            missing_list = formula[1]
+                        else:
+                            missing_list = list()
+                        if missing_list:
+                            for food in missing_list:
+                                if food not in missing_foods:
+                                    missing_foods.append(food)
                 csv_lines.append([id, conv_stage, utterance,f , formula])
                 print(id, conv_stage, utterance)
                 print("Expected:", formula)
                 print("Got:", f)
                 print()
             with_intent += 1
+    if get_missing_foods:
+        print("Missing foods:")
+        print(", ".join(missing_foods))
     total = float(with_intent) if intent else float(len(dataset))
     print("ACCURACY SCORE: %.2f (%d/%d)" % (got_right / total, got_right, total))
     if to_print == 'wrong':
@@ -91,6 +108,7 @@ if __name__ == "__main__":
     argp.add_argument('domain', metavar='domain', type=str, help='Domain to test (e.g. movies? food?)')
     argp.add_argument("--eval", help="To evaluate the performance of NLU on the labeled dataset", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
+    argp.add_argument("--missing_foods", help="Do you want to print foods that NLU did not parse correctly?", action="store_true")
     argp.add_argument('-intent', metavar='intent', type=str, help='Intent you want to work on')
     argp.add_argument('-out_file', metavar='out_file', type=str, help='CSV file to write NLU errors.')
 
@@ -100,4 +118,4 @@ if __name__ == "__main__":
         if (args.test):
             test_nlu(args.domain)
         elif (args.eval):
-            evaluate(args.domain, args.intent, args.out_file)
+            evaluate(args.domain, args.intent, args.out_file, args.missing_foods)

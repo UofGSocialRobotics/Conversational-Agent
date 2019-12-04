@@ -24,17 +24,27 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
                 ingredients_list.append(bg_text)
 
     for token in document:
-        if token.text in food_list and not any(token.text in bg_text for bg_text in ingredients_list):
-            ingredients_list.append(token.text)
-        elif token.lemma_ in food_list and not any(token.lemma_ in bg_text for bg_text in ingredients_list):
-            ingredients_list.append(token.lemma_)
-        elif nlu_helper.is_negation(token, voc_no):
-            negation = True
-        # elif token.text in voc_dislike or token.lemma_ in voc_dislike:
-        elif nlu_helper.NLU_word_in_list(token, voc_dislike):
-            negation = True
+        # print(token.text)
+        score_token, word_token = nlu_helper.NLU_string_in_list_fuzz(token.text, food_list, threshold=90)
+        score_lemma, word_lemma = nlu_helper.NLU_string_in_list_fuzz(token.lemma_, food_list, threshold=90)
+        # print(score_token, word_token, score_lemma, word_lemma)
+        if ((score_token and not score_lemma) or score_lemma < score_token) and not any(word_token in bg_text for bg_text in ingredients_list):
+            ingredients_list.append(word_token)
+            # print("appened token")
+        elif score_lemma and not any(word_lemma in bg_text for bg_text in ingredients_list):
+            ingredients_list.append(word_lemma)
+            # print("appened lemma")
+        else:
+            negation = nlu_helper.is_negation(token, voc_no)
+            if not negation:
+                negation = nlu_helper.is_negation(token, voc_dislike)
+            # print(negation)
     if ingredients_list:
+        # print(ingredients_list)
         valence = "-" if negation else "+"
+        if "vegetable" in ingredients_list:
+            ingredients_list.remove("vegetable")
+            ingredients_list.append("vegetables")
         return ("inform", "food", ingredients_list, valence)
     return False
 
@@ -46,16 +56,10 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
         list_quantifiers.append(0)
     quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
     list_quantifiers += quantifiers2
-    # print(list_quantifiers)
-    # if not list_quantifiers:
-    #     for token in document:
-    #         if nlu_helper.NLU_word_in_list(token, ["healthy"]):
-    #             list_quantifiers.append(0.75)
-    # print(list_quantifiers)
     list_quantifiers_floats = [float(v) for v in list_quantifiers]
     # print(list_quantifiers, list_quantifiers_floats)
     if list_quantifiers_floats:
-        if nlu_helper.NLU_word_in_sentence_fuzz("healthy", sentence):
+        if nlu_helper.NLU_string_in_sentence_bool("healthy", sentence):
             if 0.75 in list_quantifiers_floats and len(list_quantifiers_floats) > 1:
                 list_quantifiers_floats.remove(0.75)
         quantifier = min(list_quantifiers_floats)
@@ -76,7 +80,7 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
 def inform_healthy(document, voc_no, voc_healthy):
     healthy, negation = False, False
     for token in document:
-        if nlu_helper.NLU_word_in_list(token, voc_healthy):# token.lemma_ in voc_healthy:
+        if nlu_helper.NLU_token_in_list_bool(token, voc_healthy):# token.lemma_ in voc_healthy:
             healthy = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -89,7 +93,7 @@ def inform_healthy(document, voc_no, voc_healthy):
 def inform_comfort(document, voc_no, voc_comfort):
     comfort, negation = False, False
     for token in document:
-        if nlu_helper.NLU_word_in_list(token, voc_comfort):# token.lemma_ in voc_comfort:
+        if nlu_helper.NLU_token_in_list_bool(token, voc_comfort):# token.lemma_ in voc_comfort:
             comfort = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -103,9 +107,9 @@ def inform_time(document, voc_no, voc_time, voc_no_time, voc_constraint):
     time, no_time, negation, constraint = False, False, False, False
     for token in document:
         # if token.lemma_ in voc_time:
-        if nlu_helper.NLU_word_in_list(token, voc_time):
+        if nlu_helper.NLU_token_in_list_bool(token, voc_time):
             time = True
-        elif nlu_helper.NLU_word_in_list(token, voc_no_time): #token.lemma_ in voc_no_time:
+        elif nlu_helper.NLU_token_in_list_bool(token, voc_no_time): #token.lemma_ in voc_no_time:
             no_time = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -127,7 +131,7 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
     positive, hungry, empty, stomach, light = True, None, False, False, False
     for token in document:
         # if token.lemma_ in voc_hungry:
-        if nlu_helper.NLU_word_in_list(token, voc_hungry):
+        if nlu_helper.NLU_token_in_list_bool(token, voc_hungry):
             hungry = True
         elif nlu_helper.is_negation(token, voc_no=voc_no):
             positive = False
@@ -136,7 +140,7 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
         elif token.lemma_ == "empty":
             empty = True
         # elif token.lemma_ in voc_light:
-        elif nlu_helper.NLU_word_in_list(token, voc_light):
+        elif nlu_helper.NLU_token_in_list_bool(token, voc_light):
             light = True
     if (hungry or (empty and stomach)) and positive:
         return ("inform", "hungry", True, None)
@@ -150,10 +154,10 @@ def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
     vegan, no_vegan, negation = False, False, False
     for token in document:
         # if token.lemma_ in voc_vegan:
-        if nlu_helper.NLU_word_in_list(token, voc_vegan):
+        if nlu_helper.NLU_token_in_list_bool(token, voc_vegan):
             vegan = True
         # elif token.lemma_ in voc_no_vegan:
-        elif nlu_helper.NLU_word_in_list(token, voc_no_vegan):
+        elif nlu_helper.NLU_token_in_list_bool(token, voc_no_vegan):
             no_vegan = False
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
@@ -182,7 +186,7 @@ def inform_intolerance(document, uttenrance, voc_intolerances):
             intolerances.append(token.lemma_)
         elif token.text in voc_intolerances:
             intolerances.append(token.text)
-    if nlu_helper.NLU_word_in_sentence_fuzz("lactose", uttenrance):
+    if nlu_helper.NLU_string_in_sentence_bool("lactose", uttenrance):
         intolerances.append("dairy")
     if intolerances:
         return ("inform", "intolerances", ",".join(intolerances), None)
@@ -194,10 +198,10 @@ def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
     like_bool, dislike_bool, negation = False, False, False
     for token in document:
         # if token.lemma_ in voc_like or token.text in voc_like or helper.remove_duplicate_consecutive_char_from_string(token.text) in voc_like:
-        if nlu_helper.NLU_word_in_list(token, voc_like):
+        if nlu_helper.NLU_token_in_list_bool(token, voc_like):
             like_bool = True
         # elif token.lemma_ in voc_dislike or token.text in voc_dislike:
-        elif nlu_helper.NLU_word_in_list(token, voc_dislike):
+        elif nlu_helper.NLU_token_in_list_bool(token, voc_dislike):
             dislike_bool = True
         elif nlu_helper.is_negation(token, voc_no):
             negation = True
