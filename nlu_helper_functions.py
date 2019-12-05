@@ -103,7 +103,10 @@ def is_verb(token):
 
 
 def is_negation(token, voc_no):
-    return NLU_token_in_list_bool(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg")
+    # print("is_negation", token.text, token.tag_, token.dep_)
+    neg = (NLU_token_in_list_bool(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg"))
+    # print("is_negation", neg)
+    return neg
 
 
 def is_dont_know(document, voc_no):

@@ -100,8 +100,8 @@ class Extensive_food_DBs:
             self.load_extensive_food_DBs()
 
             # for category, foods in self.category_to_foods.items():
-            # #     print(category, foods)
-            # #     print(category)
+            #     print(category, foods)
+            #     print(category)
             #     if category == "meat":
             #         print(foods)
 
@@ -183,6 +183,9 @@ class Extensive_food_DBs:
                 self.remove_foods_from_list(to_remove, foods)
             elif category == "meat":
                 to_remove = ["breast"]
+                self.remove_foods_from_list(to_remove, foods)
+            elif category == "baking goods":
+                to_remove = ["filling", "shell"]
                 self.remove_foods_from_list(to_remove, foods)
 
     def get_category(self, food):

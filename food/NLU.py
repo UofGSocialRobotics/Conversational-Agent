@@ -40,10 +40,12 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
         elif score_lemma and not any(word_lemma in bg_text for bg_text in ingredients_list):
             ingredients_list.append(word_lemma)
         else:
-            negation = nlu_helper.is_negation(token, voc_no)
-            if not negation:
-                negation = nlu_helper.is_negation(token, voc_dislike)
-            # print(negation)
+            negation_tmp = nlu_helper.is_negation(token, voc_no)
+            if not negation_tmp:
+                negation_tmp = nlu_helper.is_negation(token, voc_dislike)
+            if negation_tmp:
+                negation = True
+        # print(negation)
     if ingredients_list:
         # print(ingredients_list)
         valence = "-" if negation else "+"
@@ -61,6 +63,10 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
         list_quantifiers.append(0)
     if "unhealthy" in sentence:
         list_quantifiers.append(-0.75)
+    if "healthy" in sentence:
+        list_quantifiers.append(0.75)
+    if "healthyish" in sentence:
+        list_quantifiers.append(0.5)
     quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
     list_quantifiers += quantifiers2
     list_quantifiers_floats = [float(v) for v in list_quantifiers]
@@ -313,6 +319,7 @@ def get_intent_default(document, utterance, voc, food_list):
 def rule_based_nlu(utterance, spacy_nlp, voc, food_list, conversation_stage):
 
     utterance = nlu_helper.preprocess(utterance)
+    # print(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())
     return get_intent_depending_on_conversation_stage(stage=conversation_stage, document=document, utterance=utterance, voc=voc, food_list=food_list)
