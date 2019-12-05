@@ -11,8 +11,12 @@ import helper_functions as helper
 
 def preprocess(sentence):
     s = sentence.lower()
+    s = " " + s + " "
     s = s.replace(" don t ", " don't ")
     s = s.replace(" dont ", " don't ")
+    s = s.replace(" doesnt", " doesn't ")
+    s = s.replace(" doesn t", " doesn't ")
+    s.strip()
 
     if "1/2" in s:
         s_splited = s.split("1/2")
@@ -63,14 +67,16 @@ def NLU_token_in_list_bool(token, my_list):
     return False
 
 def NLU_string_in_list_fuzz(s, my_list, threshold=80):
+    # if len(s) > 2:
     found, word = False, None
     for w in my_list:
         score = fuzz.token_sort_ratio(s, w)
-        if score >= threshold:
+        if score == 100 or (len(w) > 2 and len(s) > 2 and score >= 90) or (len(w) > 3 and len(s) > 3 and score >= threshold):
             threshold = score
             word = w
             found = True
     if found:
+        # print(word, threshold)
         return threshold, word
     return False, False
 
@@ -105,7 +111,7 @@ def is_verb(token):
 def is_negation(token, voc_no):
     # print("is_negation", token.text, token.tag_, token.dep_)
     neg = (NLU_token_in_list_bool(token, voc_no) or (token.tag_ == "RB" and token.dep_ == "neg"))
-    # print("is_negation", neg)
+    # print("is_negation", token.text, (NLU_token_in_list_bool(token, voc_no), (token.tag_ == "RB" and token.dep_ == "neg")))
     return neg
 
 
@@ -350,6 +356,7 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
         if (NLU_token_in_list_bool(token, voc_yes["all_yes_words"]) or NLU_token_in_list_bool(token,voc_yes["yes_vb"])) and is_positive == None:
             is_positive = True
         elif is_negation(token, voc_no=voc_no["all_no_words"]):
+            # print("negation", token.text)
             return res["no"]
     if is_positive == True:
         return res["yes"]
@@ -543,6 +550,7 @@ def get_quantifiers(document, sentence, voc_quantifiers):
         for quantifier, words in voc_quantifiers.items():
             s = NLU_token_in_list_bool(token, words)
             if s:
+                # print(token.text, words)
                 if s == score:
                     list_quantifiers.append(quantifier)
                 elif s > score:

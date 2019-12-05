@@ -63,7 +63,7 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
         list_quantifiers.append(0)
     if "unhealthy" in sentence:
         list_quantifiers.append(-0.75)
-    if "healthy" in sentence:
+    if "healthy" in sentence or "balanced" in sentence:
         list_quantifiers.append(0.75)
     if "healthyish" in sentence:
         list_quantifiers.append(0.5)
@@ -215,8 +215,10 @@ def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
             like_bool = True
         # elif token.lemma_ in voc_dislike or token.text in voc_dislike:
         elif nlu_helper.NLU_token_in_list_bool(token, voc_dislike):
+            # print("dislike", token.text)
             dislike_bool = True
         elif nlu_helper.is_negation(token, voc_no):
+            # print("negation", token.text)
             negation = True
     if like_bool and negation:
         return res['no']
@@ -262,14 +264,19 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     elif stage == "inform(food)":
         f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+        # print("found answer witj inform food?")
         if not f:
             f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
+            # print("found answer witj user_likes_recipe?")
         if not f:
             f = is_but_no_inform_food(utterance)
+            # print("found answer witj is_but_no_inform_food?")
         if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
+            # print("found answer witj yes_no?")
         if not f:
             f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
+            # print("found answer witj request_more?")
     elif stage == "request(another)":
         f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
         if not f:

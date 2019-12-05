@@ -211,4 +211,4 @@ extensive_food_DBs = Extensive_food_DBs.getInstance()
 
 if __name__ == "__main__":
     # parse_healthiness_quantifiers_csv("food/resources/nlu/quantifiers.csv")
-    generate_examples_dataset_json_from_annotated_csv("food/resources/data_collection/NLU_analyzed.csv")
+    generate_examples_dataset_json_from_annotated_csv("food/resources/nlu/NLU_dataset.csv")

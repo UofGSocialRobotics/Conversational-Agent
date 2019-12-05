@@ -33,7 +33,10 @@
                 "well",
                 "granted",
                 "true",
-                "likely"
+                "likely",
+                "nice",
+                "better",
+                "interesting"
             ],
             "yes_advb": [
                 "definitely",
@@ -69,7 +72,8 @@
                 "tremendous",
                 "whoopee",
                 "wonderful",
-                "perfect"
+                "perfect",
+                "best"
             ]
         },
         "yes_vb": [
@@ -107,7 +111,8 @@
             "wrong",
             "incorrect",
             "without",
-            "yuck"
+            "yuck",
+            "pass"
         ],
         "no_2words": [
             "uh uh",
@@ -225,6 +230,7 @@
         ],
         "0.75": [
             "mostly",
+            "most",
             "quite",
             "pretty",
             "lot",
@@ -240,7 +246,6 @@
         "0.5": [
             "fairly",
             "medium",
-            "most",
             "reasonably",
             "moderately",
             "moderate"
