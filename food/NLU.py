@@ -14,14 +14,21 @@ import config
 
 def inform_food(document, sentence, food_list, voc_no, voc_dislike):
     # print(voc_no)
+    sentence = nlu_helper.remove_punctuation(sentence)
+    # print(sentence)
     ingredients_list = list()
     negation = False
     if len(sentence) > 1:
         bigrams = nltk.bigrams(sentence.split())
-        for bg in bigrams:
+        for i, bg in enumerate(bigrams):
             bg_text = ' '.join(bg)
             if bg_text in food_list:
                 ingredients_list.append(bg_text)
+            else:
+                lemma_w1, lemma_w2 = document[i].lemma_, document[i+1].lemma_
+                lemma_bg = lemma_w1 + " " + lemma_w2
+                if lemma_bg in food_list:
+                    ingredients_list.append(bg_text)
 
     for token in document:
         # print(token.text)
@@ -30,10 +37,8 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
         # print(score_token, word_token, score_lemma, word_lemma)
         if ((score_token and not score_lemma) or score_lemma < score_token) and not any(word_token in bg_text for bg_text in ingredients_list):
             ingredients_list.append(word_token)
-            # print("appened token")
         elif score_lemma and not any(word_lemma in bg_text for bg_text in ingredients_list):
             ingredients_list.append(word_lemma)
-            # print("appened lemma")
         else:
             negation = nlu_helper.is_negation(token, voc_no)
             if not negation:
@@ -54,6 +59,8 @@ def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
         list_quantifiers.append(0)
     if "so and so" in sentence:
         list_quantifiers.append(0)
+    if "unhealthy" in sentence:
+        list_quantifiers.append(-0.75)
     quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
     list_quantifiers += quantifiers2
     list_quantifiers_floats = [float(v) for v in list_quantifiers]

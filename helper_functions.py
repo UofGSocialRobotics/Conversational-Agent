@@ -102,6 +102,7 @@ def identical_no_order(l1, l2):
     if len(l1) == len(l2):
         for i in range(len(l1)):
             if l1[i] not in l2:
+                # print("can't find %s" % l1[i])
                 # if word is plural, look for sing
                 if l1[i][-1] == "s":
                     if l1[i][:-1] not in l2:
@@ -110,6 +111,7 @@ def identical_no_order(l1, l2):
                 # if word is sing, look for pl
                     if l1[i]+"s" not in l2:
                         return False
+
     return True
 
 def string_contain_common_word(string1, string2):

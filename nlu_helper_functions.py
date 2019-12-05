@@ -14,9 +14,6 @@ def preprocess(sentence):
     s = s.replace(" don t ", " don't ")
     s = s.replace(" dont ", " don't ")
 
-    # exclude = set(string.punctuation)
-    # s = ''.join(ch for ch in s if ch not in exclude)
-
     if "1/2" in s:
         s_splited = s.split("1/2")
         s = " 1/2 ".join([re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", sub_s).strip() for sub_s in s_splited])
@@ -30,6 +27,11 @@ def preprocess(sentence):
 
     return s
 
+def remove_punctuation(sentence):
+
+    exclude = set(string.punctuation)
+    s = ''.join(ch for ch in sentence if ch not in exclude)
+    return s
 
 def flatten_sentence(sentence):
     '''
@@ -80,6 +82,13 @@ def NLU_string_in_sentence_bool(s, sentence):
     s, _ = NLU_string_in_sentence_fuzz(s, sentence)
     if s:
         return True
+
+def NLU_string_in_list_bool(s, my_list, threshold=80):
+    score, _ = NLU_string_in_list_fuzz(s, my_list, threshold)
+    if score:
+        return True
+    return False
+
 
 def is_verb(token):
     '''

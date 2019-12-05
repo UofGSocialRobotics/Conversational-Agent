@@ -100,7 +100,10 @@ class Extensive_food_DBs:
             self.load_extensive_food_DBs()
 
             # for category, foods in self.category_to_foods.items():
-            #     print(category, foods)
+            # #     print(category, foods)
+            # #     print(category)
+            #     if category == "meat":
+            #         print(foods)
 
     def get_simplified_category(self, category):
         if category in self.category_to_simplified_category.keys():
@@ -111,32 +114,24 @@ class Extensive_food_DBs:
     def load_extensive_food_DBs(self):
         df = pandas.read_csv(fc.EXTENSIVE_FOOD_DB_PATH, encoding="ISO-8859-1")
         for index, row in df.iterrows():
-            if index > 0:
-                food_name = row["name"].lower()
-                category = self.get_simplified_category(row["food_group"].lower())
-                if "chicken" in food_name:
-                    print(food_name, category)
-                self.save_to_extensive_foods_DBs(food_name, category)
-        all_categories = set(self.food_to_category.values())
-        # print(all_categories)
-        # for category, foods in self.category_to_foods.items():
-        #     print(category, foods)
+            # if index > 0:
+            food_name = row["name"].lower()
+            category = self.get_simplified_category(row["food_group"].lower())
+            self.save_to_extensive_foods_DBs(food_name, category)
+        self.load_additional_foods(path=fc.ADDITINAL_FOODS_DB_PATH)
         self.post_processing()
         for category, foods in self.category_to_foods.items():
             self.all_foods_list += foods
             self.all_foods_list.append(category)
-        # print(self.all_foods_list)
+
 
     def save_to_extensive_foods_DBs(self, food_name, category):
-        chicken = "chicken" in food_name
         food_name_words_list = food_name.split()
-        if len(food_name) > 3:# and len(food_name_words_list) < 3:
+        if len(food_name) > 3:
             if "(" in food_name and ")" in food_name:
                 in_parentehses = food_name[food_name.find("(")+1:food_name.find(")")]
                 splited_at_comma = in_parentehses.split(',')
                 sub_foods = [food_name[:food_name.find('(')-1].strip()] + [w.strip() for w in splited_at_comma]
-                if chicken:
-                    print(sub_foods)
                 for f in sub_foods:
                     self.save_to_extensive_foods_DBs(f, category)
             elif "," in food_name:
@@ -170,24 +165,25 @@ class Extensive_food_DBs:
         for category, foods in self.category_to_foods.items():
             if category == "vegetables":
                 to_remove = ['rape', 'cress', 'stalks', "leaves", "var.", "shoots", "tree", "flower"]
-                to_add = ["celery", "zucchini", "pumpkin", "squash", "cucumber", "butternut", "peas", "beans"]
                 self.remove_foods_from_list(to_remove, foods)
-                self.add_foods_to_list(to_add, foods)
             elif category == "spices":
                 to_remove = ["celery", "turnip", "savory", "onion", "leaves", "nuts", "powder", "tree", "preserve", "salad"]
-                to_add = ["vervain"]
                 self.remove_foods_from_list(to_remove, foods)
-                self.add_foods_to_list(to_add, foods)
             elif category == "fruits":
                 to_remove = ["var.", "hybrid", "leaves", "nuts", "powder", "tree", "preserve", "salad"]
-                to_add = ["watermelon", "melon"]
                 self.remove_foods_from_list(to_remove, foods)
-                self.add_foods_to_list(to_add, foods)
             elif category == "fish":
                 to_remove = ["halibut/turbot", "moss", "smelt", "cucumber", "sucker"]
-                to_add = ["halibut", "turbot"]
                 self.remove_foods_from_list(to_remove, foods)
-                self.add_foods_to_list(to_add, foods)
+            elif category == "dishes":
+                to_remove = ["chicken", "fish", "dish", "beans", "other_dish"]
+                self.remove_foods_from_list(to_remove, foods)
+            elif category == "dairy":
+                to_remove = ["human", "mammals", "other mammals", 'vitamin a + d added', '0% fat', '1% fat', '2% fat', 'vitamin d added', '3.25% fat']
+                self.remove_foods_from_list(to_remove, foods)
+            elif category == "meat":
+                to_remove = ["breast"]
+                self.remove_foods_from_list(to_remove, foods)
 
     def get_category(self, food):
         if food in self.food_to_category.keys():
@@ -202,6 +198,11 @@ class Extensive_food_DBs:
         if food in self.food_to_category.keys():
             return self.food_to_category[food] == category
         return False
+
+    def load_additional_foods(self, path):
+        df = pandas.read_csv(fc.ADDITINAL_FOODS_DB_PATH, encoding="ISO-8859-1")
+        for index, row in df.iterrows():
+            self.save_to_extensive_foods_DBs(row[0], row[1])
 
 extensive_food_DBs = Extensive_food_DBs.getInstance()
 

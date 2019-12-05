@@ -96,6 +96,7 @@ NLG_ACK_DB = "food/resources/nlg/ack_db.csv"
 FOOD_MODEL_PATH = "food/resources/dm/food_model.csv"
 LOCAL_FOOD_DB = "food/resources/dm/recipes.json"
 EXTENSIVE_FOOD_DB_PATH = "food/resources/nlu/foods.csv"
+ADDITINAL_FOODS_DB_PATH = "food/resources/nlu/additions_to_food_DB.csv"
 
 ####################################################################################################
 ##                                          Other config                                          ##
