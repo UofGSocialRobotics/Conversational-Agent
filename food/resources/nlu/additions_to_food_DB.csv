@@ -1,0 +1,79 @@
+﻿food,category
+steak,meat
+fried chicken,dishes
+stir fry,dishes
+chicken breast,meat
+cottage pie,dishes
+tikka massala,dishes
+curry,dishes
+vegetarian sausage,dishes
+spaghetti,dishes
+celery,vegetables
+zucchini,vegetables
+pumpkim,vegetables
+squash,vegetables
+cucumber,vegetables
+butternut,vegetables
+peas,vegetables
+beans,vegetables
+vervain,spices
+watermelon,fruit
+melon,fruit
+halibut,fish
+turbot,fish
+parmesan,dairy
+cheddar,dairy
+mozzarella,dairy
+parmigiano,dairy
+gouda,dairy
+swiss,dairy
+emmentaler,dairy
+brie,dairy
+camember,dairy
+gruyere,dairy
+feta,dairy
+monterey jack,dairy
+provolone,dairy
+edam,dairy
+blue cheese,dairy
+gorgonzola,dairy
+roquefort,dairy
+ricotta,dairy
+cottage cheese,dairy
+mascarpone,dairy
+halloumi,dairy
+manchego,dairy
+epoisses,dairy
+muenster cheese,dairy
+red leicester,dairy
+stilton,dairy
+wensleydale,dairy
+cream cheese,dairy
+neufchatel,dairy
+parmesan,dairy
+african,cuisine
+american,cuisine
+british,cuisine
+cajun,cuisine
+caribbean,cuisine
+chinese,cuisine
+eastern european,cuisine
+european,cuisine
+french,cuisine
+german,cuisine
+greek,cuisine
+indian,cuisine
+irish,cuisine
+italian,cuisine
+japanese,cuisine
+jewish,cuisine
+korean,cuisine
+latin american,cuisine
+mediterranean,cuisine
+mexican,cuisine
+middle eastern,cuisine
+nordic,cuisine
+southern,cuisine
+spanish,cuisine
+thai,cuisine
+vietnamese,cuisine
