@@ -16,6 +16,7 @@ def preprocess(sentence):
     s = s.replace(" dont ", " don't ")
     s = s.replace(" doesnt", " doesn't ")
     s = s.replace(" doesn t", " doesn't ")
+    s = s.replace(" i m ", " i'm ")
     s.strip()
 
     if "1/2" in s:
@@ -362,9 +363,13 @@ def is_yes_no(document, sentence, voc_yes, voc_no):
         return res["yes"]
 
 def iamgood_means_no(document, voc_yes):
-    for token in document:
-        if NLU_token_in_list_bool(token, voc_yes["yes_words"]["yes_adj"]):
-            return ("no", None, None, None)
+    if len(document) >= 3:
+        # if document.tag_ == True
+        for i, token in enumerate(document):
+            # print(token.text, token.tag_)
+            if NLU_token_in_list_bool(token, voc_yes["yes_words"]["yes_adj"]):
+                if i >=2 and document[i-2].tag_ == "PRP" and document[i-1].tag_ == "VBP":
+                    return ("no", None, None, None)
     return False
 
 

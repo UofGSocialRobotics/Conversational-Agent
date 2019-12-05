@@ -149,7 +149,9 @@
         "detestable",
         "disapprove",
         "but",
-        "complicated"
+        "complicated",
+        "expensive",
+        "boring"
     ],
     "spoonacular_intolerances": [
         "dairy",
