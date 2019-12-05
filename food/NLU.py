@@ -283,7 +283,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         if not f:
             # print("got answer in is_yes_no?")
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
-            print(f)
+            # print(f)
     else:
         f = get_intent_default(document, utterance, voc, food_list)
 
