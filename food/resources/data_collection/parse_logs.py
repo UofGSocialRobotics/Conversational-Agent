@@ -3,26 +3,66 @@ import csv
 import argparse
 import json
 
-def logs_to_csv():
+
+def parse_data_reco_no_list(line, list_to_parse, list_to_append):
+    for elt in list_to_parse:
+        list_to_append.append(elt)
+        data = line.split("'"+elt+"': ")[1].split(",")[0]
+        list_to_append.append(data)
+        list_to_append.append("")
+
+
+def parse_data_reco_lists_or_dicts(line, list_to_parse, list_to_append):
+    for elt in list_to_parse:
+        splited = line.split("'"+elt+"': ")[1]
+        if splited[0] == '[':
+            data = splited.split("]")[0] + "]"
+        else:
+            data = splited.split("}")[0] + "}"
+        if elt == "queries":
+            queries_splited = data.split("',")
+            for i, query in enumerate(queries_splited):
+                query = query.replace("'","")
+                query = query.replace("]","")
+                query = query.replace("[","")
+                list_to_append.append("query_"+i.__str__())
+                list_to_append.append(query)
+                list_to_append.append("")
+        else:
+            list_to_append.append(elt)
+            list_to_append.append(data)
+            list_to_append.append("")
+
+
+def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
 
     filepath = 'server_logs.log'
     NLU_intents_by_clients = dict()
     with open(filepath) as fp:
         line = fp.readline()
         while line:
-            if ("NLU" in line and "received" in line and "Server_in" in line) or ("NLU" in line and "publishing" in line):
-                msg = line.strip().split("CONTENT = ")[1]
-                client_id = line.split("NLU")[1].split(":")[0]
-                # print(client_id, msg)
-                if client_id not in NLU_intents_by_clients.keys():
-                    NLU_intents_by_clients[client_id] = [""]
-                NLU_intents_by_clients[client_id].append(msg)
-            if ("NLG" in line and "received" in line and "DM/" in line):
-                msg = line.strip().split("CONTENT = ")[1]
-                intent = msg.split(":")[1].split(",")[0].replace("'","").strip()
-                client_id = line.split("NLG")[1].split(":")[0]
-                # print(client_id, intent)
-                NLU_intents_by_clients[client_id].append(intent)
+            if client_id_wanted and client_id_wanted in line:
+                if ("NLU" in line and "received" in line and "Server_in" in line) or ("NLU" in line and "publishing" in line):
+                    msg = line.strip().split("CONTENT = ")[1]
+                    client_id = line.split("NLU")[1].split(":")[0]
+                    # print(client_id, msg)
+                    if client_id not in NLU_intents_by_clients.keys():
+                        NLU_intents_by_clients[client_id] = [""]
+                    NLU_intents_by_clients[client_id].append(msg)
+                if ("NLG" in line and "received" in line and "DM/" in line):
+                    msg = line.strip().split("CONTENT = ")[1]
+                    intent = msg.split(":")[1].split(",")[0].replace("'","").strip()
+                    client_id = line.split("NLG")[1].split(":")[0]
+                    # print(client_id, intent)
+                    NLU_intents_by_clients[client_id].append(intent)
+                # print(data_reco_wanted, )
+                if data_reco_wanted and ("DataCollector_in" in line and "received" in line and "data_recommendation" in line):
+                    to_get_from_data_reco_no_list = ['n_queries', 'n_seed_ingredients', 'n_reco', 'n_accepted_reco']
+                    to_get_from_data_reco_lists_dicts = ["queries", "seed_ingredients", "food_values", "food_val_state"]
+                    parse_data_reco_no_list(line, to_get_from_data_reco_no_list, NLU_intents_by_clients[client_id])
+                    parse_data_reco_lists_or_dicts(line, to_get_from_data_reco_lists_dicts, NLU_intents_by_clients[client_id])
+
+
             line = fp.readline()
 
     clients_list = list(NLU_intents_by_clients.keys())
@@ -39,37 +79,9 @@ def logs_to_csv():
             if i % 3 == 2:
                 dict_for_csv[client].append(client_list_csv)
 
-    # lines_by_client_old_csv = dict()
-    # with open("food/resources/data_collection/NLU_for_analysis_analyzed.csv", 'r') as fcsv_r:
-    #     content_csv = csv.reader(fcsv_r)
-    #     for line_input in content_csv:
-    #         if "client_id: " in line_input[0]:
-    #             client_id = line_input[0].split()[1]
-    #             # print(client_id)
-    #             lines_by_client_old_csv[client_id] = list()
-    #         else:
-    #             lines_by_client_old_csv[client_id].append(line_input)
-
-    # final_csv = dict()
-    # for client_id, client_data in lines_by_client_old_csv.items():
-    #     if client_id not in dict_for_csv.keys():
-    #         print("Can't find client %s" % client_id)
-    #     elif len(client_data) != len(dict_for_csv[client_id]):
-    #         print("Data does not correspond for client %s" % client_id)
-    #         print(len(client_data), len(dict_for_csv[client_id]))
-    #         for l1 in client_data:
-    #             print(l1)
-    #         for l2 in dict_for_csv[client_id]:
-    #             print(l2)
-    #     else:
-    #         final_csv[client_id] = [["client_id: "+client_id]]
-    #         for i, l1 in enumerate(client_data):
-    #             l2 = dict_for_csv[client_id][i]
-    #             # print(l1, l2)
-    #             final_csv[client_id].append([l2[0]] + l1)
 
 
-    with open("NLU_for_analysis2.csv", 'w') as fcsv:
+    with open("NLU_data"+client_id_wanted+".csv", 'w') as fcsv:
         csv_writer = csv.writer(fcsv)
         for client_id, client_data in dict_for_csv.items():
             for line in client_data:
@@ -125,10 +137,12 @@ if __name__ == "__main__":
     argp.add_argument('-c', metavar='client_id', type=str, help='Client ID.')
     argp.add_argument("--logs", help="Print logs", action="store_true")
     argp.add_argument("--json", help="Print json data", action="store_true")
+    argp.add_argument("--to_csv", help="To csv", action="store_true")
+    argp.add_argument("--data_reco", help="Do you want data about recommendation as well?", action="store_true")
 
     args = argp.parse_args()
 
-    if args.c:
+    if args.c and not args.to_csv:
         if args.logs:
             print_logs_for_client(args.c)
         elif args.json:
@@ -137,4 +151,4 @@ if __name__ == "__main__":
             print("What do you want for client " + args.c + "?")
             argp.print_help()
     else:
-        logs_to_csv()
+        logs_to_csv(args.c, args.data_reco)

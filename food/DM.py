@@ -179,9 +179,6 @@ class DM(wbc.WhiteBoardClient):
             if fc.healthy in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.health)
-            # elif fc.greeting in self.currState:
-            #     if fc.no in self.from_NLU[fc.intent]:
-            #         self.user_model[fc.liked_features].append(fc.comfort)
             elif fc.filling in self.currState:
                 if fc.yes in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.filling)
@@ -189,20 +186,16 @@ class DM(wbc.WhiteBoardClient):
                 if fc.no in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.time)
             if fc.inform_food in next_state:
-                if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
-                    next_state = "bye"
-                else:
-                    # if "request" in self.from_NLU[fc.intent] and "more" not in self.from_NLU[fc.entity_type]:
-                    #     log.debug("trying to get 1st recommendation")
-                    #     # food_options, recommended_food, self.current_recipe_list = self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-                    #     self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-                    self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                # if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
+                #     next_state = "bye"
+                # else:
+                self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
 
-                    if self.current_recipe_list:
-                        recipe = self.current_recipe_list[0]
-                        self.n_recommendations += 1
-                    else:
-                        next_state = "bye"
+                if self.current_recipe_list:
+                    recipe = self.current_recipe_list[0]
+                    self.n_recommendations += 1
+                else:
+                    next_state = "bye"
 
 
             if next_state == "request(another)" and self.n_recommendations == fc.MAX_RECOMMENDATIONS:
