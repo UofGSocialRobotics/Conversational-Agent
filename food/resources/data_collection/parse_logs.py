@@ -42,20 +42,26 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
         line = fp.readline()
         while line:
             if client_id_wanted and client_id_wanted in line:
-                if ("NLU" in line and "received" in line and "Server_in" in line) or ("NLU" in line and "publishing" in line):
+                to_get_NLU_intents = ("DM" in line and "received" in line and "NLU/" in line)
+                if ("NLU" in line and "received" in line and "Server_in" in line) or to_get_NLU_intents:
                     msg = line.strip().split("CONTENT = ")[1]
-                    client_id = line.split("NLU")[1].split(":")[0]
+                    if to_get_NLU_intents:
+                        client_id = line.split("NLU/")[1].split(" ")[0]
+                    else:
+                        client_id = line.split("NLU")[1].split(":")[0]
                     # print(client_id, msg)
                     if client_id not in NLU_intents_by_clients.keys():
                         NLU_intents_by_clients[client_id] = [""]
                     NLU_intents_by_clients[client_id].append(msg)
+                    print(msg)
+                # get current sate
                 if ("NLG" in line and "received" in line and "DM/" in line):
                     msg = line.strip().split("CONTENT = ")[1]
-                    intent = msg.split(":")[1].split(",")[0].replace("'","").strip()
+                    current_state = msg.split(":")[1].split(",")[0].replace("'","").strip()
                     client_id = line.split("NLG")[1].split(":")[0]
-                    # print(client_id, intent)
-                    NLU_intents_by_clients[client_id].append(intent)
-                # print(data_reco_wanted, )
+                    print(current_state)
+                    NLU_intents_by_clients[client_id].append(current_state)
+                # get data_reco
                 if data_reco_wanted and ("DataCollector_in" in line and "received" in line and "data_recommendation" in line):
                     to_get_from_data_reco_no_list = ['n_queries', 'n_seed_ingredients', 'n_reco', 'n_accepted_reco']
                     to_get_from_data_reco_lists_dicts = ["queries", "seed_ingredients", "food_values", "food_val_state"]
@@ -64,6 +70,8 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
 
 
             line = fp.readline()
+
+    print(NLU_intents_by_clients)
 
     clients_list = list(NLU_intents_by_clients.keys())
     random.shuffle(clients_list)
@@ -85,6 +93,7 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
         csv_writer = csv.writer(fcsv)
         for client_id, client_data in dict_for_csv.items():
             for line in client_data:
+                # print(line)
                 csv_writer.writerow(line)
 
 

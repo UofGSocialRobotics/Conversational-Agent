@@ -8,8 +8,6 @@ request(from),human,NONE,"I'd like us to know each other a bit better. I've just
 request(usual_dinner),NONE,NONE,Tell me. What do you usually eat for dinner?
 request(why_dinner),NONE,NONE,Could you tell me why you usually eat #usual_dinner for dinner?
 greet_back,NONE,NONE,Welcome back! How are you doing today?
-request_back(last_movie),NONE,NONE,Looking good as usual! So did you eventually eat #last_food? I hope you liked it!
-inform(opinion_last_movie),NONE,NONE,Oh. can you tell me why?
 request(situation),NONE,NONE,I'm here to help you find something healthy to eat. So tell me. Where do you plan to have lunch today?
 request(hungry),NONE,NONE,Are you feeling hungry or would you rather have a light lunch?
 inform(food),NONE,features,One great food option for #situation would be to eat #recipe. That's a great option if you #features. What do you think?

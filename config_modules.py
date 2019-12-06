@@ -60,9 +60,10 @@ class Modules:
             NLU_config = {"module": food_NLU.NLU, "name": "NLU", "subscribes": config.NLU_subscribes, "publishes": config.NLU_publishes}
             DM_config = {"module": food_DM.DM, "name": "DM", "subscribes": config.DM_subscribes+[config.MSG_HEALTH_DIAGNOSTIC_OUT], "publishes": config.DM_publishes}
             NLG_config = {"module": food_NLG.NLG, "name": "NLG", "subscribes": config.NLG_subscribes, "publishes": config.NLG_publishes, "tags_explanation_types": config.EXPLANATION_TYPE}
-            SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": config.SentimentAnalysis_subscribes, "publishes": config.SentimentAnalysis_publishes}
+            # SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": config.SentimentAnalysis_subscribes, "publishes": config.SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": config.HealthDiagnostic_subscribes, "publishes": config.HealthDiagnostic_publishes}
-            self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
+            # self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
+            self.modules += [NLU_config, DM_config, NLG_config, HeathDiagnostic_config]
             logging.log.info("(config.py) Set domain as food.")
         else:
             logging.log.error("No %s domain" % domain)

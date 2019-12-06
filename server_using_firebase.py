@@ -26,7 +26,7 @@ def stream_handler_users_ref(message):
 def filter_client_id_data(message):
     data = message["data"]
     path = message["path"]
-    print(data, path)
+    # print(data, path)
     if data:
         try:
             if config.FIREBASE_KEY_SOURCE in data.keys() and data[config.FIREBASE_KEY_SOURCE] == config.FIREBASE_VALUE_SOURCE_AGENT:
@@ -137,7 +137,7 @@ class ServerUsingFirebase:
 
      # @overrides(ds_manager.DSManager)
     def publish_for_client(self, message, client_id, firebase_key):
-        log.debug("In publish_for_client")
+        # log.debug("In publish_for_client")
         if client_id in self.clients_services:
             # ref = self.firebase_db.child(config.FIREBASE_KEY_SESSIONS).child(client_id)
             if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND:

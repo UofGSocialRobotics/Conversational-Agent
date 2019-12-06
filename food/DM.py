@@ -30,7 +30,7 @@ class DM(wbc.WhiteBoardClient):
         self.store_pref = True
 
         self.from_NLU = None
-        self.from_SA = None
+        # self.from_SA = None
         self.food_data = None
 
         self.load_food_data()
@@ -110,15 +110,15 @@ class DM(wbc.WhiteBoardClient):
         # Todo: Second interaction
         # Todo: no then request(sweet/bitter/...)
 
-        if "SA" in topic:
-            self.from_SA = msg
-        elif "NLU" in topic:
+        # if "SA" in topic:
+        #     self.from_SA = msg
+        if "NLU" in topic:
             self.from_NLU = msg
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
         elif "HealthDiagnostic" in topic:
             self.user_model[fc.food_scores_trait] = msg[fc.food_scores_trait]
         # Wait for both SA and NLU messages before sending something back to the whiteboard
-        if self.from_NLU and self.from_SA:
+        if self.from_NLU: # and self.from_SA:
 
             recipe = None
             next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
@@ -138,9 +138,9 @@ class DM(wbc.WhiteBoardClient):
             if fc.inform in self.from_NLU[fc.intent]:
                 print(self.from_NLU)
                 if fc.user_name in self.from_NLU[fc.entity_type]:
-                    print("DM here user_name")
+                    # print("DM here user_name")
                     self.user_model[fc.user_name] = self.from_NLU[fc.entity]
-                    print(self.user_model[fc.user_name])
+                    # print(self.user_model[fc.user_name])
                 if fc.health in self.from_NLU[fc.entity_type]:
                     if self.from_NLU[fc.entity] is True:
                         self.user_model[fc.liked_features].append(fc.health)
@@ -168,11 +168,12 @@ class DM(wbc.WhiteBoardClient):
                     ingredients_list = self.from_NLU[fc.entity]
                     if self.currState == "request(usual_dinner)" and "+" in self.from_NLU[fc.polarity]:
                         self.user_model[fc.usual_dinner] += ingredients_list
-                    if "+" in self.from_NLU[fc.polarity] and self.currState == "request(food)":
-                        self.user_model[fc.liked_food] += ingredients_list
-                    else:
-                        self.user_model[fc.disliked_food] += ingredients_list
-                        self.remove_recipes_with_disliked_ingredients()
+                    elif self.currState == "request(food)":
+                        if "+" in self.from_NLU[fc.polarity]:
+                            self.user_model[fc.liked_food] += ingredients_list
+                        else:
+                            self.user_model[fc.disliked_food] += ingredients_list
+                            self.remove_recipes_with_disliked_ingredients()
                         # print("there", self.from_NLU[fc.polarity])
 
 
@@ -214,7 +215,7 @@ class DM(wbc.WhiteBoardClient):
             self.currState = next_state
             new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe)
             self.from_NLU = None
-            self.from_SA = None
+            # self.from_SA = None
             self.publish({"current_state": self.currState}, topic=self.publishes[4])
             self.publish(new_msg, topic=self.publishes[0])
 

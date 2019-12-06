@@ -43,8 +43,9 @@ class WhiteBoardClient:
         self.service_started = False
 
     def on_whiteboard_message(self, message, topic):
-        helper.print_message(self.name, "received", message, topic)
-        self.treat_message(message,topic)
+        if ("DataCollector_in" not in self.name) or ("DataCollector_in" in self.name and "data_recommendation" in message.__str__()):
+            helper.print_message(self.name, "received", message, topic)
+            self.treat_message(message,topic)
 
     def treat_message(self, message, topic):
         # log.error("$s: method treat_message should be overwriten in inherited classes!" % self.name)
@@ -52,7 +53,7 @@ class WhiteBoardClient:
         self.time_start = time.time()
 
     def publish(self, message, topic=None):
-        helper.print_message(self.name, "publishing", message, self.publishes)
+        # helper.print_message(self.name, "publishing", message, self.publishes)
         if self.resp_time:
             resp_time = time.time() - self.time_start
             color = "green" if resp_time < 0.5 else "red"

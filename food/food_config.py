@@ -90,7 +90,7 @@ food_scores_state = "food_scores_state"
 
 DM_MODEL = "food/resources/dm/model.csv"
 USER_MODELS = "food/resources/user_models/"
-NLG_SENTENCE_DB = "food/resources/nlg/sentence_db_nosmalltalk.csv"
+NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 NLG_ACK_DB = "food/resources/nlg/ack_db.csv"
 # NLG_ACK_DB = "food/resources/nlg/ack_db.json"
 FOOD_MODEL_PATH = "food/resources/dm/food_model.csv"
@@ -120,7 +120,7 @@ MOVIEDB_POSTER_PATH = "https://image.tmdb.org/t/p/original/"
 
 SPOONACULAR_KEY = b'gAAAAABduryIrAaX-zsQLqzVjah6HXKrwA1GBGPCTNap8FyXniQKFw2uGJP8vxbcbut-WVUXnR3Emct7iMxXhKWQ15wUPlt2idUjNnxhiB9TF8pM9S12ev19M-2u40cGoE6Vxeb7duqR'
 SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?apiKey="
-N_RESULTS = 5
+N_RESULTS = 2
 SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number=" + N_RESULTS.__str__()
 SPOONACULAR_API_ADDITIONAL_INGREDIENTS = "&includeIngredients="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
