@@ -2,7 +2,7 @@ import whiteboard_client as wbc
 import helper_functions as helper
 import json
 import food.food_config as fc
-from random import randint
+import random
 from pathlib import Path
 import pandas
 import urllib.request
@@ -51,6 +51,7 @@ class DM(wbc.WhiteBoardClient):
         self.n_accepted_recommendations = 0
         self.list_sorted_ingredients = list()
         self.current_recipe_list = list()
+        self.already_recommended_recipe_list = list()
 
         self.food_values = None
         self.spoonacular_queries = list()
@@ -72,7 +73,7 @@ class DM(wbc.WhiteBoardClient):
                     if "-" in line_input[i]:
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
-        print(self.nodes)
+        # print(self.nodes)
 
     def save_user_model(self):
         file = fc.USER_MODELS + self.client_id + ".prefs"
@@ -162,7 +163,8 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model[fc.special_diet].append(fc.vegan)
                     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
                 if fc.intolerances in self.from_NLU[fc.entity_type]:
-                    self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
+                    # self.user_model[fc.disliked_food].append(self.from_NLU[fc.entity])
+                    self.add_disliked_foods(self.from_NLU[fc.entity].split(","))
                     self.user_model[fc.intolerances] = self.from_NLU[fc.entity]
                 if fc.food in self.from_NLU[fc.entity_type]:
                     ingredients_list = self.from_NLU[fc.entity]
@@ -170,10 +172,13 @@ class DM(wbc.WhiteBoardClient):
                         self.user_model[fc.usual_dinner] += ingredients_list
                     elif self.currState == "request(food)":
                         if "+" in self.from_NLU[fc.polarity]:
-                            self.user_model[fc.liked_food] += ingredients_list
+                            # self.user_model[fc.liked_food] += ingredients_list
+                            self.add_liked_foods(ingredients_list)
                         else:
-                            self.user_model[fc.disliked_food] += ingredients_list
+                            # self.user_model[fc.disliked_food] += ingredients_list
+                            self.add_disliked_foods(ingredients_list)
                             self.remove_recipes_with_disliked_ingredients()
+
                         # print("there", self.from_NLU[fc.polarity])
 
 
@@ -194,6 +199,7 @@ class DM(wbc.WhiteBoardClient):
 
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
+                    self.already_recommended_recipe_list.append(recipe[fc.title])
                     self.n_recommendations += 1
                 else:
                     next_state = "bye"
@@ -218,6 +224,18 @@ class DM(wbc.WhiteBoardClient):
             # self.from_SA = None
             self.publish({"current_state": self.currState}, topic=self.publishes[4])
             self.publish(new_msg, topic=self.publishes[0])
+
+    def add_disliked_foods(self, foods_list):
+        self.user_model[fc.disliked_food] += foods_list
+        for food in foods_list:
+            if food in self.user_model[fc.liked_food]:
+                self.user_model[fc.liked_food].remove(food)
+
+    def add_liked_foods(self, foods_list):
+        self.user_model[fc.liked_food] += foods_list
+        for food in foods_list:
+            if food in self.user_model[fc.disliked_food]:
+                self.user_model[fc.disliked_food].remove(food)
 
     def save_reco_data(self):
         # print(colored("Did %d queries to Spoonacular\nWorked with ingredients: %s" % (len(self.spoonacular_queries), ", ".join(self.used_seed_ingredients)), "blue"))
@@ -251,7 +269,14 @@ class DM(wbc.WhiteBoardClient):
         self.food_data = pandas.read_csv(fc.FOOD_MODEL_PATH, encoding='utf-8', sep=',')
         # print(self.food_data)
 
-
+    def remove_already_recommended_or_disliked_recipes(self):
+        new_recipe_list = list()
+        for recipe in self.current_recipe_list:
+            if recipe[fc.title] not in self.already_recommended_recipe_list:
+                new_recipe_list.append(recipe)
+        self.current_recipe_list = new_recipe_list
+        self.remove_recipes_likely_to_be_disliked()
+        self.remove_recipes_with_disliked_ingredients()
 
     def remove_recipes_likely_to_be_disliked(self):
         new_recipe_list = list()
@@ -347,8 +372,9 @@ class DM(wbc.WhiteBoardClient):
                 n_trials = 0
                 while got_recipe is False and n_trials < 3:
                     got_recipe = self.get_recipe_list_with_spoonacular_in_no_more_than_two_seconds()
-        self.remove_recipes_likely_to_be_disliked()
-        self.remove_recipes_with_disliked_ingredients()
+        # self.remove_recipes_likely_to_be_disliked()
+        # self.remove_recipes_with_disliked_ingredients()
+        self.remove_already_recommended_or_disliked_recipes()
 
         #Sending recipes to NLG so that NLG can start fetching recipe cards
         thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))
@@ -387,7 +413,7 @@ class DM(wbc.WhiteBoardClient):
             if row[fc.food_type] in expected_food_type:
                 h, f, c = row[fc.healthiness], row[fc.food_fillingness], row[fc.emotional_satisfaction]
                 distance = abs(h - d_h) + abs(f - d_f)
-                all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f)))
+                all_foods.append((self.preprocess_ingredient_name(row[fc.food_name]), distance, (h, f), row["food_type"]))
         # all_foods.append(("salmon", 0, (1, 1)))
         self.list_sorted_ingredients = sorted(all_foods, key=operator.itemgetter(1))
 
@@ -403,10 +429,19 @@ class DM(wbc.WhiteBoardClient):
         return ingredient
 
     def get_recipe_from_spoonacular_with_specific_food_request(self):
+        recipe_str, ingredients_str = "", ""
         if self.user_model[fc.liked_food]:
-            ingredients_str = self.user_model[fc.liked_food].pop(0)
+            # print("self.user_model[fc.liked_food]", self.user_model[fc.liked_food])
+            ingredients_str, where_from = ",".join(self.user_model[fc.liked_food]).replace(' ', "%20"), "from_user"
+            n_res = 10
         else:
-            ingredients_str = self.list_sorted_ingredients.pop(0)[0]
+            n_res = fc.N_RESULTS
+            food_str = self.list_sorted_ingredients.pop(0)
+            if food_str[-1] == "meal":
+                recipe_str = food_str[0]
+            else:
+                ingredients_str = food_str[0]
+            where_from = "from_DB"
         self.used_seed_ingredients.append(ingredients_str)
         if self.user_model[fc.time_to_cook]:
             max_time = self.user_model[fc.time_to_cook] + 1
@@ -419,19 +454,35 @@ class DM(wbc.WhiteBoardClient):
         diet_str = fc.SPOONACULAR_API_DIET + "vegan" if "vegan" in self.user_model[fc.special_diet] else ""
         intolerances_str = fc.SPOONACULAR_API_INTOLERANCES + self.user_model[fc.intolerances] if self.user_model[fc.intolerances] else ""
         # liked_food_str = "%20" + self.user_model['liked_food'][0] if liked_food and self.user_model['liked_food'][0] not in request_food else ""
+        include_ingredients_str = fc.SPOONACULAR_API_INCLUDE_INGREDIENTS + ingredients_str if ingredients_str else ""
         exclude_ingredients_str = fc.SPOONACULAR_API_EXCLUDE_INGREDIENTS + ",".join(self.user_model[fc.disliked_food]) if self.user_model[fc.disliked_food] else ""
-        query = ingredients_str + time_str + diet_str + intolerances_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
-        log.debug(query)
-        recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
+        recipe_list = self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, n_res)
 
-        if not recipe_list or len(recipe_list) < fc.N_RESULTS and "mashed" in ingredients_str:
-            ingredients_str = ingredients_str.replace("mashed", "")
-            ingredients_str = ingredients_str.strip()
-            query = ingredients_str + time_str + diet_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER
+        if not recipe_list or len(recipe_list) < fc.N_RESULTS:
+            if "mashed" in include_ingredients_str:
+                include_ingredients_str = include_ingredients_str.replace("mashed", "")
+                include_ingredients_str = include_ingredients_str.strip()
+                recipe_list += self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, n_res)
+            # if user is asking for too much...
+            if len(self.user_model[fc.liked_food]) > 1:
+                print(colored("User is asking for too much. Let's randomly chose one food", "green"))
+                ingredients_str = random.choice(self.user_model[fc.liked_food])
+                include_ingredients_str = fc.SPOONACULAR_API_INCLUDE_INGREDIENTS + ingredients_str if ingredients_str else ""
+                recipe_list += self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, n_res)
+
+        # print("ingredients_str", ingredients_str, "recipe_str", recipe_str)
+        return recipe_list, [ingredients_str, where_from]
+
+    def query_spoonacular_and_clean_result_list(self, recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, n_res):
+        recipe_list = list()
+        query = recipe_str + time_str + diet_str + intolerances_str + include_ingredients_str + exclude_ingredients_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER + n_res.__str__()
+        if query not in self.spoonacular_queries:
             log.debug(query)
-            recipe_list = self.query_spoonacular(self.generate_soonacular_url(query))
-
-        return recipe_list, ingredients_str
+            recipe_list += self.query_spoonacular(self.generate_soonacular_url(query))
+            self.remove_already_recommended_or_disliked_recipes()
+        else:
+            log.info("Already used query %s." % query)
+        return recipe_list
 
     def get_recipe_list_with_spoonacular_in_no_more_than_two_seconds(self):
         p = multiprocessing.Process(target=self.get_recipe_list_with_spoonacular(), name=self.name+"/get_recipe_list_with_spoonacular", args=(self,))
@@ -461,7 +512,8 @@ class DM(wbc.WhiteBoardClient):
         tmp_copy = copy.deepcopy(self.current_recipe_list)
         for recipe in potential_new_recipes_list:
             if recipe['title'] not in [r['title'] for r in tmp_copy]:
-                recipe ['seed_ingredient'] = seed_ingredient
+                # print("seed_ingredient", seed_ingredient)
+                recipe['seed_ingredient'] = seed_ingredient
                 self.current_recipe_list.append(recipe)
 
     def generate_soonacular_url(self, query):

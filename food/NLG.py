@@ -20,6 +20,7 @@ AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.cur
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False):
+        print("NLG, cs = ", cs)
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes, resp_time)

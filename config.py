@@ -16,7 +16,7 @@ exp_cs_robot = "robot"
 exp_cs_control = "NONE"
 exp_no_ack = "no_ack"
 aamas_study_CS = True
-possible_CS = [exp_cs_human,  exp_cs_robot, exp_cs_control]
+possible_CS = [exp_cs_human]
 
 
 ####################################################################################################
@@ -31,7 +31,7 @@ FIREBASE_CONFIG = {
 
 with open("shared_resources/encryption_key.json", 'rb') as f:
     key = json.load(f)["encryption_key"]
-print(key)
+# print(key)
 f = fernet.Fernet(key.encode())
 for key, value in FIREBASE_CONFIG.items():
     FIREBASE_CONFIG[key] = f.decrypt(value).decode()

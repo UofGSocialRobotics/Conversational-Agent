@@ -53,13 +53,13 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
                     if client_id not in NLU_intents_by_clients.keys():
                         NLU_intents_by_clients[client_id] = [""]
                     NLU_intents_by_clients[client_id].append(msg)
-                    print(msg)
+                    # print(msg)
                 # get current sate
                 if ("NLG" in line and "received" in line and "DM/" in line):
                     msg = line.strip().split("CONTENT = ")[1]
                     current_state = msg.split(":")[1].split(",")[0].replace("'","").strip()
                     client_id = line.split("NLG")[1].split(":")[0]
-                    print(current_state)
+                    # print(current_state)
                     NLU_intents_by_clients[client_id].append(current_state)
                 # get data_reco
                 if data_reco_wanted and ("DataCollector_in" in line and "received" in line and "data_recommendation" in line):
@@ -71,7 +71,7 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
 
             line = fp.readline()
 
-    print(NLU_intents_by_clients)
+    # print(NLU_intents_by_clients)
 
     clients_list = list(NLU_intents_by_clients.keys())
     random.shuffle(clients_list)

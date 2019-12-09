@@ -11,6 +11,18 @@ from ca_logging import log
 import food.food_config as fc
 import config
 
+def preprocess_foodNLU(sentence):
+    s = sentence.lower()
+    s = " " + s + " "
+    s = s.replace(" veg ", " vegetables ")
+    s = s.replace(" veggies ", " vegetables ")
+    s = s.replace(" veg.", " vegetables.")
+    s = s.replace(" veggies.", " vegetables.")
+    s = s.replace(" veg,", " vegetables,")
+    s = s.replace(" veggies,", " vegetables,")
+    s.strip()
+    s = ' '.join(s.split())
+    return s
 
 def inform_food(document, sentence, food_list, voc_no, voc_dislike):
     # print(voc_no)
@@ -329,6 +341,7 @@ def get_intent_default(document, utterance, voc, food_list):
 def rule_based_nlu(utterance, spacy_nlp, voc, food_list, conversation_stage):
 
     utterance = nlu_helper.preprocess(utterance)
+    utterance = preprocess_foodNLU(utterance)
     # print(utterance)
     document = spacy_nlp(utterance)
     capitalized_document = spacy_nlp(utterance.title())

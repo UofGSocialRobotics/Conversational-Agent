@@ -2,6 +2,7 @@ previous_intent,CS,ack,valence,current_intent_is_NOT, current_intent_is
 greeting,NONE,Nice to meet you #user_name.,NONE,NONE,NONE
 greeting,human,Nice to meet you #user_name.,NONE,NONE,NONE
 greeting,robot,Nice to meet you #user_name.,NONE,NONE,NONE
+request(mood),NONE,Okay.,NONE,NONE,NONE
 request(mood),NONE,Lovely!,yes,NONE,NONE
 request(mood),human,Lovely! I'm having a great day and I'm in a very good mood myself.,yes,NONE,NONE
 request(mood),robot,"Lovely! As a computer program, I don't have feelings, but it's great you feel good.",yes,NONE,NONE
@@ -9,7 +10,7 @@ request(mood),NONE,I'm sorry to hear that.,no,NONE,NONE
 request(mood),human,"I'm sorry to hear that. Whenever I feel bad myself, I find comfort in a great dinner.",no,NONE,NONE
 request(mood),robot,"I'm sorry to hear that. As a computer program, I don't have feelings, but I know life can be tough for you humans.",no,NONE,NONE
 request(from),NONE,Good.,NONE,NONE,NONE
-request(from),NONE,Sorry about being too intrusive. I'll simply focus on getting to know your eating habits.,"no",NONE,NONE
+request(from),NONE,Sorry about being too intrusive. I'll simply focus on getting to know your eating habits.,no,NONE,NONE
 request(from),human,What a coincidence! I spent some time there on vacation a few years ago. I loved that place!,NONE,NONE,NONE
 request(from),robot,"I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it.",NONE,NONE,NONE
 greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
@@ -44,6 +45,9 @@ request(diet),robot,Noted.,NONE,NONE,NONE
 request(healthy),NONE,"Ya, taste first and healthiness second right? ","no, not_healthy",NONE,NONE
 request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
 request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
+inform(food),NONE,Okay.,NONE,NONE,NONE
+inform(food),human,Okay.,NONE,NONE,NONE
+inform(food),robot,Okay.,NONE,NONE,NONE
 inform(food),NONE,Okay.,yes,NONE,NONE
 inform(food),human,I'm happy you like it.,yes,NONE,NONE
 inform(food),robot,My programmers will be happy you like it.,yes,NONE,NONE
