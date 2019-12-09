@@ -199,6 +199,10 @@ class DM(wbc.WhiteBoardClient):
 
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
+                    # print(recipe)
+                    msg = "HealthScore: %.2f (user val: %.2f)" % (recipe['healthScore'], self.food_values[fc.healthiness])
+                    print(colored(msg, "magenta"))
+                    log.info(msg)
                     self.already_recommended_recipe_list.append(recipe[fc.title])
                     self.n_recommendations += 1
                 else:
@@ -502,19 +506,25 @@ class DM(wbc.WhiteBoardClient):
         print(colored("in get_recipe_list_with_spoonacular", "blue"))
         self.current_recipe_list = list()
         potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
-        self.add_new_recipes(potential_new_recipes, seed_ingredient)
+        self.add_and_sort_new_recipes(potential_new_recipes, seed_ingredient)
         while len(self.current_recipe_list) < fc.N_RESULTS and len(self.list_sorted_ingredients) > 0:
             potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
-            self.add_new_recipes(potential_new_recipes, seed_ingredient)
+            self.add_and_sort_new_recipes(potential_new_recipes, seed_ingredient)
         log.debug("Got %d recipes with Spoonacular" % len(self.current_recipe_list))
 
-    def add_new_recipes(self, potential_new_recipes_list, seed_ingredient):
+    def add_and_sort_new_recipes(self, potential_new_recipes_list, seed_ingredient):
         tmp_copy = copy.deepcopy(self.current_recipe_list)
         for recipe in potential_new_recipes_list:
             if recipe['title'] not in [r['title'] for r in tmp_copy]:
                 # print("seed_ingredient", seed_ingredient)
                 recipe['seed_ingredient'] = seed_ingredient
                 self.current_recipe_list.append(recipe)
+        for recipe in self.current_recipe_list:
+            recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe['healthScore'] / float(100) - self.food_values[fc.healthiness])
+        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.health_score_distance_to_user_s_health_value])
+        # print(colored("Sorted", "magenta"))
+        # for recipe in self.current_recipe_list:
+        #     print(colored(recipe['healthScore'], "magenta"))
 
     def generate_soonacular_url(self, query):
         tmp = fc.SPOONACULAR_API_SEARCH + fc.SPOONACULAR_KEY + "&query=" + query
