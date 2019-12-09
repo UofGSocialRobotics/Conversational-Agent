@@ -290,7 +290,10 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
             # print("found answer witj request_more?")
     elif stage == "request(another)":
-        f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
+        f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+        if not f:
+            f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
+        # print("got answer in iamgood_means_no?")
         # print("got answer in iamgood_means_no?")
         if not f:
             # print("got answer in is_yes_no?")
