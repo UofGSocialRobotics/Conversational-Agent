@@ -106,6 +106,7 @@ class DM(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
 
         self.requery_because_got_new_required_food = False
+        ingredients_list = None
 
         # print(self.currState)
 
@@ -202,6 +203,12 @@ class DM(wbc.WhiteBoardClient):
 
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
+
+
+                    ingredients_list = self.get_all_ingredients(recipe)
+                    # for i in ingredients_list:
+                    #     print(i)
+
                     # print(recipe)
                     msg = "HealthScore: %.2f (user val: %.2f)" % (recipe['healthScore'], self.food_values[fc.healthiness])
                     print(colored(msg, "magenta"))
@@ -226,7 +233,7 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, ingredients_list)
             self.from_NLU = None
             # self.from_SA = None
             self.publish({"current_state": self.currState}, topic=self.publishes[4])
@@ -264,8 +271,8 @@ class DM(wbc.WhiteBoardClient):
         self.publish(data, topic=self.publishes[3])
 
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipe):
-        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.recipe: recipe}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipe, ingredients=None):
+        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.recipe: recipe, fc.ingredients: ingredients}
         # json_msg = json.dumps(frame)
         return frame
 

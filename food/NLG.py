@@ -225,12 +225,14 @@ class NLG(wbc.WhiteBoardClient):
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
 
             if message['recipe']:
-                if recipe_card:
-                    msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], recipe_card)
-                else:
-                    msg_to_send = self.msg_to_json(message['intent'], final_sentence, self.recipe['sourceUrl'], None)
+                recipe = self.recipe['sourceUrl']
+                if not recipe_card:
+                    recipe_card = None
+                ingredients_list=message[fc.ingredients]
             else:
-                msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
+                recipe, recipe_card, ingredients_list = None, None, None
+                # msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
+            msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
 
         if self.timeit_details:
             print("Response time treat_message: %.3f sec" % (time.time() - start))
@@ -284,8 +286,8 @@ class NLG(wbc.WhiteBoardClient):
             print(colored(error_message, "green"))
             return None
 
-    def msg_to_json(self, intent, sentence, food_recipe, food_poster):
-        frame = {'intent': intent, 'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster}
+    def msg_to_json(self, intent, sentence, food_recipe, food_poster, ingredients_list):
+        frame = {'intent': intent, 'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster, fc.ingredients: ingredients_list}
         #json_msg = json.dumps(frame)
         return frame
 
