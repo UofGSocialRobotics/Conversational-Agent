@@ -333,19 +333,14 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
         f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
         if not f:
             f = inform_cuisine(document, voc_cuisine=voc["cuisines"], voc_no=voc['no']["all_no_words"])
-        # print("found answer witj inform food?")
         if not f:
             f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
-            # print("found answer witj user_likes_recipe?")
         if not f:
             f = is_but_no_inform_food(utterance)
-            # print("found answer witj is_but_no_inform_food?")
         if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
-            # print("found answer witj yes_no?")
         if not f:
             f = nlu_helper.is_requestmore(document, voc_request_more=voc["request_more"])
-            # print("found answer witj request_more?")
     elif stage == "request(another)":
         f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
         if not f:

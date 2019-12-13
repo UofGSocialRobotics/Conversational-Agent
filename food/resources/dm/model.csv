@@ -9,7 +9,7 @@ request(healthy),request(diet),TRUE,,
 request(diet),request(time),TRUE,,
 request(time),request(food),TRUE,,
 request(food),inform(food),TRUE,,
-inform(food),request(another),TRUE,request(more)-inform(food)
+inform(food),request(another),TRUE,request(more)-inform(food),inform(food)-inform(food)
 request(another),inform(food),TRUE,bye-bye,no-bye
 greet_back,request_back(last_movie),TRUE,,
 request_back(last_movie),inform(opinion_last_movie),FALSE,,
