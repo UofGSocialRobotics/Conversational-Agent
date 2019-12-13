@@ -197,6 +197,14 @@ def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
         else:
             return ("inform", "vegan", False, None)
 
+def inform_diet(document, voc_diet):
+    for token in document:
+        score, word = nlu_helper.NLU_token_in_list_fuzz(token, voc_diet)
+        if word:
+            return ("inform", "diet", word, None)
+        elif nlu_helper.NLU_token_in_list_bool(token, ["keto"]):
+            return ("inform", "diet", "ketonic", None)
+    return False
 
 def is_but_no_inform_food(sentence):
     if "but" in sentence:
@@ -265,7 +273,8 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             elif f[0] == "no":
                 f = ("inform", "healthy", -1, None)
     elif stage == "request(diet)":
-        f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        # f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        f = inform_diet(document, voc_diet=voc['diet'])
         if not f:
             f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
         if not f:

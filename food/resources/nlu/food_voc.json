@@ -38,12 +38,6 @@
         "friend",
         "company"
     ],
-    "vegan": [
-        "vegan",
-        "vegetarian",
-        "vegetables",
-        "veggies"
-    ],
     "no_vegan": [
         "meat",
         "animals",
@@ -224,5 +218,17 @@
         "spanish",
         "thai",
         "vietnamese"
+    ],
+    "diet": [
+        "gluten free",
+        "ketonic",
+        "vegetarian",
+        "lacto-vegetarian",
+        "ovo-vegetarian",
+        "vegan",
+        "pescetarian",
+        "paleo",
+        "primal",
+        "whole30"
     ]
 }
