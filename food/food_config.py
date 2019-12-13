@@ -40,6 +40,7 @@ no_time = 'no_time'
 time_to_cook = "time_to_cook"
 duration = 'duration'
 hungry = 'hungry'
+cuisine = 'cuisine'
 not_hungry = 'not_hungry'
 vegan = "vegan"
 intolerances = "intolerances"
@@ -80,6 +81,8 @@ liked_features = "liked_features"
 disliked_features = "disliked_features"
 liked_food = "liked_food"
 disliked_food = 'disliked_food'
+liked_cuisine = "liked_cuisine"
+disliked_cuisine = "disliked_cuisine"
 liked_recipe = "liked_recipe"
 disliked_recipe = "disliked_recipe"
 special_diet = 'special_diet'
@@ -126,6 +129,8 @@ SPOONACULAR_API_SEARCH = "https://api.spoonacular.com/recipes/complexSearch?apiK
 N_RESULTS = 2
 SPOONACULAR_API_SEARCH_RESULTS_NUMBER = "&number="
 SPOONACULAR_API_INCLUDE_INGREDIENTS = "&includeIngredients="
+SPOONACULAR_API_CUISINE = "&cuisine="
+SPOONACULAR_API_EXCLUDE_CUISINE = "&excludeCuisine="
 SPOONACULAR_API_MAX_TIME = "&maxReadyTime="
 SPOONACULAR_API_DIET = "&diet="
 SPOONACULAR_API_TYPE = "&type=main%20course"

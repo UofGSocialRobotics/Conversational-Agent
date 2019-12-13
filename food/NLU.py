@@ -67,6 +67,22 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
         return ("inform", "food", ingredients_list, valence)
     return False
 
+def inform_cuisine(document, voc_cuisine, voc_no):
+    cuisine_list, negation = list(), False
+    for token in document:
+        score, word = nlu_helper.NLU_token_in_list_fuzz(token, voc_cuisine)
+        if word:
+            cuisine_list.append(word)
+        elif nlu_helper.is_negation(token, voc_no):
+            negation = True
+    if cuisine_list:
+        if negation:
+            return ("inform", "cuisine", cuisine_list, '-')
+        else:
+            return ("inform", "cuisine", cuisine_list, '+')
+    return False
+
+
 def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
     list_quantifiers = list()
     if nlu_helper.is_dont_know(document, voc_no) or nlu_helper.is_dont_care(document, voc_no) or nlu_helper.is_doesnt_matter(document, voc_no):
@@ -175,28 +191,6 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
         return ("inform", "hungry", not positive, None)
     return False
 
-def inform_vegan(document, voc_no, voc_vegan, voc_no_vegan):
-    vegan, no_vegan, negation = False, False, False
-    for token in document:
-        # if token.lemma_ in voc_vegan:
-        if nlu_helper.NLU_token_in_list_bool(token, voc_vegan):
-            vegan = True
-        # elif token.lemma_ in voc_no_vegan:
-        elif nlu_helper.NLU_token_in_list_bool(token, voc_no_vegan):
-            no_vegan = False
-        elif nlu_helper.is_negation(token, voc_no):
-            negation = True
-    if vegan:
-        if negation:
-            return ("inform", "vegan", False, None)
-        else:
-            return ("inform", "vegan", True, None)
-    elif no_vegan:
-        if negation:
-            return ("inform", "vegan", True, None)
-        else:
-            return ("inform", "vegan", False, None)
-
 def inform_diet(document, voc_diet):
     for token in document:
         score, word = nlu_helper.NLU_token_in_list_fuzz(token, voc_diet)
@@ -253,12 +247,12 @@ def user_likes_recipe(document, sentence, voc_like, voc_dislike, voc_no):
 def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, food_list):
     # print("in get_intent_depending_on_conversation_stage, stage = " + stage)
     f = None
-    if stage == "request(mood)":
-        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
-    elif stage == "greeting":
+    if stage == "greeting":
         f = nlu_helper.name_in_my_name_is_sentence(document)
         if not f:
             f = nlu_helper.name_in_one_word_sentence(document)
+    elif stage == "request(mood)":
+        f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
     elif stage == "request(filling)":
         f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     elif stage == "request(healthy)":
@@ -273,18 +267,25 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             elif f[0] == "no":
                 f = ("inform", "healthy", -1, None)
     elif stage == "request(diet)":
-        # f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
         f = inform_diet(document, voc_diet=voc['diet'])
         if not f:
             f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
         if not f:
             f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+        if not f:
+            f = inform_cuisine(document, voc_cuisine=voc["cuisines"], voc_no=voc['no']["all_no_words"])
     elif stage == "request(time)":
         f = nlu_helper.is_duration(document, utterance, voc["numbers"], voc["duration_units"], voc["duration_unit_division"])
         if not f:
             f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
+    elif stage == "request(food)":
+        f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+        if not f:
+            f = inform_cuisine(document, voc_cuisine=voc["cuisines"], voc_no=voc['no']["all_no_words"])
     elif stage == "inform(food)":
         f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+        if not f:
+            f = inform_cuisine(document, voc_cuisine=voc["cuisines"], voc_no=voc['no']["all_no_words"])
         # print("found answer witj inform food?")
         if not f:
             f = user_likes_recipe(document, utterance, voc_like=voc["like"], voc_dislike=voc['dislike'], voc_no=voc['no']["all_no_words"])
@@ -301,13 +302,11 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     elif stage == "request(another)":
         f = inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
         if not f:
-            f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
-        # print("got answer in iamgood_means_no?")
-        # print("got answer in iamgood_means_no?")
+            f = inform_cuisine(document, voc_cuisine=voc["cuisines"], voc_no=voc['no']["all_no_words"])
         if not f:
-            # print("got answer in is_yes_no?")
+            f = nlu_helper.iamgood_means_no(document, voc_yes=voc["yes"])
+        if not f:
             f = nlu_helper.is_yes_no(document, utterance, voc_yes=voc["yes"], voc_no=voc["no"])
-            # print(f)
     else:
         f = get_intent_default(document, utterance, voc, food_list)
 
@@ -328,7 +327,8 @@ def get_intent_default(document, utterance, voc, food_list):
     if not f:
         f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     if not f:
-        f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        # f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
+        f = inform_diet(document, voc_diet=voc['diet'])
     if not f:
         f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
     if not f:

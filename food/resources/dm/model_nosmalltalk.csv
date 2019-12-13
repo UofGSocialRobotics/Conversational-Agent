@@ -2,7 +2,7 @@ start,request(filling),FALSE,,
 request(filling),request(healthy),TRUE,,
 request(healthy),request(diet),TRUE,,
 request(diet),request(time),TRUE,,
-request(time),inform(food),TRUE,,
+request(time),request(food),TRUE,,
 request(food),inform(food),TRUE,,
 inform(food),request(another),TRUE,request(more)-inform(food)
 request(another),inform(food),TRUE,bye-bye,no-bye
