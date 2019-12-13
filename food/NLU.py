@@ -83,6 +83,42 @@ def inform_cuisine(document, voc_cuisine, voc_no):
     return False
 
 
+def inform_hungry_with_quantifier(document, sentence, voc_no, voc_quantifiers):
+    list_quantifiers = list()
+    if nlu_helper.is_dont_know(document, voc_no) or nlu_helper.is_dont_care(document, voc_no) or nlu_helper.is_doesnt_matter(document, voc_no):
+        list_quantifiers.append(0)
+    if "so and so" in sentence:
+        list_quantifiers.append(0)
+    if "not" in sentence:
+        list_quantifiers.append(-0.75)
+    if "hungry" in sentence or "peckish" in sentence:
+        list_quantifiers.append(0.75)
+    if "starv" in sentence or "famish" in sentence:
+        list_quantifiers.append(1)
+    if "hungryish" in sentence:
+        list_quantifiers.append(0.5)
+    quantifiers2 = nlu_helper.get_quantifiers(document, sentence, voc_quantifiers)
+    list_quantifiers += quantifiers2
+    list_quantifiers_floats = [float(v) for v in list_quantifiers]
+    # print(list_quantifiers, list_quantifiers_floats)
+    if list_quantifiers_floats:
+        if nlu_helper.NLU_string_in_sentence_bool("hungry", sentence):
+            if 0.75 in list_quantifiers_floats and len(list_quantifiers_floats) > 1:
+                list_quantifiers_floats.remove(0.75)
+        quantifier = min(list_quantifiers_floats)
+        # print(quantifier)
+        negation = False
+        for token in document:
+            if nlu_helper.is_negation(token, voc_no):
+                negation = True
+            if negation:
+                v = -1 * quantifier
+            else:
+                v = quantifier
+            return ("inform", "hungry", v, None)
+    else:
+        return None
+
 def inform_healthy_with_quantifier(document, sentence, voc_no, voc_quantifiers):
     list_quantifiers = list()
     if nlu_helper.is_dont_know(document, voc_no) or nlu_helper.is_dont_care(document, voc_no) or nlu_helper.is_doesnt_matter(document, voc_no):
@@ -254,9 +290,11 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
     elif stage == "request(mood)":
         f = nlu_helper.user_feels_good(document=document, sentence=utterance, voc_feel_good=voc["feel_good"], voc_feel_bad=voc["feel_bad"], voc_feel_tired=voc["feel_tired"], voc_no=voc['no']["all_no_words"])
     elif stage == "request(filling)":
-        f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
+        f = inform_hungry_with_quantifier(document, sentence=utterance, voc_no=voc['no']['all_no_words'], voc_quantifiers=voc["quantifiers"])
+        if not f:
+            f = inform_hungry(document, voc_no=voc["no"]["all_no_words"], voc_hungry=voc["hungry"], voc_light=voc["light"])
     elif stage == "request(healthy)":
-        f = inform_healthy_with_quantifier(document, sentence=utterance, voc_no=voc["no"], voc_quantifiers=voc["quantifiers"])
+        f = inform_healthy_with_quantifier(document, sentence=utterance, voc_no=voc["no"]['all_no_words'], voc_quantifiers=voc["quantifiers"])
         if not f:
             f = inform_healthy(document, voc_no=voc["no"]["all_no_words"], voc_healthy=voc["healthy"])
         if not f:

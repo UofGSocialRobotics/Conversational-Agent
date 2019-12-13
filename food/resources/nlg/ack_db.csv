@@ -22,6 +22,9 @@ request(why_dinner),human,Good to know.,NONE,NONE,NONE
 request(why_dinner),robot,I see.,NONE,NONE,NONE
 request(situation),NONE,Sure.,no,NONE,NONE
 request(situation),NONE,Alright. Let's find something you can cook.,yes,NONE,NONE
+request(filling),NONE,Alright.,NONE,NONE,NONE
+request(filling),human,Alright.,NONE,NONE,NONE
+request(filling),robot,Alright.,NONE,NONE,NONE
 request(filling),NONE,"Something light for you, noted.","no, not_hungry",NONE,NONE
 request(filling),NONE,Let's get something light then.,"no, not_hungry",NONE,NONE
 request(filling),human,"Sure. As I said before,  I mostly eat light dinners myself.","no, not_hungry",NONE,NONE
@@ -29,40 +32,54 @@ request(filling),robot,"Yeah. As a computer program, I am never hungry either.",
 request(filling),NONE,Let's get something to ease your hunger then.,"yes, hungry",NONE,NONE
 request(filling),human,I'm hungry too!,"yes, hungry",NONE,NONE
 request(filling),robot,"I don't know what it feels like to be hungry, but I'll remember to find something filling for you!","yes, hungry",NONE,NONE
+request(time),NONE,Noted.,NONE,NONE,NONE
+request(time),human,Perfect.,NONE,NONE,NONE
+request(time),robot,Perfect.,NONE,NONE,NONE
 request(time),NONE,"Of course, you're a busy person. ","no, no_time",NONE,NONE
 request(time),human,"Of course, you're a busy person. Same here, I only have time to cook on weekends.","no, no_time",NONE,NONE
 request(time),robot,Of course. Main advantage of being a computer program: I have all the time in the world!,"no, no_time",NONE,NONE
 request(time),NONE,Great!,"yes, time",NONE,NONE
 request(time),human,Great! I love spending time cooking myself. That's one of my hobbies.,"yes, time",NONE,NONE
 request(time),robot,Great! I have to admit that I spend most of my time doing complex calculations and improving my english skills.,"yes, time",NONE,NONE
+request(healthy),NONE,Okay.,NONE,NONE,NONE
+request(healthy),human,Okay.,NONE,NONE,NONE
+request(healthy),robot,Okay.,NONE,NONE,NONE
 request(healthy),NONE,Okay.,"yes, healthy",NONE,NONE
 request(healthy),human,Nice. I myself try to eat as healthy as I can.,"yes, healthy",NONE,NONE
 request(healthy),robot,"Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again!","yes, healthy",NONE,NONE
+request(healthy),NONE,"Ya, taste first and healthiness second right? ","no, not_healthy",NONE,NONE
+request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
+request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
 request(diet),NONE,Okay.,NONE,NONE,NONE
 request(diet),NONE,Noted.,NONE,NONE,NONE
 request(diet),human,Okay.,NONE,NONE,NONE
 request(diet),robot,Noted.,NONE,NONE,NONE
-request(healthy),NONE,"Ya, taste first and healthiness second right? ","no, not_healthy",NONE,NONE
-request(healthy),human,"Ya, taste first and healthiness second right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
-request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
+request(food),NONE,That's a good idea!,inform,NONE,NONE
+request(food),human,That's a good idea!,inform,NONE,NONE
+request(food),robot,That's a good idea!,inform,NONE,NONE
+request(food),NONE,"No contraint, great!",no,NONE,NONE
+request(food),human,"No contraint, great!",no,NONE,NONE
+request(food),robot,"No contraint, great!",no,NONE,NONE
+request(food),NONE,Fine.,NONE,NONE,NONE
+request(food),human,Fine.,NONE,NONE,NONE
+request(food),robot,Fine.,NONE,NONE,NONE
 inform(food),NONE,Okay.,NONE,NONE,NONE
 inform(food),human,Okay.,NONE,NONE,NONE
 inform(food),robot,Okay.,NONE,NONE,NONE
 inform(food),NONE,Okay.,yes,NONE,NONE
 inform(food),human,I'm happy you like it.,yes,NONE,NONE
 inform(food),robot,My programmers will be happy you like it.,yes,NONE,NONE
-inform(food),NONE,Give me another chance.,no,bye,NONE
-inform(food),NONE,I can recommend something else.,no,bye,NONE
-inform(food),NONE,I have something else for you.,no,bye,NONE
-inform(food),NONE,Let me find something else.,no,bye,NONE
-inform(food),human,Oh I'm sorry. Give me another chance.,no,bye,NONE
-inform(food),human,"My apologies. It's one of my favorites, but I can recommend something else.",no,bye,NONE
-inform(food),human,"Okay, my mistake. But I have something else for you.",no,bye,NONE
-inform(food),human,Noted. Let me find something else for you.,no,bye,NONE
-inform(food),robot,"My algorithm could be improved, but I have something else for you.",no,bye,NONE
-inform(food),robot,I though you would like it. Humans are such a mystery to me. Give me another chance.,no,bye,NONE
-inform(food),robot,Let me find something else in my database.,no,bye,NONE
-inform(food),robot,My programmers need to do a better job if you don't like it. I will pass on the information. Let me find something else.,no,bye,NONE
+inform(food),NONE,I could recommend something else.,no,bye,NONE
+inform(food),NONE,Okay.,no,bye,NONE
+inform(food),NONE,Alright.,no,bye,NONE
+inform(food),human,Oh I'm sorry. ,no,bye,NONE
+inform(food),human,"My apologies. It's one of my favorites, but I could find something else for you.",no,bye,NONE
+inform(food),human,"Okay, my mistake. I have other recipes.",no,bye,NONE
+inform(food),human,Noted.,no,bye,NONE
+inform(food),robot,My algorithm could be improved.,no,bye,NONE
+inform(food),robot,I though you would like it. Humans are such a mystery to me. ,no,bye,NONE
+inform(food),robot,I have other recipes in my database.,no,bye,NONE
+inform(food),robot,My programmers need to do a better job if you don't like it. I will pass on the information.,no,bye,NONE
 inform(food),NONE,I can't find anything else to recommend that fits your criteria.,no,NONE,bye
 inform(food),human,"I'm sorry I have nothing else to recommend that fits your criteria, but I had a great time chatting with you. I think we have a lot in common.",no,NONE,bye
 inform(food),robot,I'm sorry I can't find anything that correspond to your criteria in my database. I had more success with the 856 other people I recommended recipe to in the last hour.,no,NONE,bye

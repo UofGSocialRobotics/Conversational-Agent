@@ -101,6 +101,7 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time choose_sentence: %.3f sec" % (time.time() - start))
 
     def choose_ack(self, previous_intent, valence=None, CS=None, current_intent=None):
+        # print("Looking for ack with", previous_intent, valence, CS, current_intent)
         CS = self.cs
         if self.cs == "no_ack":
             return ""
@@ -116,6 +117,8 @@ class NLG(wbc.WhiteBoardClient):
         key_res_tmp = key_res
         if valence:
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence)]
+        elif valence == None:
+            key_res = [ack_params for ack_params in key_res if ("NONE" in ack_params.valence)]
         if not key_res:
             key_res = key_res_tmp
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence or ack_params.valence == "NONE")]
@@ -192,6 +195,7 @@ class NLG(wbc.WhiteBoardClient):
                 if message['user_intent']['intent'] in ["yes", "no"]:
                     valence = message['user_intent']['intent']
                 elif message['user_intent']['entity_type'] == "duration":
+                    valence = "yes" if message['user_intent']['entity'] > 30 else "no"
                     valence = "yes" if message['user_intent']['entity'] > 30 else "no"
                 elif message['user_intent']['entity_type']:
                     valence = "yes" if message['user_intent']['entity'] and (message['user_intent']['polarity'] == '+' or message['user_intent']['polarity'] == None) else "no"
