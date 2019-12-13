@@ -74,8 +74,6 @@ class NLG(wbc.WhiteBoardClient):
             cs = "NONE"
         # print(self.sentenceDB)
         start = time.time()
-        # for sentence_params, sentences_list in self.sentenceDB.items():
-        # print((intent, cs.__str__(), tags_list.__str__()))
         sentences_params_list = self.sentenceDB.keys()
         key_res = [s for s in sentences_params_list if s.intent == intent]
         # print(key_res)
@@ -178,15 +176,6 @@ class NLG(wbc.WhiteBoardClient):
             self.user_intent = message['user_intent']
             self.situation = self.user_model['situation']
 
-            # Todo: Better authoring
-
-            # Content Planning
-            #
-            # Here we select the different strategies that will be used to deliver the content:
-            # Ack + Ack_CS
-            # Sentence_CS
-            # Explanation
-
             intent = message[fc.intent]
             ack_cs = self.pick_ack_social_strategy() if fc.NLG_USE_ACKS_CS else None
             cs = self.pick_social_strategy() if fc.NLG_USE_CS else None
@@ -197,19 +186,7 @@ class NLG(wbc.WhiteBoardClient):
                 self.recipe = message['recipe']
                 recipe_card = self.get_recipe_card(self.recipe)
 
-            # Sentence Planning
-            #
-            # Based on the strategies selected during the content planning, we generate the sentence.
-
-            # if self.sentenceDB[message['intent']][cs]:
-            #     # sentence = random.choice(self.sentenceDB[message['intent']][cs])
-            #     sentence = self.choose_sentence(message[fc.intent], cs)
-            # else:
-                # sentence = random.choice(self.sentenceDB[message['intent']]['NONE'])
             sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
-            # print("\n------\n")
-            # print(sentence)
-            # print("\n------\n")
 
             if fc.NLG_USE_ACKS:
                 if message['user_intent']['intent'] in ["yes", "no"]:
