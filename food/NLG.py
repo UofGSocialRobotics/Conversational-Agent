@@ -191,6 +191,8 @@ class NLG(wbc.WhiteBoardClient):
             if fc.NLG_USE_ACKS:
                 if message['user_intent']['intent'] in ["yes", "no"]:
                     valence = message['user_intent']['intent']
+                elif message['user_intent']['entity_type'] == "duration":
+                    valence = "yes" if message['user_intent']['entity'] > 30 else "no"
                 elif message['user_intent']['entity_type']:
                     valence = "yes" if message['user_intent']['entity'] and (message['user_intent']['polarity'] == '+' or message['user_intent']['polarity'] == None) else "no"
                 else:
