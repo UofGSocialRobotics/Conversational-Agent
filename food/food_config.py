@@ -8,7 +8,11 @@ import json
 RECIPE_DM_MSG = "recipe_DM_msg" # should be used to send recipes to NLG so that NLS can fetch recipe cards in advance.
 USUAL_DM_MSG = "usual_DM_msg" #should be used for everything else
 
+normed_health_score = "normed_health_score"
+normed_fillingness_score = "normed_fillingness_score"
 health_score_distance_to_user_s_health_value = "distance_healthiness"
+fillingness_score_distance_to_user_s_fillingness_value = "distance_fillingness"
+average_health_fillingness_distance = "average_health_fillingness_distance"
 
 intent = 'intent'
 previous_intent = "previous_intent"
@@ -94,7 +98,7 @@ food_scores_state = "food_scores_state"
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "food/resources/dm/model_nosmalltalk.csv"
+DM_MODEL = "food/resources/dm/model.csv"
 USER_MODELS = "food/resources/user_models/"
 NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 if "nosmalltalk" in DM_MODEL:
@@ -141,6 +145,9 @@ SPOONACULAR_API_INTOLERANCES = "&intolerances="
 SPOONACULAR_API_SEARCH_ADDITIONAL_INFO = "&fillIngredients=true&addRecipeInformation=true"
 SPOONACULAR_FOOD_RECO = "https://api.spoonacular.com/food/detect?apiKey="
 SPOONACULAR_API_VISUALIZE = "https://api.spoonacular.com/recipes/visualizeRecipe?apiKey="
+SPOONACULAR_API_RECIPE_NUTRITION_INFO = "&minCalories=0&minFat=0&minSugar=0&minProtein=0&minCarbs=0&minSodium=0"
+CALORIES_MAX = 1200
+CALORIES_MIN = 100
 #https://api.spoonacular.com/recipes/complexSearch?apiKey=f124c11f97374e4ea23184db8d4f4097&query=pasta&maxFat=25&number=2&fillIngredients=true&addRecipeInformation=true
 
 #title 	string 	My recipe 	The title of the recipe.
