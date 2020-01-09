@@ -1,16 +1,16 @@
 greeting,NONE,NONE,"Hi there! I'm here to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?"
 greeting,robot,NONE,"Hi there! I'm Cora. I've been built by a team of researchers to help you change your dinner habits and maybe find some new recipes for you to cook. So tell me, what's your name?"
-greeting,human,NONE,"Hi there! My name is Cora. I've been  working with a team of researchers on eating behaviors for a few months now, and I'm here to help you change your dinner habits. So tell me, what's your name?"
+greeting,human,NONE,"Hi there! My name is Cora. I've been working with a team of researchers on eating behaviors for a few months now, and I'm here to help you change your dinner habits. So tell me, what's your name?"
 request(mood),NONE,NONE,And how are you doing today? Is everything alright?
 request(from),NONE,NONE,I'd like to know you a bit better. Can you tell me where you live?
 request(from),robot,NONE,"My programmers would like to know you a bit better. I was created in Glasgow, United Kingdom. Can you tell me where you live?"
 request(from),human,NONE,"I'd like us to know each other a bit better. I've just moved to Glasgow, Scotland a few months ago, I used to live in Pittsburgh, USA before that. It's raining a lot but I like it here. Can you tell me where you live?"
-request(usual_dinner),NONE,NONE,Tell me. What do you usually eat for dinner?
+request(usual_dinner),NONE,NONE,I'd like to know a bit more about your eating habits. So tell me. What do you usually eat for dinner?
 request(why_dinner),NONE,NONE,Could you tell me why you usually eat #usual_dinner for dinner?
-request(filling),NONE,NONE,So before I recommend something let me ask you a few more questions. First things first: how hungry are you?
+request(filling),NONE,NONE,So before I recommend something let me ask you a few questions. First things first: how hungry are you?
 request(healthy),NONE,NONE,How healthy do you want your meal to be?
 request(diet),NONE,NONE,Any specific diet or intolerances I should be aware of?
-request(time),NONE,NONE,We're almost there. How much time to you want to spend cooking tonight? 
+request(time),NONE,NONE,We're almost there. How much time do you want to spend cooking tonight?
 request(food),NONE,NONE,One last question. Is there any food you'd like to use? Something already in your kitchen or that you could buy?
 inform(food),NONE,features,One great food option for #situation would be to eat #recipe. That's a great option if you #features. What do you think?
 inform(food),NONE,features,"For #situation I'd recommend eating #recipe"""
@@ -23,7 +23,7 @@ inform(food),NONE,"features, food",What about #recipe? This meal contains #mainf
 inform(food),NONE,"features, food",What about #recipe? This meal contains #mainfood which is great if you #features.
 inform(food),NONE,"features, food","#mainfood would work perfectly for you if you #features, so how about #recipe?"
 inform(food),NONE,opinion,"I love #recipe so much, it's so tasty!! What do you think about it?"
-inform(food),NONE,opinion,#recipe is so yummy! I'm sure you will love it as much as I do!
+inform(food),NONE,opinion,#recipe is so yummy! I think you might love it as much as I do!
 inform(food),NONE,opinion,"I had #recipe recently, and it was so good I'll have it again soon! What do you think about it?"
 inform(food),NONE,opinion,Would you like #recipe? It's personally one of my favorites!
 inform(food),NONE,opinion,I have something delicious in mind for you!! What about #recipe?
@@ -33,4 +33,4 @@ inform(food),NONE,NONE,What about #recipe?
 inform(food),NONE,NONE,For #situation I'd recommend eating #recipe. What do you think?
 inform(food),NONE,NONE,How about #recipe?
 request(another),NONE,NONE,Would you like another recipe?
-bye,NONE,NONE,Enjoy whatever you end up cooking and see you soon!
+bye,NONE,NONE,It was nice talking to you #name! Enjoy your food and see you soon!
