@@ -98,7 +98,7 @@ food_scores_state = "food_scores_state"
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "food/resources/dm/model.csv"
+DM_MODEL = "food/resources/dm/model_nosmalltalk.csv"
 USER_MODELS = "food/resources/user_models/"
 NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 if "nosmalltalk" in DM_MODEL:

@@ -535,9 +535,20 @@ class DM(wbc.WhiteBoardClient):
     def get_unused_ingredients(self):
         unused_ingredients = list()
         # all_used_seed_ingredients_str = "SEP" + " ".join([seed_i[0] for seed_i in self.used_seed_ingredients]) + "SEP"
+        set_of_used_seed_ingredients = list()
+        for used_i in self.used_seed_ingredients:
+            if used_i:
+                # get ingredients that we have not tried to query on their own
+                if "," not in used_i:
+                    if used_i not in set_of_used_seed_ingredients:
+                        set_of_used_seed_ingredients.append(used_i)
+        print(self.used_seed_ingredients, set_of_used_seed_ingredients)
         for food in self.user_model[fc.liked_food]:
-            if food not in [used_i[0] for used_i in self.used_seed_ingredients]:
+            if food not in set_of_used_seed_ingredients:
                 unused_ingredients.append(food)
+        print(self.used_seed_ingredients, set_of_used_seed_ingredients, unused_ingredients, "?")
+        if not unused_ingredients:
+            exit(0)
         return unused_ingredients
 
     def query_spoonacular_and_clean_result_list(self, recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredient_str):
