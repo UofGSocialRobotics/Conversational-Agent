@@ -156,17 +156,23 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model[fc.user_name] = self.from_NLU[fc.entity]
                     # print(self.user_model[fc.user_name])
                 if fc.health in self.from_NLU[fc.entity_type]:
-                    if self.from_NLU[fc.entity] is True:
-                        self.user_model[fc.liked_features].append(fc.health)
-                        self.user_model[fc.food_scores_state][fc.healthiness] = 1
-                    elif self.from_NLU[fc.entity] is False:
-                        self.user_model[fc.food_scores_state][fc.healthiness] = -1
+                    if isinstance(self.from_NLU[fc.entity], float) or isinstance(self.from_NLU[fc.entity], int):
+                        self.user_model[fc.food_scores_state][fc.healthiness] = self.from_NLU[fc.entity]
+                    else:
+                        if self.from_NLU[fc.entity] is True:
+                            self.user_model[fc.liked_features].append(fc.health)
+                            self.user_model[fc.food_scores_state][fc.healthiness] = 1
+                        elif self.from_NLU[fc.entity] is False:
+                            self.user_model[fc.food_scores_state][fc.healthiness] = -1
                 if fc.hungry in self.from_NLU[fc.entity_type]:
-                    if self.from_NLU[fc.entity] is True:
-                        self.user_model[fc.liked_features].append(fc.filling)
-                        self.user_model[fc.food_scores_state][fc.food_fillingness] = 1
-                    elif self.from_NLU[fc.entity] is False:
-                        self.user_model[fc.food_scores_state][fc.food_fillingness] = -1
+                    if isinstance(self.from_NLU[fc.entity], float) or isinstance(self.from_NLU[fc.entity], int):
+                        self.user_model[fc.food_scores_state][fc.food_fillingness] = self.from_NLU[fc.entity]
+                    else:
+                        if self.from_NLU[fc.entity] is True:
+                            self.user_model[fc.liked_features].append(fc.filling)
+                            self.user_model[fc.food_scores_state][fc.food_fillingness] = 1
+                        elif self.from_NLU[fc.entity] is False:
+                            self.user_model[fc.food_scores_state][fc.food_fillingness] = -1
                 if fc.time in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is False:
                     self.user_model[fc.liked_features].append(fc.time)
                 if fc.duration in self.from_NLU[fc.entity_type]:
@@ -223,8 +229,11 @@ class DM(wbc.WhiteBoardClient):
 
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
+                    # print(recipe)
                     # ingredients_list = self.get_all_ingredients(recipe)
-                    msg = "HealthScore: %.2f (user val: %.2f)" % (abs((recipe['healthScore'] / float(100) * 2 - 1)), self.food_values[fc.healthiness])
+                    msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
+                    msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
+                    msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
                     print(colored(msg, "magenta"))
                     log.info(msg)
                     self.already_recommended_recipe_list.append(recipe[fc.title])
@@ -535,7 +544,7 @@ class DM(wbc.WhiteBoardClient):
         if ingredient_str not in self.used_seed_ingredients:
             self.used_seed_ingredients.append(ingredient_str)
         recipe_list = list()
-        query = recipe_str + time_str + diet_str + intolerances_str + include_ingredients_str + exclude_ingredients_str + include_cuisine_str + exclude_cuisine_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER + n_res.__str__()
+        query = recipe_str + time_str + diet_str + intolerances_str + include_ingredients_str + exclude_ingredients_str + include_cuisine_str + exclude_cuisine_str + fc.SPOONACULAR_API_SEARCH_ADDITIONAL_INFO + fc.SPOONACULAR_API_RECIPE_NUTRITION_INFO + fc.SPOONACULAR_API_SEARCH_RESULTS_NUMBER + n_res.__str__()
         if query not in self.spoonacular_queries:
             log.debug(query)
             recipe_list += self.query_spoonacular(self.generate_soonacular_url(query))
@@ -576,11 +585,21 @@ class DM(wbc.WhiteBoardClient):
                 recipe['seed_ingredient'] = seed_ingredient
                 self.current_recipe_list.append(recipe)
         for recipe in self.current_recipe_list:
-            recipe[fc.health_score_distance_to_user_s_health_value] = abs((recipe['healthScore'] / float(100) * 2 - 1) - self.food_values[fc.healthiness])
-        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.health_score_distance_to_user_s_health_value])
+            recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
+            recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
+            recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
+            recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
+            recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
+        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
         # print(colored("Sorted", "magenta"))
         # for recipe in self.current_recipe_list:
         #     print(colored(recipe['healthScore'], "magenta"))
+
+    def get_calories(sel, recipe):
+        for elt in recipe["nutrition"]:
+            title = elt["title"]
+            if title == "Calories":
+                return elt["amount"]
 
     def generate_soonacular_url(self, query):
         tmp = fc.SPOONACULAR_API_SEARCH + fc.SPOONACULAR_KEY + "&query=" + query

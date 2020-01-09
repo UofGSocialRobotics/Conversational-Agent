@@ -165,6 +165,10 @@ def norm_pandas_matrix(matrix):
 
     return normed_matrix
 
+def norm_value_between_minus_one_and_one(val, min, max):
+    return float(val - min) / (max - min) * 2 -1
+
+
 def remove_duplicate_consecutive_char_from_string(s):
     new_s = " "
     for c in s:
