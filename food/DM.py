@@ -115,7 +115,7 @@ class DM(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
 
         self.requery_because_got_new_required_food = False
-        ingredients_list = None
+        recipe_ingredients_list = None
 
         # print(self.currState)
 
@@ -230,7 +230,7 @@ class DM(wbc.WhiteBoardClient):
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
                     # print(recipe)
-                    # ingredients_list = self.get_all_ingredients(recipe)
+                    recipe_ingredients_list = self.get_all_ingredients(recipe)
                     msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
                     msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
                     msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
@@ -256,7 +256,7 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, ingredients_list)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, recipe_ingredients_list)
             self.from_NLU = None
             # self.from_SA = None
             self.publish({"current_state": self.currState}, topic=self.publishes[4])
@@ -354,7 +354,10 @@ class DM(wbc.WhiteBoardClient):
 
     def get_all_ingredients(self, recipe):
         ingredients = recipe['usedIngredients'] + recipe["missedIngredients"]
-        return [ingredient['name'] for ingredient in ingredients]
+        ingredients_names = [ingredient['name'] for ingredient in ingredients]
+        ingredients_names = list(set(ingredients_names))
+        print(colored(ingredients_names, "blue"))
+        return ingredients_names
 
     def remove_recipes_with_disliked_ingredients(self):
         if not self.user_model[fc.disliked_food]:
