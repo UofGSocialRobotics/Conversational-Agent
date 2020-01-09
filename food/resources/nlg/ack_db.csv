@@ -57,9 +57,9 @@ request(diet),robot,Noted.,NONE,NONE,NONE
 request(food),NONE,That's a good idea!,inform,NONE,NONE
 request(food),human,That's a good idea!,inform,NONE,NONE
 request(food),robot,That's a good idea!,inform,NONE,NONE
-request(food),NONE,"No contraint, great!",no,NONE,NONE
-request(food),human,"No contraint, great!",no,NONE,NONE
-request(food),robot,"No contraint, great!",no,NONE,NONE
+request(food),NONE,"No constraint, great!",no,NONE,NONE
+request(food),human,"No constraint, great!",no,NONE,NONE
+request(food),robot,"No constraint, great!",no,NONE,NONE
 request(food),NONE,Fine.,NONE,NONE,NONE
 request(food),human,Fine.,NONE,NONE,NONE
 request(food),robot,Fine.,NONE,NONE,NONE
