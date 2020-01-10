@@ -121,9 +121,9 @@ class NLG(wbc.WhiteBoardClient):
             key_res = [ack_params for ack_params in key_res if ("NONE" in ack_params.valence)]
         if not key_res:
             key_res = key_res_tmp
-            print(key_res_tmp)
-            for ack_params in key_res:
-                print(ack_params.valence, valence)
+            # print(key_res_tmp)
+            # for ack_params in key_res:
+                # print(ack_params.valence, valence)
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence or ack_params.valence == "NONE")]
         # print(key_res)
         if current_intent:
