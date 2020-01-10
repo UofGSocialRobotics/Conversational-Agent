@@ -3,11 +3,12 @@ greeting,NONE,Nice to meet you #user_name.,NONE,NONE,NONE
 greeting,human,Nice to meet you #user_name.,NONE,NONE,NONE
 greeting,robot,Nice to meet you #user_name.,NONE,NONE,NONE
 request(mood),NONE,Okay.,NONE,NONE,NONE
+request(mood),human,Okay.,NONE,NONE,NONE
 request(mood),NONE,Lovely!,yes,NONE,NONE
 request(mood),human,Lovely! I'm having a great day and I'm in a very good mood myself.,yes,NONE,NONE
 request(mood),robot,"Lovely! As a computer program, I don't have feelings, but it's great you feel good.",yes,NONE,NONE
 request(mood),NONE,I'm sorry to hear that.,no,NONE,NONE
-request(mood),human,"I'm sorry to hear that. I'll try to recommend something that would brighten your day.",no,NONE,NONE
+request(mood),human,I'm sorry to hear that. I'll try to recommend something that would brighten your day.,no,NONE,NONE
 request(mood),robot,"I'm sorry to hear that. As a computer program, I don't have feelings, but I know life can be tough for you humans.",no,NONE,NONE
 request(from),NONE,Good.,NONE,NONE,NONE
 request(from),NONE,Sorry about being too intrusive. I'll simply focus on getting to know your eating habits.,no,NONE,NONE
@@ -15,7 +16,7 @@ request(from),human,What a coincidence! I spent some time there on vacation a fe
 request(from),robot,"I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it.",NONE,NONE,NONE
 greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
 request(usual_dinner),NONE,Okay.,NONE,NONE,NONE
-request(usual_dinner),human,"I see. I myself try to have a healthy diet so I eat light dinners with lots of vegetables.",NONE,NONE,NONE
+request(usual_dinner),human,I see. I myself try to have a healthy diet so I eat light dinners with lots of vegetables.,NONE,NONE,NONE
 request(usual_dinner),robot,"I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now.",NONE,NONE,NONE
 request(why_dinner),NONE,Good to know.,NONE,NONE,NONE
 request(why_dinner),human,Good to know.,NONE,NONE,NONE
@@ -48,7 +49,7 @@ request(healthy),NONE,Okay.,"yes, healthy",NONE,NONE
 request(healthy),human,Nice. I also think it's important to be careful with what you eat so we're on the same page.,"yes, healthy",NONE,NONE
 request(healthy),robot,"Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again!","yes, healthy",NONE,NONE
 request(healthy),NONE,"Ya, taste first and healthiness second right? ","no, not_healthy",NONE,NONE
-request(healthy),human,"Taste first am I right? I totally agree with you.","no, not_healthy",NONE,NONE
+request(healthy),human,Taste first am I right? I totally agree with you.,"no, not_healthy",NONE,NONE
 request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
 request(diet),NONE,Okay.,NONE,NONE,NONE
 request(diet),NONE,Noted.,NONE,NONE,NONE
@@ -73,7 +74,7 @@ inform(food),NONE,I could recommend something else.,no,bye,NONE
 inform(food),NONE,Okay.,no,bye,NONE
 inform(food),NONE,Alright.,no,bye,NONE
 inform(food),human,Oh I'm sorry. ,no,bye,NONE
-inform(food),human,"My apologies. I thought you'd like it.",no,bye,NONE
+inform(food),human,My apologies. I thought you'd like it.,no,bye,NONE
 inform(food),human,"Okay, my mistake. Let me find something better.",no,bye,NONE
 inform(food),human,Noted.,no,bye,NONE
 inform(food),robot,My algorithm could be improved.,no,bye,NONE

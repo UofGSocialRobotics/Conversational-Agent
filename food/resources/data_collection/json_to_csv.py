@@ -15,6 +15,8 @@ def format_date_splited_at_separator(date_val, separator):
 def format_date(value):
     # print(value)
     # print("new datetime", len(value))
+    if "klo" in value:
+        value = value.replace(" klo", "")
     if 'à' in value:
         splited_at_comma = value.split("à")
     elif ',' in value:
@@ -104,6 +106,8 @@ def json_to_csv(path_read_from, path_write_to):
                         data_participant.append(prolific_id)
                         if first_line_bool:
                             first_line.append("prolific_id")
+                    else:
+                        prolific_id = "unknown"
                     start_time = False
                     stop_time = False
                     if "xp_condition" in data.keys():
@@ -205,7 +209,7 @@ if __name__ == "__main__":
     argp.add_argument('data_folder', metavar='data_folder', type=str, help='Where to get the data from? and write the data to?')
 
     args = argp.parse_args()
-    path_read_from = "food/resources/"+args.data_folder+"/data.json"
-    path_write_to = "food/resources/"+args.data_folder+"/"
+    path_read_from = "food/resources/data_collection/"+args.data_folder+"/data.json"
+    path_write_to = "food/resources/data_collection/"+args.data_folder+"/"
     json_to_csv(path_read_from, path_write_to)
 

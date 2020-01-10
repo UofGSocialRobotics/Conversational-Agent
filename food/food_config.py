@@ -30,6 +30,7 @@ inform = "inform"
 user_name = "user_name"
 
 food = "food"
+diet = "diet"
 food_type = "food_type"
 food_name = "food_name"
 
@@ -89,7 +90,7 @@ liked_cuisine = "liked_cuisine"
 disliked_cuisine = "disliked_cuisine"
 liked_recipe = "liked_recipe"
 disliked_recipe = "disliked_recipe"
-special_diet = 'special_diet'
+# special_diet = 'special_diet'
 situation = "situation"
 food_scores_trait = "food_scores_trait"
 food_scores_state = "food_scores_state"
@@ -98,7 +99,7 @@ food_scores_state = "food_scores_state"
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "food/resources/dm/model_nosmalltalk.csv"
+DM_MODEL = "food/resources/dm/model.csv"
 USER_MODELS = "food/resources/user_models/"
 NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 if "nosmalltalk" in DM_MODEL:

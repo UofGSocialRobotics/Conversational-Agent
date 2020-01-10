@@ -121,6 +121,9 @@ class NLG(wbc.WhiteBoardClient):
             key_res = [ack_params for ack_params in key_res if ("NONE" in ack_params.valence)]
         if not key_res:
             key_res = key_res_tmp
+            print(key_res_tmp)
+            for ack_params in key_res:
+                print(ack_params.valence, valence)
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence or ack_params.valence == "NONE")]
         # print(key_res)
         if current_intent:
@@ -196,9 +199,12 @@ class NLG(wbc.WhiteBoardClient):
                     valence = message['user_intent']['intent']
                 elif message['user_intent']['entity_type'] == "duration":
                     valence = "yes" if message['user_intent']['entity'] > 30 else "no"
-                    valence = "yes" if message['user_intent']['entity'] > 30 else "no"
                 elif message['user_intent']['entity_type']:
-                    valence = "yes" if message['user_intent']['entity'] and (message['user_intent']['polarity'] == '+' or message['user_intent']['polarity'] == None) else "no"
+                    print(colored("Here we are", "magenta"))
+                    if message['user_intent']['entity_type'] == "hungry" or message['user_intent']['entity_type'] == "healthy":
+                        valence = "yes" if message['user_intent']['entity'] > 0 else "no"
+                    else:
+                        valence = "yes" if message['user_intent']['entity'] and (message['user_intent']['polarity'] == '+' or message['user_intent']['polarity'] == None) else "no"
                 else:
                     valence = None
                 current_intent = message[fc.intent] if message[fc.previous_intent] == fc.inform_food else None
