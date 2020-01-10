@@ -115,7 +115,7 @@ class DM(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
 
         self.requery_because_got_new_required_food = False
-        ingredients_list = None
+        recipe_ingredients_list = None
 
         # print(self.currState)
 
@@ -230,7 +230,7 @@ class DM(wbc.WhiteBoardClient):
                 if self.current_recipe_list:
                     recipe = self.current_recipe_list[0]
                     # print(recipe)
-                    # ingredients_list = self.get_all_ingredients(recipe)
+                    recipe_ingredients_list = self.get_all_ingredients(recipe)
                     msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
                     msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
                     msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
@@ -256,7 +256,7 @@ class DM(wbc.WhiteBoardClient):
 
             prev_state = self.currState
             self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, ingredients_list)
+            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, recipe_ingredients_list)
             self.from_NLU = None
             # self.from_SA = None
             self.publish({"current_state": self.currState}, topic=self.publishes[4])
@@ -354,7 +354,10 @@ class DM(wbc.WhiteBoardClient):
 
     def get_all_ingredients(self, recipe):
         ingredients = recipe['usedIngredients'] + recipe["missedIngredients"]
-        return [ingredient['name'] for ingredient in ingredients]
+        ingredients_names = [ingredient['name'] for ingredient in ingredients]
+        ingredients_names = list(set(ingredients_names))
+        print(colored(ingredients_names, "blue"))
+        return ingredients_names
 
     def remove_recipes_with_disliked_ingredients(self):
         if not self.user_model[fc.disliked_food]:
@@ -535,9 +538,20 @@ class DM(wbc.WhiteBoardClient):
     def get_unused_ingredients(self):
         unused_ingredients = list()
         # all_used_seed_ingredients_str = "SEP" + " ".join([seed_i[0] for seed_i in self.used_seed_ingredients]) + "SEP"
+        set_of_used_seed_ingredients = list()
+        for used_i in self.used_seed_ingredients:
+            if used_i:
+                # get ingredients that we have not tried to query on their own
+                if "," not in used_i:
+                    if used_i not in set_of_used_seed_ingredients:
+                        set_of_used_seed_ingredients.append(used_i)
+        print(self.used_seed_ingredients, set_of_used_seed_ingredients)
         for food in self.user_model[fc.liked_food]:
-            if food not in [used_i[0] for used_i in self.used_seed_ingredients]:
+            if food not in set_of_used_seed_ingredients:
                 unused_ingredients.append(food)
+        print(self.used_seed_ingredients, set_of_used_seed_ingredients, unused_ingredients, "?")
+        if not unused_ingredients:
+            exit(0)
         return unused_ingredients
 
     def query_spoonacular_and_clean_result_list(self, recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredient_str):

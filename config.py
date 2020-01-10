@@ -16,7 +16,7 @@ exp_cs_robot = "robot"
 exp_cs_control = "NONE"
 exp_no_ack = "no_ack"
 aamas_study_CS = True
-possible_CS = [exp_cs_human]
+possible_CS = [exp_no_ack]
 
 
 ####################################################################################################

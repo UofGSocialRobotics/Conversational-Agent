@@ -211,7 +211,7 @@ class NLG(wbc.WhiteBoardClient):
                 recipe = self.recipe['sourceUrl']
                 if not recipe_card:
                     recipe_card = None
-                ingredients_list=message[fc.ingredients]
+                ingredients_list = message[fc.ingredients]
             else:
                 recipe, recipe_card, ingredients_list = None, None, None
                 # msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
