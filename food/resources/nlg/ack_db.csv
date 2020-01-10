@@ -36,19 +36,19 @@ request(time),NONE,Noted.,NONE,NONE,NONE
 request(time),human,Perfect.,NONE,NONE,NONE
 request(time),robot,Perfect.,NONE,NONE,NONE
 request(time),NONE,"Of course, you're a busy person. ","no, no_time",NONE,NONE
-request(time),human,"Of course, you're a busy person. That’s why I want to make finding good recipes easier.","no, no_time",NONE,NONE
+request(time),human,"Of course, you're a busy person. Same here, I only have time to cook on weekends.","no, no_time",NONE,NONE
 request(time),robot,Of course. Main advantage of being a computer program: I have all the time in the world!,"no, no_time",NONE,NONE
 request(time),NONE,Great!,"yes, time",NONE,NONE
-request(time),human,It’s great that you enjoy cooking. It's definitely a great hobby.,"yes, time",NONE,NONE
+request(time),human,Great! I love spending time cooking myself. That's one of my hobbies.,"yes, time",NONE,NONE
 request(time),robot,Great! I have to admit that I spend most of my time doing complex calculations and improving my english skills.,"yes, time",NONE,NONE
 request(healthy),NONE,Okay.,NONE,NONE,NONE
 request(healthy),human,Okay.,NONE,NONE,NONE
 request(healthy),robot,Okay.,NONE,NONE,NONE
 request(healthy),NONE,Okay.,"yes, healthy",NONE,NONE
-request(healthy),human,Nice. I also think it's important to be careful with what you eat so we're on the same page.,"yes, healthy",NONE,NONE
+request(healthy),human,Nice. I also try to be careful with what I eat so we're on the same page.,"yes, healthy",NONE,NONE
 request(healthy),robot,"Being careful with what you put in your stomach right? I also try to be careful with the data I put in my Hard Drive. I got viruses twice, and I don't want that to happen again!","yes, healthy",NONE,NONE
 request(healthy),NONE,"Ya, taste first and healthiness second right? ","no, not_healthy",NONE,NONE
-request(healthy),human,"Taste first am I right? I totally agree with you.","no, not_healthy",NONE,NONE
+request(healthy),human,"Taste first am I right? I enjoy so much having a good dinner, I totally agree with you.","no, not_healthy",NONE,NONE
 request(healthy),robot,"Ya, taste first right? I have never had any food, but humans seem to get so much pleasure eating, I hope someday I can experience it.","no, not_healthy",NONE,NONE
 request(diet),NONE,Okay.,NONE,NONE,NONE
 request(diet),NONE,Noted.,NONE,NONE,NONE
