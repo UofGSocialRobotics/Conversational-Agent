@@ -129,8 +129,8 @@ if __name__ == "__main__":
 
 
     autotest_scripts = dict()
-    autotest_scripts["error_pop_from_empty_list"] = ["hiya", "Lucile", "exhausted", "I live in Paris", "I depends, pasta most of the time.", "Easy to make", "i am hungry", "very healthy", 'i dont eat dairy', "I have pabout 20 min", "Sprout and tomatoes",
-                                                     "OK", "sure", "something else", "no", "OK", "why not", "aerhyrew6tjetky", "yes", "sure, something with chicken?", "nice", "yes", "great", "no i have enough"]
+    autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
+                                                     "why not", "sure", 'something else than soup?', 'yep', 'no', 'ok', "seems nice", "ya", "good", "no thanks"]
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False

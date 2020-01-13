@@ -319,34 +319,36 @@ class DM(wbc.WhiteBoardClient):
         # print(self.food_data)
 
     def remove_already_recommended_or_disliked_recipes(self):
-        new_recipe_list = list()
-        for recipe in self.current_recipe_list:
-            if recipe[fc.title] not in self.already_recommended_recipe_list:
-                new_recipe_list.append(recipe)
-        self.current_recipe_list = new_recipe_list
-        self.remove_recipes_likely_to_be_disliked()
-        self.remove_recipes_with_disliked_ingredients()
+        if self.current_recipe_list:
+            new_recipe_list = list()
+            for recipe in self.current_recipe_list:
+                if recipe[fc.title] not in self.already_recommended_recipe_list:
+                    new_recipe_list.append(recipe)
+            self.current_recipe_list = new_recipe_list
+            self.remove_recipes_likely_to_be_disliked()
+            self.remove_recipes_with_disliked_ingredients()
 
     def remove_recipes_likely_to_be_disliked(self):
-        new_recipe_list = list()
-        log.debug("Before removing disliked foods: "+ len(self.current_recipe_list).__str__())
-        for recipe in self.current_recipe_list:
-            bool_recipe_disliked = False
-            for disliked_recipe in self.user_model[fc.disliked_recipe]:
-                shortest_recipe_title = recipe[fc.title] if len(recipe[fc.title]) < len(disliked_recipe[fc.title]) else disliked_recipe[fc.title]
-                longest_recipe_title = recipe[fc.title] if len(recipe[fc.title]) >= len(disliked_recipe[fc.title]) else disliked_recipe[fc.title]
-                if shortest_recipe_title in longest_recipe_title:
-                    bool_recipe_disliked = True
-                    break
-                similarity_score = fuzz.token_sort_ratio(recipe[fc.title], disliked_recipe[fc.title])
-                if similarity_score > 85:
-                    bool_recipe_disliked = True
-                    log.debug("Removing "+recipe[fc.title])
-                    break
-            if not bool_recipe_disliked:
-                new_recipe_list.append(recipe)
-        self.current_recipe_list = new_recipe_list
-        log.debug("After removing disliked foods: " + len(self.current_recipe_list).__str__())
+        if self.current_recipe_list:
+            new_recipe_list = list()
+            log.debug("Before removing disliked foods: "+ len(self.current_recipe_list).__str__())
+            for recipe in self.current_recipe_list:
+                bool_recipe_disliked = False
+                for disliked_recipe in self.user_model[fc.disliked_recipe]:
+                    shortest_recipe_title = recipe[fc.title] if len(recipe[fc.title]) < len(disliked_recipe[fc.title]) else disliked_recipe[fc.title]
+                    longest_recipe_title = recipe[fc.title] if len(recipe[fc.title]) >= len(disliked_recipe[fc.title]) else disliked_recipe[fc.title]
+                    if shortest_recipe_title in longest_recipe_title:
+                        bool_recipe_disliked = True
+                        break
+                    similarity_score = fuzz.token_sort_ratio(recipe[fc.title], disliked_recipe[fc.title])
+                    if similarity_score > 85:
+                        bool_recipe_disliked = True
+                        log.debug("Removing "+recipe[fc.title])
+                        break
+                if not bool_recipe_disliked:
+                    new_recipe_list.append(recipe)
+            self.current_recipe_list = new_recipe_list
+            log.debug("After removing disliked foods: " + len(self.current_recipe_list).__str__())
 
     def get_all_ingredients(self, recipe):
         ingredients = recipe['usedIngredients'] + recipe["missedIngredients"]
@@ -426,6 +428,8 @@ class DM(wbc.WhiteBoardClient):
                 got_recipe = False
                 n_trials = 0
                 while got_recipe is False and n_trials < 3:
+                    n_trials += 1
+                    log.debug("Trial #%d" % n_trials)
                     got_recipe = self.get_recipe_list_with_spoonacular_in_no_more_than_two_seconds()
 
         self.remove_already_recommended_or_disliked_recipes()
@@ -483,6 +487,7 @@ class DM(wbc.WhiteBoardClient):
         return ingredient
 
     def get_recipe_from_spoonacular_with_specific_food_request(self):
+        print("entering get_recipe_from_spoonacular_with_specific_food_request")
         recipe_str, ingredients_str = "", ""
         if self.user_model[fc.liked_food]:
             # print("self.user_model[fc.liked_food]", self.user_model[fc.liked_food])
@@ -490,11 +495,14 @@ class DM(wbc.WhiteBoardClient):
             n_res = 10
         else:
             n_res = fc.N_RESULTS
-            food_str = self.list_sorted_ingredients.pop(0)
-            if food_str[-1] == "meal":
-                recipe_str = food_str[0]
+            if not self.used_seed_ingredients:
+                ingredients_str = "soup"
             else:
-                ingredients_str = food_str[0]
+                food_str = self.list_sorted_ingredients.pop(0)
+                if food_str[-1] == "meal":
+                    recipe_str = food_str[0]
+                else:
+                    ingredients_str = food_str[0]
             where_from = "from_DB"
         if self.user_model[fc.time_to_cook]:
             max_time = self.user_model[fc.time_to_cook] + 1
@@ -516,6 +524,8 @@ class DM(wbc.WhiteBoardClient):
         recipe_list = self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredients_str)
 
         if not recipe_list or len(recipe_list) < fc.N_RESULTS:
+            recipe_list = list()
+            log.debug("not enough results: #results=%d, #expected=%d" % (len(recipe_list), fc.N_RESULTS))
             if "mashed" in include_ingredients_str:
                 include_ingredients_str = include_ingredients_str.replace("mashed", "")
                 include_ingredients_str = include_ingredients_str.strip()
@@ -529,7 +539,13 @@ class DM(wbc.WhiteBoardClient):
                     include_ingredients_str = fc.SPOONACULAR_API_INCLUDE_INGREDIENTS + ingredients_str if ingredients_str else ""
                     recipe_list += self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, include_ingredients_str, exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredients_str)
 
+        if not recipe_list or len(recipe_list) < fc.N_RESULTS:
+            #default: no ingredient, increase number of res to be sure we have a different query
+            n_res += 1
+            recipe_list = self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, "", exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredients_str)
+
         # print("ingredients_str", ingredients_str, "recipe_str", recipe_str)
+        log.debug("exiting get_recipe_from_spoonacular_with_specific_food_request, returning %d results" % len(recipe_list))
         return recipe_list, [ingredients_str, where_from]
 
     def get_unused_ingredients(self):
@@ -563,6 +579,8 @@ class DM(wbc.WhiteBoardClient):
         else:
             #TODO: error here, infonite loop if we don't requery...
             log.info("Already used query %s." % query)
+            return False
+        log.debug("query_spoonacular_and_clean_result_list returns %d results" % len(recipe_list))
         return recipe_list
 
     def get_recipe_list_with_spoonacular_in_no_more_than_two_seconds(self):
@@ -584,18 +602,24 @@ class DM(wbc.WhiteBoardClient):
         self.current_recipe_list = list()
         potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
         self.add_and_sort_new_recipes(potential_new_recipes, seed_ingredient)
-        while len(self.current_recipe_list) < fc.N_RESULTS and len(self.list_sorted_ingredients) > 0:
+        n_trials_get_recipe_list_with_spoonacular = 0
+        while (len(self.current_recipe_list) + len(potential_new_recipes)) < fc.N_RESULTS and len(self.list_sorted_ingredients) > 0 and n_trials_get_recipe_list_with_spoonacular < 5:
+            log.debug("n_trials_get_recipe_list_with_spoonacular = %d" % n_trials_get_recipe_list_with_spoonacular)
             potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
             self.add_and_sort_new_recipes(potential_new_recipes, seed_ingredient)
         log.debug("Got %d recipes with Spoonacular" % len(self.current_recipe_list))
 
     def add_and_sort_new_recipes(self, potential_new_recipes_list, seed_ingredient):
-        tmp_copy = copy.deepcopy(self.current_recipe_list)
-        for recipe in potential_new_recipes_list:
-            if recipe['title'] not in [r['title'] for r in tmp_copy]:
-                # print("seed_ingredient", seed_ingredient)
-                recipe['seed_ingredient'] = seed_ingredient
-                self.current_recipe_list.append(recipe)
+        log.debug("entering add_and_sort_new_recipes, #potential_new_recipes_list=%d, #self.current_recipe_list=%d" % (len(potential_new_recipes_list), len(self.current_recipe_list)))
+        if self.current_recipe_list:
+            tmp_copy = copy.deepcopy(self.current_recipe_list)
+            for recipe in potential_new_recipes_list:
+                if recipe['title'] not in [r['title'] for r in tmp_copy]:
+                    # print("seed_ingredient", seed_ingredient)
+                    recipe['seed_ingredient'] = seed_ingredient
+                    self.current_recipe_list.append(recipe)
+        else:
+            self.current_recipe_list = potential_new_recipes_list
         for recipe in self.current_recipe_list:
             recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
             recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
@@ -603,6 +627,7 @@ class DM(wbc.WhiteBoardClient):
             recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
             recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
         self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
+        log.debug("exting add_and_sort_new_recipes, returning #%d results" % len(self.current_recipe_list))
         # print(colored("Sorted", "magenta"))
         # for recipe in self.current_recipe_list:
         #     print(colored(recipe['healthScore'], "magenta"))
@@ -625,6 +650,8 @@ class DM(wbc.WhiteBoardClient):
         result = data.read()
         json_recipe_list = json.loads(result)
         recipe_list = json_recipe_list['results']
+        log.debug("query spoonacular returns %d results" % len(recipe_list))
+        # print(recipe_list)
         return recipe_list
 
     def get_headers(self, matrix):

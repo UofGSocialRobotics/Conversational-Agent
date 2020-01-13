@@ -33,4 +33,4 @@ inform(food),NONE,NONE,What about #recipe?
 inform(food),NONE,NONE,For #situation I'd recommend eating #recipe. What do you think?
 inform(food),NONE,NONE,How about #recipe?
 request(another),NONE,NONE,Would you like another recipe?
-bye,NONE,NONE,It was nice talking to you #name! Enjoy your food and see you soon!
+bye,NONE,NONE,It was nice talking to you #user_name! Enjoy your food and see you soon!
