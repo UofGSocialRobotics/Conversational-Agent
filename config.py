@@ -9,7 +9,7 @@ import json
 exp_type_food = "food"
 exp_type_opinion = "opinion"
 exp_type_feature = "feature"
-EXPLANATION_TYPE = [exp_type_food]
+EXPLANATION_TYPE = [exp_type_opinion]
 
 exp_cs_human = "human"
 exp_cs_robot = "robot"

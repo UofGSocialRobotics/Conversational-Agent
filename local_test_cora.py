@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     autotest_scripts = dict()
     autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
-                                                     "why not", "sure", 'something else than soup?', 'yep', 'no', 'ok', "seems nice", "ya", "good", "no thanks"]
+                                                     "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False

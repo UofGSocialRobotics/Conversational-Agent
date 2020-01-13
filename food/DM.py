@@ -495,14 +495,14 @@ class DM(wbc.WhiteBoardClient):
             n_res = 10
         else:
             n_res = fc.N_RESULTS
-            if not self.used_seed_ingredients:
-                ingredients_str = "soup"
+            # if not self.used_seed_ingredients:
+            #     ingredients_str = "soup"
+            # else:
+            food_str = self.list_sorted_ingredients.pop(0)
+            if food_str[-1] == "meal":
+                recipe_str = food_str[0]
             else:
-                food_str = self.list_sorted_ingredients.pop(0)
-                if food_str[-1] == "meal":
-                    recipe_str = food_str[0]
-                else:
-                    ingredients_str = food_str[0]
+                ingredients_str = food_str[0]
             where_from = "from_DB"
         if self.user_model[fc.time_to_cook]:
             max_time = self.user_model[fc.time_to_cook] + 1
