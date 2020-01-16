@@ -48,4 +48,4 @@ class HealthDiagnostic(wbc.WhiteBoardClient):
             data = {fc.food_scores_trait: {fc.healthiness: h, fc.food_fillingness: f, fc.comfort: c}}
             self.publish(data)
         else:
-            log.debug("Already calculated health score (%.2f)" % self.food_diagnostic_score)
+            log.debug("Already calculated health score")

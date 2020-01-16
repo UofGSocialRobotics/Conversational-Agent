@@ -90,6 +90,7 @@ def json_to_csv(path_read_from, path_write_to):
             first_line = list()
             first_line_bool = True
             for id, data in sessions.items():
+                print(id)
 
                 if isinstance(data, dict):
                     # print(data)
@@ -193,7 +194,7 @@ def json_to_csv(path_read_from, path_write_to):
                     participant_data = [id[1:]] + data_participant
                     csv_writer.writerow(participant_data)
 
-                    with open(path_write_to+prolific_id+".txt", 'w+') as dialog_file:
+                    with open(path_write_to+"/dialogs/"+prolific_id+".txt", 'w+') as dialog_file:
                         for line in diaglog:
                             dialog_file.write(line+'\n')
 

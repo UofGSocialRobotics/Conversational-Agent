@@ -525,7 +525,7 @@ class DM(wbc.WhiteBoardClient):
 
         if not recipe_list or len(recipe_list) < fc.N_RESULTS:
             recipe_list = list()
-            log.debug("not enough results: #results=%d, #expected=%d" % (len(recipe_list), fc.N_RESULTS))
+            # log.debug("not enough results: #results=%d, #expected=%d" % (len(recipe_list), fc.N_RESULTS))
             if "mashed" in include_ingredients_str:
                 include_ingredients_str = include_ingredients_str.replace("mashed", "")
                 include_ingredients_str = include_ingredients_str.strip()
@@ -545,7 +545,7 @@ class DM(wbc.WhiteBoardClient):
             recipe_list = self.query_spoonacular_and_clean_result_list(recipe_str, time_str, diet_str, intolerances_str, "", exclude_ingredients_str, include_cuisine_str, exclude_cuisine_str, n_res, ingredients_str)
 
         # print("ingredients_str", ingredients_str, "recipe_str", recipe_str)
-        log.debug("exiting get_recipe_from_spoonacular_with_specific_food_request, returning %d results" % len(recipe_list))
+        # log.debug("exiting get_recipe_from_spoonacular_with_specific_food_request, returning %d results" % len(recipe_list))
         return recipe_list, [ingredients_str, where_from]
 
     def get_unused_ingredients(self):
@@ -580,7 +580,7 @@ class DM(wbc.WhiteBoardClient):
             #TODO: error here, infonite loop if we don't requery...
             log.info("Already used query %s." % query)
             return False
-        log.debug("query_spoonacular_and_clean_result_list returns %d results" % len(recipe_list))
+        # log.debug("query_spoonacular_and_clean_result_list returns %d results" % len(recipe_list))
         return recipe_list
 
     def get_recipe_list_with_spoonacular_in_no_more_than_two_seconds(self):
@@ -607,10 +607,10 @@ class DM(wbc.WhiteBoardClient):
             log.debug("n_trials_get_recipe_list_with_spoonacular = %d" % n_trials_get_recipe_list_with_spoonacular)
             potential_new_recipes, seed_ingredient = self.get_recipe_from_spoonacular_with_specific_food_request()
             self.add_and_sort_new_recipes(potential_new_recipes, seed_ingredient)
-        log.debug("Got %d recipes with Spoonacular" % len(self.current_recipe_list))
+        # log.debug("Got %d recipes with Spoonacular" % len(self.current_recipe_list))
 
     def add_and_sort_new_recipes(self, potential_new_recipes_list, seed_ingredient):
-        log.debug("entering add_and_sort_new_recipes, #potential_new_recipes_list=%d, #self.current_recipe_list=%d" % (len(potential_new_recipes_list), len(self.current_recipe_list)))
+        # log.debug("entering add_and_sort_new_recipes, #potential_new_recipes_list=%d, #self.current_recipe_list=%d" % (len(potential_new_recipes_list), len(self.current_recipe_list)))
         if self.current_recipe_list:
             tmp_copy = copy.deepcopy(self.current_recipe_list)
             for recipe in potential_new_recipes_list:
@@ -620,14 +620,15 @@ class DM(wbc.WhiteBoardClient):
                     self.current_recipe_list.append(recipe)
         else:
             self.current_recipe_list = potential_new_recipes_list
-        for recipe in self.current_recipe_list:
-            recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
-            recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
-            recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
-            recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
-            recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
-        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
-        log.debug("exting add_and_sort_new_recipes, returning #%d results" % len(self.current_recipe_list))
+        if self.current_recipe_list:
+            for recipe in self.current_recipe_list:
+                recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
+                recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
+                recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
+                recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
+                recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
+            self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
+        # log.debug("exting add_and_sort_new_recipes, returning #%d results" % len(self.current_recipe_list))
         # print(colored("Sorted", "magenta"))
         # for recipe in self.current_recipe_list:
         #     print(colored(recipe['healthScore'], "magenta"))
@@ -650,7 +651,7 @@ class DM(wbc.WhiteBoardClient):
         result = data.read()
         json_recipe_list = json.loads(result)
         recipe_list = json_recipe_list['results']
-        log.debug("query spoonacular returns %d results" % len(recipe_list))
+        # log.debug("query spoonacular returns %d results" % len(recipe_list))
         # print(recipe_list)
         return recipe_list
 

@@ -211,6 +211,11 @@ class NLG(wbc.WhiteBoardClient):
                 ack = self.choose_ack(previous_intent=message['previous_intent'], valence=valence, CS=None, current_intent=current_intent)
             else:
                 ack = ""
+            #to avoid none type errors further down
+            if not ack:
+                ack = ""
+            if not sentence:
+                sentence = ""
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
 
             if message['recipe']:
