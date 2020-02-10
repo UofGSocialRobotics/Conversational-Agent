@@ -647,6 +647,7 @@ class DM(wbc.WhiteBoardClient):
         return tmp
 
     def query_spoonacular(self, spoonURL):
+        print(spoonURL)
         data = urllib.request.urlopen(spoonURL)
         result = data.read()
         json_recipe_list = json.loads(result)

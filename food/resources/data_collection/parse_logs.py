@@ -99,6 +99,43 @@ def logs_to_csv(client_id_wanted="", data_reco_wanted=False):
 
     print("Wrote data for %d conversations" % len(dict_for_csv.keys()))
 
+
+def get_sigir_clients_ids(csv_file_all_data):
+    clients_ids_list = list()
+    with open(csv_file_all_data, 'r') as f:
+        csv_lines = csv.reader(f)
+        for line in csv_lines:
+            # print(line)
+            clients_ids_list.append(line[0])
+    return clients_ids_list
+
+def extract_answers_for_question(clients_ids_list, question):
+    if question == "ingredients":
+        q_text = "food you'd like to use?"
+    elif question == "time":
+        q_text = "spend cooking tonight?"
+    filepath = 'server_logs.log'
+    for client_id in clients_ids_list:
+        # print(client_id)
+        ingredients_line = False
+        with open(filepath) as fp:
+            line = fp.readline()
+            while line:
+                if client_id in line:
+                    # print(line)
+                    if ingredients_line:
+                        user_utterance = line.split("text': '")
+                        if len(user_utterance) > 1 :
+                            user_utterance = user_utterance[1].split('}')[0]
+                        print(user_utterance)
+                    if q_text in line:
+                        # print("TRUE")
+                        ingredients_line = True
+                    else:
+                        ingredients_line = False
+                line = fp.readline()
+
+
 def print_logs_for_client(client_id):
 
     filepath = 'server_logs.log'
@@ -148,6 +185,7 @@ if __name__ == "__main__":
     argp.add_argument("--json", help="Print json data", action="store_true")
     argp.add_argument("--to_csv", help="To csv", action="store_true")
     argp.add_argument("--data_reco", help="Do you want data about recommendation as well?", action="store_true")
+    argp.add_argument('--ingredients', help="Print users' inputs for ingredients", action="store_true")
 
     args = argp.parse_args()
 
@@ -159,5 +197,10 @@ if __name__ == "__main__":
         else:
             print("What do you want for client " + args.c + "?")
             argp.print_help()
+    elif args.ingredients:
+        csv_path = "food/resources/data_collection/sigir/data_all_prolific.csv"
+        clients_ids_list = get_sigir_clients_ids(csv_path)
+        print(clients_ids_list)
+        extract_answers_for_question(clients_ids_list, "time")
     else:
         logs_to_csv(args.c, args.data_reco)

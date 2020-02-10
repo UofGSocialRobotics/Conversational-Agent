@@ -69,10 +69,11 @@ def NLU_token_in_list_bool(token, my_list):
 
 def NLU_string_in_list_fuzz(s, my_list, threshold=80):
     # if len(s) > 2:
+    # print(threshold)
     found, word = False, None
     for w in my_list:
         score = fuzz.token_sort_ratio(s, w)
-        if score == 100 or (len(w) > 2 and len(s) > 2 and score >= 90) or (len(w) > 3 and len(s) > 3 and score >= threshold):
+        if score == 100 or (len(w) <= 2 and len(s) <= 2 and score >= 90) or (len(w) > 3 and len(s) > 3 and score >= threshold):
             threshold = score
             word = w
             found = True

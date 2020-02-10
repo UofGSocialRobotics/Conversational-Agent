@@ -13,7 +13,7 @@ def get_density(x_list, y_list):
 
 def generate_plots_with_demographics():
 
-    df = pandas.read_csv("food/resources/aamas/food_diagnostic.csv")
+    df = pandas.read_csv("food/resources/sigir/food_states_all_sigir.csv")
     male_df = df.query("gender == 'male'")
     female_df = df.query("gender == 'female'")
     uk_df = df.query("living_in_UK != 'not_in_UK'")
@@ -90,7 +90,7 @@ def generate_plots_with_demographics():
 D = 1
 
 def generate_plot_trait_states():
-    df = pandas.read_csv("food/resources/aamas/food_diagnostic.csv")
+    df = pandas.read_csv("food/resources/sigir/food_states_all_sigir.csv")
     df_foods = pandas.read_csv("food/resources/dm/food_model.csv")
     # df_foods = df_foods["healthiness", "food_fillingness"]
     df_snacks = df_foods.query("situation_name == 'Day time Snack' or situation_name == 'Evening Snack'")
@@ -158,7 +158,7 @@ def generate_plot_trait_states():
 
 
 def study_correlations_state_trait():
-    df = pandas.read_csv("food/resources/aamas/food_diagnostic.csv")
+    df = pandas.read_csv("food/resources/sigir/food_states_all_sigir.csv")
     fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
 
     trait_healthiness_values_list = df['Healthiness_trait'].to_list()
@@ -179,14 +179,21 @@ def study_correlations_state_trait():
 
 
 def convert_json_to_csv():
-    with open("food/resources/aamas/food_states.csv", "w") as fcsv:
+    with open("food/resources/data_collection/sigir/food_averages_all_sigir.csv", "w") as fcsv:
         csv_writer = csv.writer(fcsv)
         csv_writer.writerow(["healthiness","fillingness"])
-        with open('food/resources/aamas/food_states.json', 'r') as fjson:
+        with open('food/resources/data_collection/sigir/food_averages_all_sigir.json', 'r') as fjson:
             content = json.load(fjson)
             for elt in content:
-                csv_writer.writerow([elt["healthiness"],elt["food_fillingness"]])
+                healthiness_val = elt["healthiness"]
+                if isinstance(healthiness_val, bool):
+                    healthiness_val = 0.75 if healthiness_val else -0.75
+                fillingness_val = elt["food_fillingness"]
+                if isinstance(fillingness_val, bool):
+                    fillingness_val = 0.75 if fillingness_val else -0.75
+                csv_writer.writerow([healthiness_val, fillingness_val])
 
 
 if __name__ == "__main__":
-    study_correlations_state_trait()
+    convert_json_to_csv()
+    # study_correlations_state_trait()

@@ -94,7 +94,7 @@ class Extensive_food_DBs:
                 'herbs and spices': "spices",
                 'confectioneries': "sweets",
                 'cereals and cereal products': "cereals",
-                'aquatic foods': "fish"
+                'aquatic foods': "fish",
             }
 
             self.load_extensive_food_DBs()
@@ -123,6 +123,9 @@ class Extensive_food_DBs:
         for category, foods in self.category_to_foods.items():
             self.all_foods_list += foods
             self.all_foods_list.append(category)
+        # for category, foods in self.category_to_foods.items():
+        #     print(category)
+        #     print(foods)
 
 
     def save_to_extensive_foods_DBs(self, food_name, category):
@@ -187,6 +190,8 @@ class Extensive_food_DBs:
             elif category == "baking goods":
                 to_remove = ["filling", "shell"]
                 self.remove_foods_from_list(to_remove, foods)
+        self.category_to_foods['seasoning'] = list()
+
 
     def get_category(self, food):
         if food in self.food_to_category.keys():

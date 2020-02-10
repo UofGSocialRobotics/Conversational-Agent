@@ -1,6 +1,7 @@
 import cryptography.fernet as fernet
 import json
 
+
 ####################################################################################################
 ##                                              Voc                                               ##
 ####################################################################################################
@@ -95,11 +96,39 @@ situation = "situation"
 food_scores_trait = "food_scores_trait"
 food_scores_state = "food_scores_state"
 
+salt = "salt"
+sugars = 'sugars'
+fat = 'fat'
+saturates = 'saturates'
+nutrition_elements = [salt, sugars, fat, saturates]
+low_to_medium = 'low-to-medium'
+medium_to_high = 'medium-to-high'
+
+
+####################################################################################################
+##                                       Recommended food values                                  ##
+####################################################################################################
+
+RECOMMENDED_VALUES = dict()
+RECOMMENDED_VALUES[salt] = dict()
+RECOMMENDED_VALUES[salt][low_to_medium] = 0.36
+RECOMMENDED_VALUES[salt][medium_to_high] = 18.3
+RECOMMENDED_VALUES[sugars] = dict()
+RECOMMENDED_VALUES[sugars][low_to_medium] = 6
+RECOMMENDED_VALUES[sugars][medium_to_high] = 27
+RECOMMENDED_VALUES[fat] = dict()
+RECOMMENDED_VALUES[fat][low_to_medium] = 3.6
+RECOMMENDED_VALUES[fat][medium_to_high] = 21
+RECOMMENDED_VALUES[saturates] = dict()
+RECOMMENDED_VALUES[saturates][low_to_medium] = 1.25
+RECOMMENDED_VALUES[saturates][medium_to_high] = 6
+
+
 ####################################################################################################
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "food/resources/dm/model.csv"
+DM_MODEL = "food/resources/dm/model_nosmalltalk.csv"
 USER_MODELS = "food/resources/user_models/"
 NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 if "nosmalltalk" in DM_MODEL:

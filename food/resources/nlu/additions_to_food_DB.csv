@@ -17,8 +17,8 @@ butternut,vegetables
 peas,vegetables
 beans,vegetables
 vervain,spices
-watermelon,fruit
-melon,fruit
+watermelon,fruits
+melon,fruits
 halibut,fish
 turbot,fish
 parmesan,dairy
@@ -28,9 +28,11 @@ parmigiano,dairy
 gouda,dairy
 swiss,dairy
 emmentaler,dairy
+emmental,dairy
 brie,dairy
 camember,dairy
 gruyere,dairy
+feta cheese,dairy
 feta,dairy
 monterey jack,dairy
 provolone,dairy
@@ -53,3 +55,69 @@ neufchatel,dairy
 parmesan,dairy
 bacon,meat
 pickle,vegetables
+mayonnaise,spices
+salt,spices
+pepper,spices
+oil,oils
+olive oil,oils
+crème fraiche,dairy
+crème fraîche,dairy
+creme fraiche,dairy
+pesto,spices
+paprika,spices
+vinegar,oils
+red wine vinegar,oils
+wine vinegar,oils
+mixed herbs,spices
+rice noodle,pasta
+red chilli,spices
+green chilli,spices
+chilli,spices
+prawn,fish
+tomatoes,vegetables
+tortilla,cereals
+corn tortilla,cereals
+rice tortilla,cereals
+courgette,gourds
+breadcrumbs,cereals
+noodle,pasta
+cornflour,baking goods
+bouquet garni,spices
+bay leaves,spices
+ciabatta,cereals
+chorizo,meat
+sweetcorn,vegetables
+crouton,cereals
+croûton,cereals
+pak choi,vegetables
+beansprouts,vegetables
+cannelloni,pasta
+casarecce,pasta
+conchiglie,pasta
+conhiglioni,pasta
+couscous,pasta
+ditalini,pasta
+ditaloni,pasta
+elbow Macaroni,pasta
+farfalle,pasta
+fusilli,pasta
+gnocchi,pasta
+lasagna,pasta
+linguine,pasta
+lumaconi,pasta
+macaroni,pasta
+maccheroncini,pasta
+mafaldine,pasta
+reginette,pasta
+noodles,pasta
+orzo,pasta
+pappardelle,pasta
+penne,pasta
+mezze penne,pasta
+rigate,pasta
+ravioli,pasta
+rigatoni,pasta
+ppaghetti,pasta
+tagliatelle,pasta
+tortellini,pasta
+tortelloni,pasta

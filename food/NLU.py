@@ -10,6 +10,7 @@ import nltk
 from ca_logging import log
 import food.food_config as fc
 import config
+import string
 
 def preprocess_foodNLU(sentence):
     s = sentence.lower()
@@ -24,7 +25,7 @@ def preprocess_foodNLU(sentence):
     s = ' '.join(s.split())
     return s
 
-def inform_food(document, sentence, food_list, voc_no, voc_dislike):
+def inform_food(document, sentence, food_list, voc_no, voc_dislike, threshold=100):
     # print(voc_no)
     sentence = nlu_helper.remove_punctuation(sentence)
     # print(sentence)
@@ -32,24 +33,29 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
     negation = False
     if len(sentence) > 1:
         bigrams = nltk.bigrams(sentence.split())
+        j = 0
         for i, bg in enumerate(bigrams):
+            if document[i].text in string.punctuation:
+                j += 1
             bg_text = ' '.join(bg)
             if bg_text in food_list:
                 ingredients_list.append(bg_text)
-            else:
-                lemma_w1, lemma_w2 = document[i].lemma_, document[i+1].lemma_
+            elif j + 1 < len(document):
+                lemma_w1, lemma_w2 = document[j].lemma_, document[j+1].lemma_
                 lemma_bg = lemma_w1 + " " + lemma_w2
                 if lemma_bg in food_list:
                     ingredients_list.append(bg_text)
+            j += 1
 
     for token in document:
         # print(token.text)
-        score_token, word_token = nlu_helper.NLU_string_in_list_fuzz(token.text, food_list, threshold=90)
-        score_lemma, word_lemma = nlu_helper.NLU_string_in_list_fuzz(token.lemma_, food_list, threshold=90)
+        score_token, word_token = nlu_helper.NLU_string_in_list_fuzz(token.text, food_list, threshold=threshold)
+        score_lemma, word_lemma = nlu_helper.NLU_string_in_list_fuzz(token.lemma_, food_list, threshold=threshold)
+        # print(token.text, score_token, token.lemma_, score_lemma)
         # print(score_token, word_token, score_lemma, word_lemma)
-        if ((score_token and not score_lemma) or score_lemma < score_token) and not any(word_token in bg_text for bg_text in ingredients_list):
+        if ((score_token and not score_lemma) or score_lemma < score_token) and not any(token.text in bg_text for bg_text in ingredients_list):
             ingredients_list.append(word_token)
-        elif score_lemma and not any(word_lemma in bg_text for bg_text in ingredients_list):
+        elif score_lemma and not any(token.lemma_ in bg_text for bg_text in ingredients_list):
             ingredients_list.append(word_lemma)
         else:
             negation_tmp = nlu_helper.is_negation(token, voc_no)
@@ -66,6 +72,9 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike):
             ingredients_list.append("vegetables")
         return ("inform", "food", ingredients_list, valence)
     return False
+
+
+
 
 def inform_cuisine(document, voc_cuisine, voc_no):
     cuisine_list, negation = list(), False
