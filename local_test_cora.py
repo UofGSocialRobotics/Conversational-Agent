@@ -71,8 +71,17 @@ class TestCora():
         if config.MSG_NLG in topic:
             # self.publish_for_client(message, self.client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
             print("Response time: %.3f sec" % (time.time() - self.timer_response_time))
-            print(colored("Cora says: "+message["sentence"], "red"))
-            self.publish_whiteboard({"dialog": message["sentence"]}, config.MSG_DATACOL_IN + self.client_id)
+            # if message['send_several_messages']:
+            for sentence_delay_dict in message["sentences_and_delays"]:
+                sentence, delay = sentence_delay_dict['sentence'], sentence_delay_dict['delay']
+                # print(sentence, delay)
+                if delay:
+                    print("delay: %.2f" % delay)
+                    time.sleep(delay)
+                print(colored("Cora says: "+sentence, "red"))
+                self.publish_whiteboard({"dialog": sentence}, config.MSG_DATACOL_IN + self.client_id)
+            # print(colored("Cora says: "+message["sentence"], "red"))
+            # self.publish_whiteboard({"dialog": message["sentence"]}, config.MSG_DATACOL_IN + self.client_id)
             if message["intent"] == "bye":
                 self.quit()
             else:

@@ -1,5 +1,4 @@
-{
-    "results": [
+[
         {
             "vegetarian": true,
             "vegan": true,
@@ -27198,8 +27197,4 @@
                 }
             ]
         }
-    ],
-    "offset": 0,
-    "number": 100,
-    "totalResults": 365406
-}
+    ]

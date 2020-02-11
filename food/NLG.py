@@ -10,21 +10,23 @@ from termcolor import colored
 import csv
 from collections import namedtuple
 import time
-import threading
 import math
-import pandas
-import string
+import nltk.data
+import config
+import time
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
 
 class NLG(wbc.WhiteBoardClient):
-    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False):
+    def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False, delay=False, cut_message=False):
         print("NLG, cs = ", cs)
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes, resp_time)
         self.tags_explanation_types = tags_explanation_types
+        self.delay_bool = config.DELAY_MESSAGES
+        self.cut_message_bool = config.CUT_MESSAGES
         self.sentenceDB = {}
         self.ackDB = {}
 
@@ -226,7 +228,7 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 recipe, recipe_card, ingredients_list = None, None, None
                 # msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
-            msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
+            msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
 
         if self.timeit_details:
             print("Response time treat_message: %.3f sec" % (time.time() - start))
@@ -280,10 +282,6 @@ class NLG(wbc.WhiteBoardClient):
             print(colored(error_message, "green"))
             return None
 
-    def msg_to_json(self, intent, sentence, food_recipe, food_poster, ingredients_list):
-        frame = {'intent': intent, 'sentence': sentence, 'food_recipe': food_recipe, 'recipe_card': food_poster, fc.ingredients: ingredients_list}
-        #json_msg = json.dumps(frame)
-        return frame
 
     def pick_ack_social_strategy(self):
         #return random.choice(fc.CS_LABELS)
@@ -432,3 +430,34 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
+    def cut_message(self, message):
+        tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+        return tokenizer.tokenize(message)
+
+    def delay_answer(self, sentence):
+        setence_wo_spaces = sentence.replace(" ", '')
+        n_char = len(setence_wo_spaces)
+        delay = float(n_char) * 60 / config.DELAY_ANSWER_N_CHAR_PER_MINUTE
+        return delay
+        # print("Delaying answer by %.2f sec" % delay)
+        # time.sleep(delay)
+
+    def msg_to_json(self, intent, message, food_recipe, food_poster, ingredients_list):
+        if self.cut_message_bool:
+            sentences = self.cut_message(message)
+            sentences_and_delays = list()
+            for sentence in sentences:
+                delay = self.delay_answer(sentence) if self.delay_bool else 0
+                sentences_and_delays.append({'sentence': sentence, 'delay':delay})
+            return self.single_msg_to_json(intent, sentences_and_delays, food_recipe, food_poster, ingredients_list)
+        else:
+            delay = 0
+            if self.delay_bool:
+                delay = self.delay_answer(message)
+            return self.single_msg_to_json(intent, [{'sentence': message, 'delay': delay}], food_recipe, food_poster, ingredients_list)
+
+    def single_msg_to_json(self, intent, sentences_and_delays, food_recipe, food_poster, ingredients_list):
+        print('in single_msg_to_json')
+        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'food_recipe': food_recipe, 'recipe_card': food_poster, fc.ingredients: ingredients_list}
+        #json_msg = json.dumps(frame)
+        return frame

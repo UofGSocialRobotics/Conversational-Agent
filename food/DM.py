@@ -424,6 +424,14 @@ class DM(wbc.WhiteBoardClient):
                     for i in range(fc.N_RESULTS):
                         self.current_recipe_list.append(content[i])
                     # self.current_recipe_list = json.load(f)
+                    if self.current_recipe_list:
+                        for recipe in self.current_recipe_list:
+                            recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
+                            recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
+                            recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
+                            recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
+                            recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
+                        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
             else:
                 got_recipe = False
                 n_trials = 0

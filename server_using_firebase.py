@@ -143,14 +143,30 @@ class ServerUsingFirebase:
             if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND:
                 timestamp = datetime.datetime.now().__str__()
                 if firebase_key == config.FIREBASE_KEY_DIALOG:
-                    message[config.FIREBASE_KEY_DATETIME] = timestamp
-                    message[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
-                    self.firebase_root_ref.push_at(message, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
-                    # publish for data collection
-                    topic = config.MSG_DATACOL_IN + client_id
-                    for_data_col = dict()
-                    for_data_col[config_data_collection.DIALOG] = message
-                    whiteboard.publish(message=for_data_col, topic=topic)
+                    message_to_send, sentences_and_delays = dict(), None
+                    for key, value in message.items():
+                        if key != 'sentences_and_delays':
+                            message_to_send[key] = value
+                        else:
+                            sentences_and_delays = value
+                    n_messages_to_send = len(sentences_and_delays)
+                    for i, elt in enumerate(sentences_and_delays):
+                        sentence, delay = elt['sentence'], elt['delay']
+                        if delay:
+                            time.sleep(delay)
+                        message_to_send['sentence'] = sentence
+                        message_to_send['delay'] = delay
+                        message_to_send['wait_for_more'] = True if i < (n_messages_to_send - 1) else False
+                        timestamp = datetime.datetime.now().__str__()
+                        message_to_send[config.FIREBASE_KEY_DATETIME] = timestamp
+                        message_to_send[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
+                        print(message_to_send)
+                        self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
+                        # publish for data collection
+                        topic = config.MSG_DATACOL_IN + client_id
+                        for_data_col = dict()
+                        for_data_col[config_data_collection.DIALOG] = message_to_send
+                        whiteboard.publish(message=for_data_col, topic=topic)
 
                 elif firebase_key == config.FIREBASE_KEY_XP_COND or (isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys()):
                     self.firebase_root_ref.update_at(message, path=get_path_in_sessions(client_id))

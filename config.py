@@ -18,6 +18,10 @@ exp_no_ack = "no_ack"
 aamas_study_CS = True
 possible_CS = exp_no_ack
 
+DELAY_ANSWER_N_CHAR_PER_MINUTE = 1400#350 #200
+
+CUT_MESSAGES = False
+DELAY_MESSAGES = False
 
 ####################################################################################################
 ##                                        Firebase config                                         ##
