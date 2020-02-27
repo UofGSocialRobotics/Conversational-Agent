@@ -132,17 +132,33 @@ def analysis(print_unparsed_ingredients=False):
         for recipe in content:
 
             # calculating healthiness values
-            healthiness_score = 0
-            for elt in fc.nutrition_elements:
+            NSH_healthiness_score = 0
+            for elt in fc.NSH_nutrition_elements:
                 # print(recipe['nutrition'][elt])
                 elt_quantity = float(recipe['nutrition'][elt].replace('g','') if 'g' in recipe['nutrition'][elt] else recipe['nutrition'][elt])
-                if elt_quantity <= fc.RECOMMENDED_VALUES[elt][fc.low_to_medium]:
-                    healthiness_score += 2
-                elif elt_quantity <= fc.RECOMMENDED_VALUES[elt][fc.medium_to_high]:
-                    healthiness_score += 1
+                if elt_quantity <= fc.NSH_RECOMMENDED_VALUES[elt][fc.low_to_medium]:
+                    NSH_healthiness_score += 2
+                elif elt_quantity <= fc.NSH_RECOMMENDED_VALUES[elt][fc.medium_to_high]:
+                    NSH_healthiness_score += 1
 
+            WHO_healthiness_score = 0
+            for elt in fc.WHO_nutrition_elements:
+                # print(recipe['nutrition'][elt])
+                elt_quantity = float(recipe['nutrition'][elt].replace('g','') if 'g' in recipe['nutrition'][elt] else recipe['nutrition'][elt])
+                if fc.WHO_RECOMMENDED_VALUES[elt][fc.unit] == 'grams':
+                    if elt_quantity >= fc.WHO_RECOMMENDED_VALUES[elt][fc.minumum] and elt_quantity <= fc.WHO_RECOMMENDED_VALUES[elt][fc.maximum]:
+                        WHO_healthiness_score += 1
+                else:
+                    elt_cal = elt_quantity * fc.CALORIES_PER_GRAM[elt]
+                    percentage = elt_cal / float(recipe['nutrition']['kcal']) * 100
+                    # print(elt, elt_quantity, elt_cal, percentage)
+                    if percentage >= fc.WHO_RECOMMENDED_VALUES[elt][fc.minumum] and percentage <= fc.WHO_RECOMMENDED_VALUES[elt][fc.maximum]:
+                        WHO_healthiness_score += 1
 
-            print("Parsing %s --> %d health score" % (recipe['title'], healthiness_score))
+            # print(recipe['additional_info'])
+            tag_healthy = " / H" if "Healthy" in recipe['additional_info'] else " / NH"
+
+            print("Parsing %s --> NSH health score %d (max 8) %s / WHO health score %d (max 7)" % (recipe['title'], NSH_healthiness_score, tag_healthy, WHO_healthiness_score))
 
 
             # parsing ingredients
@@ -198,7 +214,7 @@ def analysis(print_unparsed_ingredients=False):
                             all_ingredients[ingredient_category][i] = 1
                     correctely_parsed += 1
 
-    print("Ingredients succesfully parsed: %.2f" % (float(correctely_parsed) / total))
+    print("Ingredients successfully parsed: %.2f" % (float(correctely_parsed) / total))
 
     for category, ingredients_dict in all_ingredients.items():
         if category in ['dishes', 'unknown', 'dairy', 'vegetables', 'meat', 'eggs', 'gourds', 'pasta', 'fish']:

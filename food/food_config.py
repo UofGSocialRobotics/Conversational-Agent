@@ -100,7 +100,11 @@ salt = "salt"
 sugars = 'sugars'
 fat = 'fat'
 saturates = 'saturates'
-nutrition_elements = [salt, sugars, fat, saturates]
+NSH_nutrition_elements = [salt, sugars, fat, saturates]
+protein = "protein"
+carbs = 'carbs'
+fibre = 'fibre'
+WHO_nutrition_elements = [salt, sugars, fat, saturates, protein, carbs, fibre]
 low_to_medium = 'low-to-medium'
 medium_to_high = 'medium-to-high'
 
@@ -109,19 +113,66 @@ medium_to_high = 'medium-to-high'
 ##                                       Recommended food values                                  ##
 ####################################################################################################
 
-RECOMMENDED_VALUES = dict()
-RECOMMENDED_VALUES[salt] = dict()
-RECOMMENDED_VALUES[salt][low_to_medium] = 0.36
-RECOMMENDED_VALUES[salt][medium_to_high] = 18.3
-RECOMMENDED_VALUES[sugars] = dict()
-RECOMMENDED_VALUES[sugars][low_to_medium] = 6
-RECOMMENDED_VALUES[sugars][medium_to_high] = 27
-RECOMMENDED_VALUES[fat] = dict()
-RECOMMENDED_VALUES[fat][low_to_medium] = 3.6
-RECOMMENDED_VALUES[fat][medium_to_high] = 21
-RECOMMENDED_VALUES[saturates] = dict()
-RECOMMENDED_VALUES[saturates][low_to_medium] = 1.25
-RECOMMENDED_VALUES[saturates][medium_to_high] = 6
+# recommended values in grams
+NSH_RECOMMENDED_VALUES = dict()
+NSH_RECOMMENDED_VALUES[salt] = dict()
+NSH_RECOMMENDED_VALUES[salt][low_to_medium] = 0.36
+NSH_RECOMMENDED_VALUES[salt][medium_to_high] = 1.8
+NSH_RECOMMENDED_VALUES[sugars] = dict()
+NSH_RECOMMENDED_VALUES[sugars][low_to_medium] = 6
+NSH_RECOMMENDED_VALUES[sugars][medium_to_high] = 27
+NSH_RECOMMENDED_VALUES[fat] = dict()
+NSH_RECOMMENDED_VALUES[fat][low_to_medium] = 3.6
+NSH_RECOMMENDED_VALUES[fat][medium_to_high] = 21
+NSH_RECOMMENDED_VALUES[saturates] = dict()
+NSH_RECOMMENDED_VALUES[saturates][low_to_medium] = 1.25
+NSH_RECOMMENDED_VALUES[saturates][medium_to_high] = 6
+
+minumum = 'min'
+maximum = 'max'
+# recommended values in percentage of kcal per meal/recipe
+grams = 'grams'
+percentage_of_kcal = 'percentage_of_kcal'
+unit = 'unit'
+WHO_RECOMMENDED_VALUES = dict()
+WHO_RECOMMENDED_VALUES[protein] = dict()
+WHO_RECOMMENDED_VALUES[protein][unit] = percentage_of_kcal
+WHO_RECOMMENDED_VALUES[protein][minumum] = 10
+WHO_RECOMMENDED_VALUES[protein][maximum] = 15
+WHO_RECOMMENDED_VALUES[carbs] = dict()
+WHO_RECOMMENDED_VALUES[carbs][unit] = percentage_of_kcal
+WHO_RECOMMENDED_VALUES[carbs][minumum] = 55
+WHO_RECOMMENDED_VALUES[carbs][maximum] = 75
+WHO_RECOMMENDED_VALUES[sugars] = dict()
+WHO_RECOMMENDED_VALUES[sugars][unit] = percentage_of_kcal
+WHO_RECOMMENDED_VALUES[sugars][minumum] = 0
+WHO_RECOMMENDED_VALUES[sugars][maximum] = 10
+WHO_RECOMMENDED_VALUES[fat] = dict()
+WHO_RECOMMENDED_VALUES[fat][unit] = percentage_of_kcal
+WHO_RECOMMENDED_VALUES[fat][minumum] = 15
+WHO_RECOMMENDED_VALUES[fat][maximum] = 30
+WHO_RECOMMENDED_VALUES[saturates] = dict()
+WHO_RECOMMENDED_VALUES[saturates][unit] = percentage_of_kcal
+WHO_RECOMMENDED_VALUES[saturates][minumum] = 0
+WHO_RECOMMENDED_VALUES[saturates][maximum] = 10
+WHO_RECOMMENDED_VALUES[fibre] = dict()
+WHO_RECOMMENDED_VALUES[fibre][unit] = grams
+WHO_RECOMMENDED_VALUES[fibre][minumum] = 25
+WHO_RECOMMENDED_VALUES[fibre][maximum] = 10
+WHO_RECOMMENDED_VALUES[salt] = dict()
+WHO_RECOMMENDED_VALUES[salt][unit] = grams
+WHO_RECOMMENDED_VALUES[salt][minumum] = 0
+WHO_RECOMMENDED_VALUES[salt][maximum] = 0.6
+
+CALORIES_PER_GRAM = dict()
+CALORIES_PER_GRAM[fat] = 9
+CALORIES_PER_GRAM[saturates] = 9
+CALORIES_PER_GRAM[carbs] = 4
+CALORIES_PER_GRAM[protein] = 4
+CALORIES_PER_GRAM[sugars] = 4
+
+
+
 
 
 ####################################################################################################
