@@ -7,87 +7,235 @@ import spacy
 import nlu_helper_functions as nlu_helper
 import re
 import food.food_config as fc
+from bs4 import BeautifulSoup
+# from selenium import webdriver
+import requests
+import sys
+import os
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+}
+
+INGREDIENTS_CATEGORIES_TO_SCRAP = ['vegetables', 'fruits', 'pulses', 'gourds', 'meat', 'fish', 'eggs', 'dishes', 'pasta', 'cereals']
+
+explored_ingredients = list()
+recipes_to_ratings = dict()
+ingredients_to_recipes = dict()
+recipes_to_scrap_list = list()
+
+
+if os.path.isfile('food/resources/recipes_DB/recipes_users_DB.json'):
+    with open('food/resources/recipes_DB/recipes_users_DB.json', 'r') as f_recipe_user_data:
+        content = json.load(f_recipe_user_data)
+        recipes_dict = content['recipes_data']
+        users_names = content['users_list']
+        users_comments_data = content['users_data']
+else:
+    recipes_dict = dict()
+    users_names = list()
+    users_comments_data = dict()
+
+
+print("n users = %d" % len(users_names))
+users_with_more_than_5_comments = 0
+for user, data in users_comments_data.items():
+    if data['n_comments'] >= 5:
+        users_with_more_than_5_comments += 1
+print("n users with > 5 comments = %d" % users_with_more_than_5_comments)
 
 to_scrap = [
     #test
-    # 'https://www.bbcgoodfood.com/recipes/goan-style-vegetable-curry-kitchari',
+    'https://www.bbcgoodfood.com/recipes/spinach-sweet-potato-lentil-dhal'
     # chicken
-    'https://www.bbcgoodfood.com/recipes/caesar-salad-crispy-chicken', # 5min, salad
-    'https://www.bbcgoodfood.com/recipes/sweet-potato-chicken-curry',  # curry
-    'https://www.bbcgoodfood.com/recipes/summer-winter-chicken', # first res
-    'https://www.bbcgoodfood.com/recipes/chicken-noodle-soup', # soup
-    'https://www.bbcgoodfood.com/recipes/crispy-greek-style-pie', # pie
-    'https://www.bbcgoodfood.com/recipes/easiest-ever-paella', # paella
-    'https://www.bbcgoodfood.com/recipes/chicken-breast-avocado-salad', # salad, chicken breast
-    'https://www.bbcgoodfood.com/recipes/moroccan-chicken-one-pot', #healthy
-    'https://www.bbcgoodfood.com/recipes/italian-stuffed-chicken', # GF
-    'https://www.bbcgoodfood.com/recipes/7997/sticky-chicken-with-sherry-almonds-and-dates', # dairy free
-    'https://www.bbcgoodfood.com/recipes/roast-chicken-roots', #GF
-    'https://www.bbcgoodfood.com/recipes/quick-chicken-hummus-bowl', # 5min
-    'https://www.bbcgoodfood.com/recipes/chilli-chicken-honey-soy', # 5min
-    
-    #avocado
-    'https://www.bbcgoodfood.com/recipes/linguine-avocado-tomato-lime', # vegan
-    'https://www.bbcgoodfood.com/recipes/avocado-panzanella', # vegan
-
-    # beef
-    'https://www.bbcgoodfood.com/recipes/beef-stroganoff-herby-pasta', # 30 min
-    'https://www.bbcgoodfood.com/recipes/beef-bourguignon-celeriac-mash', # 3h
-    'https://www.bbcgoodfood.com/recipes/crispy-chilli-beef', #40min
-    'https://www.bbcgoodfood.com/recipes/quick-beef-broccoli-noodles', # 20min
-
-    # broccoli
-    'https://www.bbcgoodfood.com/recipes/tortellini-pesto-broccoli', # 10min
-    'https://www.bbcgoodfood.com/recipes/parmesan-broccoli', # vegetarian
-    'https://www.bbcgoodfood.com/recipes/broccoli-stilton-soup', # soup
-
-    # cabbage
-    'https://www.bbcgoodfood.com/recipes/baked-haddock-cabbage-risotto',
-    'https://www.bbcgoodfood.com/recipes/gujarati-cabbage-coconut-potato',
-    'https://www.bbcgoodfood.com/recipes/squash-cabbage-sabzi',
-
-    # cauloflower
-    'https://www.bbcgoodfood.com/recipes/cauliflower-cheese-0',
-    'https://www.bbcgoodfood.com/recipes/cauliflower-rice', # 10 min
-    'https://www.bbcgoodfood.com/recipes/roasted-cauliflower-garlic-bay-lemon', #vegan
-
-    # cheese
-    'https://www.bbcgoodfood.com/recipes/gnocchi-mushrooms-blue-cheese',
-    'https://www.bbcgoodfood.com/recipes/leek-cheese-bacon-tart', #tart
-    'https://www.bbcgoodfood.com/recipes/goats-cheese-thyme-stuffed-chicken',
-
-    # chillies
-    'https://www.bbcgoodfood.com/recipes/red-lentil-chickpea-chilli-soup',
-    'https://www.bbcgoodfood.com/recipes/chilli-cheese-omelette', # 10min
-    'https://www.bbcgoodfood.com/recipes/stir-fried-curly-kale-chilli-garlic', # 10min, vegan
-
-    # eggs
-    'https://www.bbcgoodfood.com/recipes/scrambled-egg-stir-fry', # 10min
-    'https://www.bbcgoodfood.com/recipes/veggie-egg-fried-rice', # vegetarian
-    'https://www.bbcgoodfood.com/recipes/baked-eggs-spinach-tomato', # GF
-
-    # fish
-    'https://www.bbcgoodfood.com/recipes/thai-style-steamed-fish',
-    'https://www.bbcgoodfood.com/recipes/super-quick-fish-curry',
-    'https://www.bbcgoodfood.com/recipes/fish-tacos', # healthy
-
-    # salmon
-    'https://www.bbcgoodfood.com/recipes/pasta-salmon-peas',
-    'https://www.bbcgoodfood.com/recipes/superhealthy-salmon-burgers',
-    'https://www.bbcgoodfood.com/recipes/salmon-spinach-tartare-cream',
+    # 'https://www.bbcgoodfood.com/recipes/caesar-salad-crispy-chicken', # 5min, salad
+    # 'https://www.bbcgoodfood.com/recipes/sweet-potato-chicken-curry',  # curry
+    # 'https://www.bbcgoodfood.com/recipes/summer-winter-chicken', # first res
+    # 'https://www.bbcgoodfood.com/recipes/chicken-noodle-soup', # soup
+    # 'https://www.bbcgoodfood.com/recipes/crispy-greek-style-pie', # pie
+    # 'https://www.bbcgoodfood.com/recipes/easiest-ever-paella', # paella
+    # 'https://www.bbcgoodfood.com/recipes/chicken-breast-avocado-salad', # salad, chicken breast
+    # 'https://www.bbcgoodfood.com/recipes/moroccan-chicken-one-pot', #healthy
+    # 'https://www.bbcgoodfood.com/recipes/italian-stuffed-chicken', # GF
+    # 'https://www.bbcgoodfood.com/recipes/7997/sticky-chicken-with-sherry-almonds-and-dates', # dairy free
+    # 'https://www.bbcgoodfood.com/recipes/roast-chicken-roots', #GF
+    # 'https://www.bbcgoodfood.com/recipes/quick-chicken-hummus-bowl', # 5min
+    # 'https://www.bbcgoodfood.com/recipes/chilli-chicken-honey-soy', # 5min
+    #
+    # #avocado
+    # 'https://www.bbcgoodfood.com/recipes/linguine-avocado-tomato-lime', # vegan
+    # 'https://www.bbcgoodfood.com/recipes/avocado-panzanella', # vegan
+    #
+    # # beef
+    # 'https://www.bbcgoodfood.com/recipes/beef-stroganoff-herby-pasta', # 30 min
+    # 'https://www.bbcgoodfood.com/recipes/beef-bourguignon-celeriac-mash', # 3h
+    # 'https://www.bbcgoodfood.com/recipes/crispy-chilli-beef', #40min
+    # 'https://www.bbcgoodfood.com/recipes/quick-beef-broccoli-noodles', # 20min
+    #
+    # # broccoli
+    # 'https://www.bbcgoodfood.com/recipes/tortellini-pesto-broccoli', # 10min
+    # 'https://www.bbcgoodfood.com/recipes/parmesan-broccoli', # vegetarian
+    # 'https://www.bbcgoodfood.com/recipes/broccoli-stilton-soup', # soup
+    #
+    # # cabbage
+    # 'https://www.bbcgoodfood.com/recipes/baked-haddock-cabbage-risotto',
+    # 'https://www.bbcgoodfood.com/recipes/gujarati-cabbage-coconut-potato',
+    # 'https://www.bbcgoodfood.com/recipes/squash-cabbage-sabzi',
+    #
+    # # cauloflower
+    # 'https://www.bbcgoodfood.com/recipes/cauliflower-cheese-0',
+    # 'https://www.bbcgoodfood.com/recipes/cauliflower-rice', # 10 min
+    # 'https://www.bbcgoodfood.com/recipes/roasted-cauliflower-garlic-bay-lemon', #vegan
+    #
+    # # cheese
+    # 'https://www.bbcgoodfood.com/recipes/gnocchi-mushrooms-blue-cheese',
+    # 'https://www.bbcgoodfood.com/recipes/leek-cheese-bacon-tart', #tart
+    # 'https://www.bbcgoodfood.com/recipes/goats-cheese-thyme-stuffed-chicken',
+    #
+    # # chillies
+    # 'https://www.bbcgoodfood.com/recipes/red-lentil-chickpea-chilli-soup',
+    # 'https://www.bbcgoodfood.com/recipes/chilli-cheese-omelette', # 10min
+    # 'https://www.bbcgoodfood.com/recipes/stir-fried-curly-kale-chilli-garlic', # 10min, vegan
+    #
+    # # eggs
+    # 'https://www.bbcgoodfood.com/recipes/scrambled-egg-stir-fry', # 10min
+    # 'https://www.bbcgoodfood.com/recipes/veggie-egg-fried-rice', # vegetarian
+    # 'https://www.bbcgoodfood.com/recipes/baked-eggs-spinach-tomato', # GF
+    #
+    # # fish
+    # 'https://www.bbcgoodfood.com/recipes/thai-style-steamed-fish',
+    # 'https://www.bbcgoodfood.com/recipes/super-quick-fish-curry',
+    # 'https://www.bbcgoodfood.com/recipes/fish-tacos', # healthy
+    #
+    # # salmon
+    # 'https://www.bbcgoodfood.com/recipes/pasta-salmon-peas',
+    # 'https://www.bbcgoodfood.com/recipes/superhealthy-salmon-burgers',
+    # 'https://www.bbcgoodfood.com/recipes/salmon-spinach-tartare-cream',
 ]
 
+def get_seed_ingredients():
+    seed_ingredients = list()
+    for category, foods in food_dataparser.extensive_food_DBs.category_to_foods.items():
+        if category in INGREDIENTS_CATEGORIES_TO_SCRAP:
+            seed_ingredients += foods
+    print("ingredients to scrap = ", len(seed_ingredients))
+    return seed_ingredients
+
+def find_recipes(ingredients_list=['farfal']):
+    print("%d seed ingredients to look for" % len(ingredients_list))
+
+    url = "https://www.bbcgoodfood.com/search/recipes?query="
+    for ingredient in ingredients_list:
+        n_recipes_seen = 0
+        page_i = 0
+
+        query = url + ingredient
+        soup = BeautifulSoup(requests.get(query, headers=HEADERS).content, "html.parser")
+
+        n_res = int(re.search(r'\d+', soup.find('h1', {'class': 'search-title'}).text).group())
+
+        print("\nIngredient = %s, n results = %d to explore" % (ingredient, n_res))
+
+
+        # scrap first page of results
+        n_recipes_on_page = find_recipes_on_page(soup, ingredient)
+        n_recipes_seen += n_recipes_on_page
+
+        # scrap remaining pages if necessary
+        while n_recipes_seen < n_res:
+            page_i += 1
+            sys.stdout.write("\rExploring page %d" % page_i)
+            sys.stdout.flush()
+            new_query = query + "&page=" + page_i.__str__()
+            new_soup = BeautifulSoup(requests.get(new_query, headers=HEADERS).content, "html.parser")
+            n_recipes_on_page = find_recipes_on_page(new_soup, ingredient)
+            n_recipes_seen += n_recipes_on_page
+
+        explored_ingredients.append(ingredient)
+
+        #feedback to user
+        if ingredient in ingredients_to_recipes.keys():
+            print("\rFound %d recipes with 30 or more ratings for ingredient %s" % (len(ingredients_to_recipes[ingredient]), ingredient))
+        else:
+            print("\rFound no results with 30 or more ratings for ingredient %s" % ingredient)
+        print("--> %d recipes with 30 or more ratings to scrap" % len(recipes_to_scrap_list))
+
+        #save data
+        json_recipes_to_scrap = dict()
+        json_recipes_to_scrap['explored_ingredients'] = explored_ingredients
+        json_recipes_to_scrap['recipes_list'] = recipes_to_scrap_list
+        json_recipes_to_scrap['recipes_to_ratings'] = recipes_to_ratings
+        json_recipes_to_scrap['ingredients_to_recipes'] = ingredients_to_recipes
+        with open('food/resources/recipes_DB/recipes_to_scrap.json', 'w') as f:
+            json.dump(json_recipes_to_scrap, f, indent=True)
+
+
+
+
+def find_recipes_on_page(soup, ingredient):
+    if ingredient not in ingredients_to_recipes.keys():
+        ingredients_to_recipes[ingredient] = list()
+    n_recipes_on_page = 0
+    query_res_soup = BeautifulSoup(str(soup.find('div', {'id': 'search-results'})), features="html.parser")
+    articles_list = query_res_soup.findAll('article')
+    for article in articles_list:
+        try:
+            n_recipes_on_page += 1
+            res_a = article.findAll('a')
+            link = res_a[1]['href'] if len(res_a) == 2 else res_a[0]['href']
+            res_p = article.findAll('p')
+            n_ratings = int(re.search(r'\d+', res_p[0].text).group())
+            if n_ratings >= 30 and link not in recipes_to_scrap_list:
+                recipes_to_scrap_list.append(link)
+                recipes_to_ratings[link] = n_ratings
+            if n_ratings >= 30:
+                ingredients_to_recipes[ingredient].append(link)
+        except IndexError:
+            pass
+
+    return n_recipes_on_page
 
 def scraping():
-    recipes_list = list()
 
-    for i, url in enumerate(to_scrap):
-        print(url)
+    with open('food/resources/recipes_DB/recipes_to_scrap.json', 'r') as fin:
+        content = json.load(fin)
+        recipes_passed = 0
+        for i, recipe_id in enumerate(content['recipes_list']):
+            if recipes_passed:
+                print("%d recipes passed" % recipes_passed)
+                recipes_passed = 0
+            url = "https://www.bbcgoodfood.com/" + recipe_id
+            if recipe_id not in recipes_dict.keys():
+                try:
+                    recipe = scrap_recipe_at(url, recipe_id, i)
+                    recipes_dict[recipe_id] = recipe
+                except ssl.SSLEOFError:
+                    print("Error with recipe %s" % recipe_id)
+            else:
+                recipes_passed += 1
+                # print("pass %s" % recipe_id)
+
+            if i % 50 == 0:
+                save_recipes_users_data()
+
+    save_recipes_users_data()
+
+def save_recipes_users_data():
+    recipes_users_data = dict()
+    recipes_users_data['recipes_data'] = recipes_dict
+    recipes_users_data['users_list'] = users_names
+    recipes_users_data['users_data'] = users_comments_data
+    with open('food/resources/recipes_DB/recipes_users_DB.json', 'w') as f:
+        json.dump(recipes_users_data, f, indent=True)
+
+
+def scrap_recipe_at(url='https://www.bbcgoodfood.com/recipes/aubergine-goats-cheese-pasta', id=-1, i=-1):
+        print("scrapping recipe %s (# %d)" % (id, i))
         recipe = dict()
         # give the url as a string, it can be url from any site listed below
         scraper = scrape_me(url)
 
-        recipe['id'] = i
+        recipe['id'] = id
         recipe['title'] = scraper.title()
         recipe['total_time'] = scraper.total_time()
         # recipe['title'] = scraper.yields())
@@ -107,123 +255,63 @@ def scraping():
         recipe['nutrition'] = scraper.nutrition()
         recipe['additional_info'] = scraper.additional_info()
         recipe['url'] = url
+        recipe['ratings'] = scraper.rating_info()
+        comments = scrap_comments(scraper, url)
 
-        recipes_list.append(recipe)
-    # print(scraper.links())
+        comments_wo_duplicates = list()
+        already_seen_users = list()
+        for comment in comments:
+            user_name = comment['user_name']
+            if user_name not in already_seen_users:
+                already_seen_users.append(user_name)
+                comments_wo_duplicates.append(comment)
 
-    # print(recipes_list)
+        comments = comments_wo_duplicates
 
-    with open('food/resources/dm/bbcgoodfood_scraped_recipes.json', 'w') as f:
-        json.dump(recipes_list, f, indent=True)
+        recipe['comments'] = comments
 
-
-
-def analysis(print_unparsed_ingredients=False):
-    ingredients_found = list()
-    spacy_nlp = spacy.load("en_core_web_sm")
-
-    food_list = food_dataparser.extensive_food_DBs.all_foods_list
-    voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
-    total, correctely_parsed = 0, 0
-    all_ingredients = dict()
-
-    with open('food/resources/dm/bbcgoodfood_scraped_recipes.json', 'r') as f:
-        content = json.load(f)
-        for recipe in content:
-
-            # calculating healthiness values
-            NSH_healthiness_score = 0
-            for elt in fc.NSH_nutrition_elements:
-                # print(recipe['nutrition'][elt])
-                elt_quantity = float(recipe['nutrition'][elt].replace('g','') if 'g' in recipe['nutrition'][elt] else recipe['nutrition'][elt])
-                if elt_quantity <= fc.NSH_RECOMMENDED_VALUES[elt][fc.low_to_medium]:
-                    NSH_healthiness_score += 2
-                elif elt_quantity <= fc.NSH_RECOMMENDED_VALUES[elt][fc.medium_to_high]:
-                    NSH_healthiness_score += 1
-
-            WHO_healthiness_score = 0
-            for elt in fc.WHO_nutrition_elements:
-                # print(recipe['nutrition'][elt])
-                elt_quantity = float(recipe['nutrition'][elt].replace('g','') if 'g' in recipe['nutrition'][elt] else recipe['nutrition'][elt])
-                if fc.WHO_RECOMMENDED_VALUES[elt][fc.unit] == 'grams':
-                    if elt_quantity >= fc.WHO_RECOMMENDED_VALUES[elt][fc.minumum] and elt_quantity <= fc.WHO_RECOMMENDED_VALUES[elt][fc.maximum]:
-                        WHO_healthiness_score += 1
-                else:
-                    elt_cal = elt_quantity * fc.CALORIES_PER_GRAM[elt]
-                    percentage = elt_cal / float(recipe['nutrition']['kcal']) * 100
-                    # print(elt, elt_quantity, elt_cal, percentage)
-                    if percentage >= fc.WHO_RECOMMENDED_VALUES[elt][fc.minumum] and percentage <= fc.WHO_RECOMMENDED_VALUES[elt][fc.maximum]:
-                        WHO_healthiness_score += 1
-
-            # print(recipe['additional_info'])
-            tag_healthy = " / H" if "Healthy" in recipe['additional_info'] else " / NH"
-
-            print("Parsing %s --> NSH health score %d (max 8) %s / WHO health score %d (max 7)" % (recipe['title'], NSH_healthiness_score, tag_healthy, WHO_healthiness_score))
+        #collect comments data
+        for comment in comments:
+            user_name = comment['user_name']
+            if user_name not in users_names:
+                users_names.append(user_name)
+                users_comments_data[user_name] = dict()
+                users_comments_data[user_name]['n_comments'] = 1
+                users_comments_data[user_name]['recipes_commented'] = list()
+                users_comments_data[user_name]['recipes_commented'].append(recipe['id'])
+            else:
+                users_comments_data[user_name]['n_comments'] += 1
+                users_comments_data[user_name]['recipes_commented'].append(recipe['id'])
+                if users_comments_data[user_name]['n_comments'] == 5:
+                    print("%s --> 5 comments!" % user_name)
 
 
-            # parsing ingredients
-            for ingredient in recipe['ingredients']:
-                total += 1
-                ingredients_found_in_ingredient_string = list()
-                document = spacy_nlp(ingredient)
-                if 'stock' in ingredient:
-                    ingredients_found_in_ingredient_string.append('stock')
-                elif 'oil' in ingredient:
-                    ingredients_found_in_ingredient_string.append('oil')
-                else:
-                    utterance = nlu_helper.preprocess(ingredient)
-                    utterance = NLU.preprocess_foodNLU(utterance)
-                    NLU_ingredients = NLU.inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"], threshold=100)
-                    if NLU_ingredients:
-                        ingredients_found_in_ingredient_string += NLU_ingredients[2]
-                    list_of_words = ingredient.split() if " " in ingredient else ingredient
-                    # if "pasta" not in ingredients_found_in_ingredient_string:
-                    #     for w in list_of_words:
-                    #         if w in voc['pasta']:
-                    #             ingredients_found_in_ingredient_string.append(w)
-                # to eliminate duplicates
-                ingredients_found_in_ingredient_string = list(set(ingredients_found_in_ingredient_string))
-                if len(ingredients_found_in_ingredient_string) != 1:
-                    if ("cloves" in ingredients_found_in_ingredient_string or "juice" in ingredients_found_in_ingredient_string or "sauce" in ingredients_found_in_ingredient_string or 'ketchup' in ingredients_found_in_ingredient_string) and len(ingredients_found_in_ingredient_string) == 2 :
-                        ingredients_found_in_ingredient_string = [" ".join(ingredients_found_in_ingredient_string)]
-                if len(ingredients_found_in_ingredient_string) != 1:
-                    extact_matches = list()
-                    if ingredients_found_in_ingredient_string:
-                        for i in ingredients_found_in_ingredient_string:
-                            i_in_other_parsed_ingredient = False
-                            for j in ingredients_found_in_ingredient_string:
-                                if i != j and i in j:
-                                    i_in_other_parsed_ingredient = True
-                            if not i_in_other_parsed_ingredient and i in ingredient:
-                                extact_matches.append(i)
-                    ingredients_found_in_ingredient_string = extact_matches
-                if print_unparsed_ingredients and len(ingredients_found_in_ingredient_string) != 1:
-                    print(ingredient)
-                    print(", ".join(ingredients_found_in_ingredient_string))
-                else:
-                    for i in ingredients_found_in_ingredient_string:
-                        if i not in food_dataparser.extensive_food_DBs.food_to_category.keys():
-                            ingredient_category = 'unknown'
-                        else:
-                            ingredient_category = food_dataparser.extensive_food_DBs.food_to_category[i]
-                        if ingredient_category not in all_ingredients.keys():
-                            all_ingredients[ingredient_category] = dict()
-                        if i in all_ingredients[ingredient_category].keys():
-                            all_ingredients[ingredient_category][i] += 1
-                        else:
-                            all_ingredients[ingredient_category][i] = 1
-                    correctely_parsed += 1
+        if id == -1:
+            print(recipe)
+        # scrap_price(url)
 
-    print("Ingredients successfully parsed: %.2f" % (float(correctely_parsed) / total))
+        return recipe
 
-    for category, ingredients_dict in all_ingredients.items():
-        if category in ['dishes', 'unknown', 'dairy', 'vegetables', 'meat', 'eggs', 'gourds', 'pasta', 'fish']:
-            print("\n---------------")
-            print(category)
-            for ingredient, found_in_n_recipes in ingredients_dict.items():
-                print(ingredient, found_in_n_recipes)
+
+def scrap_comments(scraper, url):
+    n_comments, comments = scraper.comments()
+    next_page = 1
+    while len(comments) < n_comments:
+        sys.stdout.write("\rComments page %d" % next_page)
+        sys.stdout.flush()
+        new_url = url + "?page=" + str(next_page)
+        scraper = scrape_me(new_url)
+        _, new_comments = scraper.comments()
+        if not new_comments:
+            break
+        comments += new_comments
+        next_page += 1
+    return comments
+
 
 
 if __name__ == "__main__":
-    # scraping()
-    analysis(print_unparsed_ingredients=False)
+    # find_recipes(get_seed_ingredients())
+    scraping()
+    # scrap_recipe_at()
+    # analysis(print_unparsed_ingredients=False)
