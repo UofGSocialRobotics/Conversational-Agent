@@ -239,10 +239,18 @@ def plot_recipes_avg_scores():
         diff = float(recipes_data[recipe_id]['ratings']['ratingValue']) - our_rating
         diff_our_rating_BBCGF_rating[recipe_id] = [diff, abs(diff)]
     # print(data_ratings.values())
-    print(stats.mean([x[1] for x in data_ratings.values()]))
+    avg_ratings_list = [x[1] for x in data_ratings.values()]
+    n_ratings_list = [x[0] for x in data_ratings.values()]
+    print(stats.mean(avg_ratings_list))
     avg_diff = stats.mean([x[0] for x in diff_our_rating_BBCGF_rating.values()])
     avg_abs_diff = stats.mean([x[1] for x in diff_our_rating_BBCGF_rating.values()])
     print(avg_diff, avg_abs_diff)
+
+    plt.scatter(n_items_list, n_ratings_list)
+    plt.ylabel("Rating")
+    plt.xlabel("Number of ratings")
+    plt.title("Popularity of recipes")
+    plt.show()
 
 
 if __name__ == "__main__":
