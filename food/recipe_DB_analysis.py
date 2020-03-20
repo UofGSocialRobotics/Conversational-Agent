@@ -234,8 +234,11 @@ def plot_recipes_avg_scores():
             # if len(all_ratings) <= 15:
             #     print(all_ratings)
             #     print(float(sum(all_ratings))/len(all_ratings))
-        our_rating = float(sum(all_ratings))/len(all_ratings)
-        data_ratings[recipe_id] = [len(all_ratings), our_rating]
+        n_ratings = len(all_ratings)
+        if n_ratings > 1000:
+            print(recipe_id, all_ratings)
+        our_rating = float(sum(all_ratings))/n_ratings
+        data_ratings[recipe_id] = [n_ratings, our_rating]
         diff = float(recipes_data[recipe_id]['ratings']['ratingValue']) - our_rating
         diff_our_rating_BBCGF_rating[recipe_id] = [diff, abs(diff)]
     # print(data_ratings.values())
