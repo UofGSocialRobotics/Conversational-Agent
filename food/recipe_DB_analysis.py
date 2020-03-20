@@ -2,9 +2,11 @@ import spacy
 import json
 import csv
 import matplotlib.pyplot as plt
+import statistics as stats
 
 X_recipes = 10
 X_users = 10
+json_recipes_users_DB_path = 'food/resources/recipes_DB/recipes_users_DB.json'
 json_xUsers_Xrecipes_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
 csv_xUsers_Xrecipes_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.csv'
 csv_xUsers_Xrecipes_path_0_1 = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB_0_1.csv'
@@ -13,7 +15,7 @@ csv_xUsers_Xrecipes_path_0_1_2 = 'food/resources/recipes_DB/recipes'+X_recipes._
 
 def recipes_users_DB_numbers():
 
-    with open('food/resources/recipes_DB/recipes_users_DB.json', 'r') as f_recipe_user_data:
+    with open(json_recipes_users_DB_path, 'r') as f_recipe_user_data:
         content = json.load(f_recipe_user_data)
         recipes_dict = content['recipes_data']
         users_names = content['users_list']
@@ -136,6 +138,29 @@ def get_elts_with_X_or_more_ratings(elts_data, X=5, elt_name='users', key='n_com
     return elts
 
 
+def get_ratings_distribution():
+    with open(json_xUsers_Xrecipes_path, 'r') as fin:
+        content = json.load(fin)
+    recipes_data = content['recipes_data']
+    number_of_x = dict()
+    for recipe_id, recipe_data in recipes_data.items():
+        comments = recipe_data['comments']
+        for comment in comments:
+            rating = comment['n_stars']
+            if rating not in number_of_x.keys():
+                number_of_x[rating] = 1
+            else:
+                number_of_x[rating] += 1
+    print("Ratings distribution:")
+    sum_r, n_r = 0, 0
+    for k, v in number_of_x.items():
+        print("%d: %d" % (k, v))
+        sum_r += k*v
+        n_r += v
+    print("Ratings average")
+    print(float(sum_r) / n_r)
+
+
 def format_user_item_matrix(n_users, n_recipes):
     with open(json_xUsers_Xrecipes_path, 'r') as fin:
         content = json.load(fin)
@@ -186,9 +211,44 @@ def format_user_item_matrix(n_users, n_recipes):
             writer.writerow(row)
 
 
+def plot_recipes_avg_scores():
+    recipes_to_look_at = list()
+    with open(csv_xUsers_Xrecipes_path, 'r') as ratings_csv:
+        reader = csv.reader(ratings_csv, delimiter=',')
+        for row in reader:
+            recipes_to_look_at.append(row[0])
+    recipes_to_look_at = recipes_to_look_at[1:]
+
+    with open(json_recipes_users_DB_path, 'r') as json_data:
+        content = json.load(json_data)
+    recipes_data = content['recipes_data']
+
+    data_ratings = dict()
+    diff_our_rating_BBCGF_rating = dict()
+
+    for recipe_id in recipes_to_look_at:
+        recipe_comments = recipes_data[recipe_id]['comments']
+        all_ratings = list()
+        for comment in recipe_comments:
+            all_ratings.append(comment['n_stars'])
+            # if len(all_ratings) <= 15:
+            #     print(all_ratings)
+            #     print(float(sum(all_ratings))/len(all_ratings))
+        our_rating = float(sum(all_ratings))/len(all_ratings)
+        data_ratings[recipe_id] = [len(all_ratings), our_rating]
+        diff = float(recipes_data[recipe_id]['ratings']['ratingValue']) - our_rating
+        diff_our_rating_BBCGF_rating[recipe_id] = [diff, abs(diff)]
+    # print(data_ratings.values())
+    print(stats.mean([x[1] for x in data_ratings.values()]))
+    avg_diff = stats.mean([x[0] for x in diff_our_rating_BBCGF_rating.values()])
+    avg_abs_diff = stats.mean([x[1] for x in diff_our_rating_BBCGF_rating.values()])
+    print(avg_diff, avg_abs_diff)
+
 
 if __name__ == "__main__":
     # find_recipes(get_seed_ingredients())
-    n_users, n_recipes = recipes_users_DB_numbers()
-    format_user_item_matrix(n_users, n_recipes)
-    plot_number_ratings_number_items()
+    # n_users, n_recipes = recipes_users_DB_numbers()
+    # format_user_item_matrix(n_users, n_recipes)
+    # get_ratings_distribution()
+    # plot_number_ratings_number_items()
+    plot_recipes_avg_scores()
