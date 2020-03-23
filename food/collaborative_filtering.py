@@ -5,12 +5,15 @@ import math
 from collections import defaultdict
 import csv
 from food.ranking_eval import nDCGatK, MAPatK
+import numpy as np
+import random
 
 from surprise import Dataset
 from surprise import SVD, NMF
 from surprise.model_selection import KFold
 from surprise import KNNWithMeans
 from surprise.model_selection import GridSearchCV
+from surprise.prediction_algorithms.predictions import Prediction
 
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
@@ -94,7 +97,7 @@ def compare_CF_algos():
     algo_dict = dict()
 
     algo_dict['SVD-1-9-0.03-0.1-bestMAE'] = SVD(n_factors=1, n_epochs=9, lr_all=0.03, reg_all=0.1)
-    algo_dict['SVD-2-11-0.01-0.2-bestRMSE'] = SVD(n_factors=1, n_epochs=10, lr_all=0.03, reg_all=0.2)
+    algo_dict['SVD-2-11-0.01-0.2-bestRMSE'] = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.2)
 
     algo_dict['NMF-21-2-bestMAE'] = NMF(n_factors=21, n_epochs=2)
     algo_dict['NMF-15-2-bestRMSE'] = NMF(n_factors=15, n_epochs=2)
@@ -212,8 +215,70 @@ def compare_CF_algos():
             csvwriter.writerow(row)
 
 
+def get_reco():
+    user_name = 'lilmssquirrel'
+
+    best_recipe = list()
+
+    for i in range(0,10):
+        print('-----------')
+        kf = KFold(n_splits=5)
+
+        # algo_dict['NMF-21-2-bestMAE'] = NMF(n_factors=21, n_epochs=2)
+        # algo_dict['NMF-15-2-bestRMSE'] = NMF(n_factors=15, n_epochs=2)
+        #
+        # sim_options = {
+        #     "name": "pearson",
+        #     "min_support": 5,
+        #     "user_based": True,  # Compute  similarities between items
+        # }
+        # algo_dict['User-b KNNwMeans'] = KNNWithMeans(k=10, sim_options=sim_options)
+        algo_name = 'NMF-21-2-bestMAE'
+        algo = NMF(n_factors=21, n_epochs=2)
+
+        for trainset, testset in kf.split(data_BBCGoodFood):
+            algo.fit(trainset)
+
+        #get a list of all recipes ids
+        recipes_ids = ratings_df['item'].unique()
+        recipes_rated_by_teresahall = ratings_df.loc[ratings_df['user'] == user_name, 'item']
+        if i == 0:
+            ratings_df_2 = ratings_df.set_index('user', drop=False)
+            print(ratings_df_2.loc[user_name, 'item':'rating'])
+        # remove the recipes that teresahall has rated from the list of all recipe ids
+        recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_teresahall)
+
+        # get predictions
+        testset = [['teresahall', item, 4.] for item in recipes_to_pred]
+        predictions = algo.test(testset)
+        random.shuffle(predictions)
+        est_list = [pred.est for pred in predictions]
+        # print(est_list)
+        print(stats.mean(est_list), stats.stdev(est_list), min(est_list), max(est_list), est_list.count(5))
+
+        # get best prediction
+        pred_ratings = np.array([pred.est for pred in predictions])
+        pred_ratings_list = [[pred.iid, pred.est] for pred in predictions]
+        for i in range(10):
+            print(pred_ratings_list[i])
+        pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list, key=lambda x: x[0])))
+        pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list_sorted, key=lambda x: x[1])))
+        # print(pred_ratings_list_sorted)
+        i_max = pred_ratings.argmax()
+        print(i_max)
+        recipe_id = recipes_to_pred[i_max]
+        recipe_id = pred_ratings_list_sorted[0][0]
+        print(recipe_id)
+
+        best_recipe.append(recipe_id)
+
+    print("with", algo_name)
+    print("x = ", len(set(best_recipe)))
+    for r in set(best_recipe):
+        print(r[9:], best_recipe.count(r))
+
 if __name__ == "__main__":
     # optimize_memorybased_CF_algo(data_BBCGoodFood)
     # optimize_modelbased_CF_algos(data_MovieLens)
     # compare_CF_algos()
-    CF_PMF()
+    get_reco()

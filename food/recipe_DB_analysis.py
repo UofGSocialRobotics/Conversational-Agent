@@ -217,7 +217,10 @@ def plot_recipes_avg_scores():
         reader = csv.reader(ratings_csv, delimiter=',')
         for row in reader:
             recipes_to_look_at.append(row[0])
-    recipes_to_look_at = recipes_to_look_at[1:]
+    recipes_to_look_at = list(set(recipes_to_look_at[1:]))
+
+
+    # scores from ALL the data we collected
 
     with open(json_recipes_users_DB_path, 'r') as json_data:
         content = json.load(json_data)
@@ -236,7 +239,7 @@ def plot_recipes_avg_scores():
             #     print(float(sum(all_ratings))/len(all_ratings))
         n_ratings = len(all_ratings)
         if n_ratings > 1000:
-            print(recipe_id, all_ratings)
+            print(recipe_id, n_ratings)
         our_rating = float(sum(all_ratings))/n_ratings
         data_ratings[recipe_id] = [n_ratings, our_rating]
         diff = float(recipes_data[recipe_id]['ratings']['ratingValue']) - our_rating
@@ -249,8 +252,29 @@ def plot_recipes_avg_scores():
     avg_abs_diff = stats.mean([x[1] for x in diff_our_rating_BBCGF_rating.values()])
     print(avg_diff, avg_abs_diff)
 
-    plt.scatter(n_ratings_list, avg_ratings_list)
-    plt.ylabel("Rating")
+
+    # Scores from the data we use for CF
+    ratings_dict = dict()
+    with open(csv_xUsers_Xrecipes_path, 'r') as ratings_csv:
+        reader = csv.reader(ratings_csv, delimiter=',')
+        first_row = True
+        for row in reader:
+            if not first_row:
+                recipe, user, rating = row[0], row[1], row[2]
+                rating = round(float(rating))
+                if recipe not in ratings_dict.keys():
+                    ratings_dict[recipe] = list()
+                ratings_dict[recipe].append(rating)
+            first_row = False
+
+        for recipe, ratings in ratings_dict.items():
+            ratings_dict[recipe] = [len(ratings), stats.mean(ratings)]
+
+        ratings_list = [x[1] for x in ratings_dict.values()]
+        n_ratings_list = [x[0] for x in ratings_dict.values()]
+
+    plt.scatter(n_ratings_list, ratings_list)
+    plt.ylabel("Average rating")
     plt.xlabel("Number of ratings")
     plt.title("Popularity of recipes")
     plt.show()
