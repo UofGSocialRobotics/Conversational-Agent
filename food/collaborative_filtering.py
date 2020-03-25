@@ -66,12 +66,12 @@ def optimize_memorybased_CF_algo(data):
 
 def optimize_modelbased_CF_algos(data):
     param_grid = {
-        "n_factors": [1, 3, 6, 10, 30, 60, 100, 300],
-        "n_epochs": [3, 5, 10],
-        # "lr_all": [0.001, 0.003, 0.006, 0.01, 0.03, 0.06, 0.1],
-        # "reg_all": [0.2, 0.4, 0.6, 0.8]
+        "n_factors": [1, 2, 3, 4],
+        "n_epochs": [8, 9, 10, 11, 12],
+        "lr_all": [0.02, 0.03, 0.04, 0.05],
+        "reg_all": [0.05, 0.1, 0.2, 0.3]
     }
-    gs = GridSearchCV(NMF, param_grid, measures=["rmse", "mae"], cv=3)
+    gs = GridSearchCV(SVD, param_grid, measures=["rmse", "mae"], cv=3)
 
     gs.fit(data)
 
@@ -80,6 +80,7 @@ def optimize_modelbased_CF_algos(data):
 
     print(gs.best_score["rmse"])
     print(gs.best_params["rmse"])
+
 
 
 def compare_CF_algos():
@@ -97,8 +98,8 @@ def compare_CF_algos():
 
     algo_dict = dict()
 
-    algo_dict['SVD-1-9-0.03-0.1-bestMAE'] = SVD(n_factors=1, n_epochs=9, lr_all=0.03, reg_all=0.1)
-    algo_dict['SVD-2-11-0.01-0.2-bestRMSE'] = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.2)
+    algo_dict['SVD-1-12-0.02-0.05-bestMAE'] = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
+    algo_dict['SVD-3-8-0.02-0.3-bestRMSE'] = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.2)
 
     algo_dict['NMF-21-2-bestMAE'] = NMF(n_factors=21, n_epochs=2)
     algo_dict['NMF-15-2-bestRMSE'] = NMF(n_factors=15, n_epochs=2)
@@ -222,85 +223,89 @@ def get_reco():
 
     users = list(ratings_df['user'])
     users_unique = set(users)
-    for u in users_unique:
-
-        start = time.time()
-
-        user_name = u
-
-        print(u)
-
-        best_recipe = list()
-
-        for i in range(0,10):
-            # print('-----------')
-            kf = KFold(n_splits=5)
-
-            # algo_name = 'SVD-1-9-0.03-0.1-bestMAE'
-            # algo = SVD(n_factors=1, n_epochs=9, lr_all=0.03, reg_all=0.1)
-
-            algo_name = 'SVD-2-11-0.01-0.2-bestRMSE'
-            algo = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.2)
-
-            # algo_name = 'NMF-21-2-bestRMS'
-            # algo = NMF(n_factors=21, n_epochs=2)
-
-            # algo_name = 'NMF-15-2-bestRMSE'
-            # algo = NMF(n_factors=15, n_epochs=2)
-
-            # sim_options = {
-            #     "name": "pearson",
-            #     "min_support": 5,
-            #     "user_based": True,  # Compute  similarities between items
-            # }
-            # algo_name = 'User-b KNNwMeans'
-            # algo = KNNWithMeans(k=10, sim_options=sim_options)
 
 
-            for trainset, testset in kf.split(data_BBCGoodFood):
-                algo.fit(trainset)
+    for i_u, u in enumerate(users_unique):
 
-            #get a list of all recipes ids
-            recipes_ids = ratings_df['item'].unique()
-            recipes_rated_by_teresahall = ratings_df.loc[ratings_df['user'] == user_name, 'item']
-            if i == 0:
-                ratings_df_2 = ratings_df.set_index('user', drop=False)
-                # print(ratings_df_2.loc[user_name, 'item':'rating'])
-            # remove the recipes that teresahall has rated from the list of all recipe ids
-            recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_teresahall)
+        if i_u < 100000:
 
-            # get predictions
-            testset = [[user_name, item, 4.] for item in recipes_to_pred]
-            predictions = algo.test(testset)
-            random.shuffle(predictions)
-            est_list = [pred.est for pred in predictions]
-            # print(est_list)
-            # print(stats.mean(est_list), stats.stdev(est_list), min(est_list), max(est_list), est_list.count(5))
+            start = time.time()
 
-            # get best prediction
-            pred_ratings = np.array([pred.est for pred in predictions])
-            pred_ratings_list = [[pred.iid, pred.est] for pred in predictions]
-            pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list, key=lambda x: x[1])))
+            user_name = u
+            # print(u)
 
-            for j in range(5):
-                recipe_id = pred_ratings_list_sorted[j][0]
-                best_recipe.append(recipe_id)
+            best_recipe = list()
 
-        best_recipes_count = list()
-        # print("with", algo_name)
-        # print("x = ", len(set(best_recipe)))
-        for r in set(best_recipe):
-            best_recipes_count.append([r, best_recipe.count(r)])
+            for i in range(0,10):
+                # print('-----------')
+                kf = KFold(n_splits=5)
 
-        best_recipes_count = list(reversed(sorted(best_recipes_count, key=lambda x: x[1])))
+                algo_name = 'SVD-1-12-0.02-0.05-bestMAE'
+                algo = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
 
-        print(time.time() - start)
+                # algo_name = 'SVD-3-8-0.02-0.3-bestRMSE'
+                # algo = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.)
 
-        for x in best_recipes_count[:5]:
-            r, n_reco = x[0][9:], x[1]
-            if r not in best_recipes_for_all_users.keys():
-                best_recipes_for_all_users[r] = 0
-            best_recipes_for_all_users[r] += n_reco
+                # algo_name = 'NMF-21-2-bestRMS'
+                # algo = NMF(n_factors=21, n_epochs=2)
+
+                # algo_name = 'NMF-15-2-bestRMSE'
+                # algo = NMF(n_factors=15, n_epochs=2)
+
+                # sim_options = {
+                #     "name": "pearson",
+                #     "min_support": 5,
+                #     "user_based": True,  # Compute  similarities between items
+                # }
+                # algo_name = 'User-b KNNwMeans'
+                # algo = KNNWithMeans(k=10, sim_options=sim_options)
+
+
+                for trainset, testset in kf.split(data_BBCGoodFood):
+                    algo.fit(trainset)
+
+                #get a list of all recipes ids
+                recipes_ids = ratings_df['item'].unique()
+                recipes_rated_by_teresahall = ratings_df.loc[ratings_df['user'] == user_name, 'item']
+                if i == 0:
+                    ratings_df_2 = ratings_df.set_index('user', drop=False)
+                    # print(ratings_df_2.loc[user_name, 'item':'rating'])
+                # remove the recipes that teresahall has rated from the list of all recipe ids
+                recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_teresahall)
+
+                # get predictions
+                testset = [[user_name, item, 4.] for item in recipes_to_pred]
+                predictions = algo.test(testset)
+                random.shuffle(predictions)
+                est_list = [pred.est for pred in predictions]
+                # print(est_list)
+                # print(stats.mean(est_list), stats.stdev(est_list), min(est_list), max(est_list), est_list.count(5))
+
+                # get best prediction
+                pred_ratings = np.array([pred.est for pred in predictions])
+                pred_ratings_list = [[pred.iid, pred.est] for pred in predictions]
+                pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list, key=lambda x: x[1])))
+
+                for j in range(5):
+                    recipe_id = pred_ratings_list_sorted[j][0]
+                    best_recipe.append(recipe_id)
+
+            best_recipes_count = list()
+            # print("with", algo_name)
+            # print("x = ", len(set(best_recipe)))
+            for r in set(best_recipe):
+                best_recipes_count.append([r, best_recipe.count(r)])
+
+            best_recipes_count = list(reversed(sorted(best_recipes_count, key=lambda x: x[1])))
+
+            print(time.time() - start)
+
+            for x in best_recipes_count[:5]:
+                r, n_reco = x[0][9:], x[1]
+                # print(r, n_reco)
+                if r not in best_recipes_for_all_users.keys():
+                    best_recipes_for_all_users[r] = 0
+                best_recipes_for_all_users[r] += n_reco
 
     best_recipes_for_all_users_list = list()
     for r, n_reco in best_recipes_for_all_users.items():
@@ -312,6 +317,6 @@ def get_reco():
 
 if __name__ == "__main__":
     # optimize_memorybased_CF_algo(data_BBCGoodFood)
-    # optimize_modelbased_CF_algos(data_MovieLens)
+    # optimize_modelbased_CF_algos(data_BBCGoodFood)
     # compare_CF_algos()
     get_reco()

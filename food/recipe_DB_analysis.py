@@ -12,12 +12,26 @@ csv_xUsers_Xrecipes_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__
 csv_xUsers_Xrecipes_path_0_1 = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB_0_1.csv'
 csv_xUsers_Xrecipes_path_0_1_2 = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB_0_1_2.csv'
 
+no_nutrition_val_file_path = 'food/resources/recipes_DB/no_nutrition_val_recipes.txt'
+
 
 def recipes_users_DB_numbers():
+
+    with open(no_nutrition_val_file_path, 'r') as f_no_nutrition_val:
+        r_no_nutrition_list = list()
+        for line in f_no_nutrition_val:
+            r_no_nutrition = '/' + line.split(' /')[1][:-1]
+            r_no_nutrition_list.append(r_no_nutrition)
 
     with open(json_recipes_users_DB_path, 'r') as f_recipe_user_data:
         content = json.load(f_recipe_user_data)
         recipes_dict = content['recipes_data']
+
+        print("Eliminating %d recipes with no nutritional info" % len(r_no_nutrition_list))
+        for r_id in r_no_nutrition_list:
+            recipes_dict[r_id] = None
+            del recipes_dict[r_id]
+
         users_names = content['users_list']
         users_comments_data = content['users_data']
         # count_n_opinions_per_elt(users_comments_data)
@@ -282,8 +296,8 @@ def plot_recipes_avg_scores():
 
 if __name__ == "__main__":
     # find_recipes(get_seed_ingredients())
-    # n_users, n_recipes = recipes_users_DB_numbers()
-    # format_user_item_matrix(n_users, n_recipes)
-    # get_ratings_distribution()
-    # plot_number_ratings_number_items()
+    n_users, n_recipes = recipes_users_DB_numbers()
+    format_user_item_matrix(n_users, n_recipes)
+    get_ratings_distribution()
+    plot_number_ratings_number_items()
     plot_recipes_avg_scores()

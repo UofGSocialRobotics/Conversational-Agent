@@ -100,7 +100,7 @@ salt = "salt"
 sugars = 'sugars'
 fat = 'fat'
 saturates = 'saturates'
-NSH_nutrition_elements = [salt, sugars, fat, saturates]
+FSA_nutrition_elements = [salt, sugars, fat, saturates]
 protein = "protein"
 carbs = 'carbs'
 fibre = 'fibre'
@@ -114,19 +114,19 @@ medium_to_high = 'medium-to-high'
 ####################################################################################################
 
 # recommended values in grams
-NSH_RECOMMENDED_VALUES = dict()
-NSH_RECOMMENDED_VALUES[salt] = dict()
-NSH_RECOMMENDED_VALUES[salt][low_to_medium] = 0.36
-NSH_RECOMMENDED_VALUES[salt][medium_to_high] = 1.8
-NSH_RECOMMENDED_VALUES[sugars] = dict()
-NSH_RECOMMENDED_VALUES[sugars][low_to_medium] = 6
-NSH_RECOMMENDED_VALUES[sugars][medium_to_high] = 27
-NSH_RECOMMENDED_VALUES[fat] = dict()
-NSH_RECOMMENDED_VALUES[fat][low_to_medium] = 3.6
-NSH_RECOMMENDED_VALUES[fat][medium_to_high] = 21
-NSH_RECOMMENDED_VALUES[saturates] = dict()
-NSH_RECOMMENDED_VALUES[saturates][low_to_medium] = 1.25
-NSH_RECOMMENDED_VALUES[saturates][medium_to_high] = 6
+FSA_RECOMMENDED_VALUES = dict()
+FSA_RECOMMENDED_VALUES[salt] = dict()
+FSA_RECOMMENDED_VALUES[salt][low_to_medium] = 0.36
+FSA_RECOMMENDED_VALUES[salt][medium_to_high] = 1.8
+FSA_RECOMMENDED_VALUES[sugars] = dict()
+FSA_RECOMMENDED_VALUES[sugars][low_to_medium] = 6
+FSA_RECOMMENDED_VALUES[sugars][medium_to_high] = 27
+FSA_RECOMMENDED_VALUES[fat] = dict()
+FSA_RECOMMENDED_VALUES[fat][low_to_medium] = 3.6
+FSA_RECOMMENDED_VALUES[fat][medium_to_high] = 21
+FSA_RECOMMENDED_VALUES[saturates] = dict()
+FSA_RECOMMENDED_VALUES[saturates][low_to_medium] = 1.25
+FSA_RECOMMENDED_VALUES[saturates][medium_to_high] = 6
 
 minumum = 'min'
 maximum = 'max'

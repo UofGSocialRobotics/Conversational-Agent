@@ -1,4 +1,3 @@
-When recommending 5 recipes to each user of the DB, we recommend a total of 50 different recipes
 cherry-bakewell-cake 5920
 sausage-sage-onion-stuffing 4153
 apple-blackberry-crumble 3694
