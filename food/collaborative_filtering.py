@@ -240,11 +240,11 @@ def get_reco():
                 # print('-----------')
                 kf = KFold(n_splits=5)
 
-                algo_name = 'SVD-1-12-0.02-0.05-bestMAE'
-                algo = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
+                # algo_name = 'SVD-1-12-0.02-0.05-bestMAE'
+                # algo = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
 
-                # algo_name = 'SVD-3-8-0.02-0.3-bestRMSE'
-                # algo = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.)
+                algo_name = 'SVD-3-8-0.02-0.3-bestRMSE'
+                algo = SVD(n_factors=2, n_epochs=11, lr_all=0.01, reg_all=0.)
 
                 # algo_name = 'NMF-21-2-bestRMS'
                 # algo = NMF(n_factors=21, n_epochs=2)

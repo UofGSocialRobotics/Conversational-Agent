@@ -3,6 +3,8 @@ import json
 import csv
 import matplotlib.pyplot as plt
 import statistics as stats
+import pandas as pd
+from food.healthy_RS import get_ids_recipes_CF_coverage_set, get_ids_healthy_recipes_coverage_set
 
 X_recipes = 10
 X_users = 10
@@ -225,7 +227,7 @@ def format_user_item_matrix(n_users, n_recipes):
             writer.writerow(row)
 
 
-def plot_recipes_avg_scores():
+def get_recipes_avg_scores(plot_bool=False):
     recipes_to_look_at = list()
     with open(csv_xUsers_Xrecipes_path, 'r') as ratings_csv:
         reader = csv.reader(ratings_csv, delimiter=',')
@@ -284,20 +286,66 @@ def plot_recipes_avg_scores():
         for recipe, ratings in ratings_dict.items():
             ratings_dict[recipe] = [len(ratings), stats.mean(ratings)]
 
+    if plot_bool:
         ratings_list = [x[1] for x in ratings_dict.values()]
         n_ratings_list = [x[0] for x in ratings_dict.values()]
+        plt.scatter(n_ratings_list, ratings_list)
+        plt.ylabel("Average rating")
+        plt.xlabel("Number of ratings")
+        plt.title("Popularity of recipes")
+        plt.show()
 
-    plt.scatter(n_ratings_list, ratings_list)
+    else:
+        return ratings_dict
+
+
+def plot_data():
+    ratings_dict = get_recipes_avg_scores()
+
+    healthy_recipes_ids = ['/recipes/' + r for r in get_ids_healthy_recipes_coverage_set()]
+    CF_recipes_ids = ['/recipes/' + r for r in get_ids_recipes_CF_coverage_set()]
+    # print(healthy_recipes_ids)
+    # print(CF_recipes_ids)
+
+    x_CF_recipes, y_CF_recipes = list(), list()
+    x_healthy_recipes, y_healthy_recipes = list(), list()
+    x_intersection, y_intersection = list(), list()
+    x_other_recipes, y_other_recipes = list(), list()
+
+    for r, ratings_data in ratings_dict.items():
+        # print(r)
+        if r in healthy_recipes_ids and r in CF_recipes_ids:
+            x_intersection.append(ratings_data[0])
+            y_intersection.append(ratings_data[1])
+        elif r in healthy_recipes_ids:
+            x_healthy_recipes.append(ratings_data[0])
+            y_healthy_recipes.append(ratings_data[1])
+        elif r in CF_recipes_ids:
+            x_CF_recipes.append(ratings_data[0])
+            y_CF_recipes.append(ratings_data[1])
+        else:
+            x_other_recipes.append(ratings_data[0])
+            y_other_recipes.append(ratings_data[1])
+
+    plt.scatter(x_other_recipes, y_other_recipes, c='grey', label="Others")
+    plt.scatter(x_healthy_recipes, y_healthy_recipes, c='green', label="Healthy recipes")
+    plt.scatter(x_CF_recipes, y_CF_recipes, c='blue', label='CF recipes')
+    plt.scatter(x_intersection, y_intersection, c='orange', label="Intersection")
     plt.ylabel("Average rating")
     plt.xlabel("Number of ratings")
     plt.title("Popularity of recipes")
+    plt.legend()
     plt.show()
+
+
+
 
 
 if __name__ == "__main__":
     # find_recipes(get_seed_ingredients())
-    n_users, n_recipes = recipes_users_DB_numbers()
-    format_user_item_matrix(n_users, n_recipes)
-    get_ratings_distribution()
-    plot_number_ratings_number_items()
-    plot_recipes_avg_scores()
+    # n_users, n_recipes = recipes_users_DB_numbers()
+    # format_user_item_matrix(n_users, n_recipes)
+    # get_ratings_distribution()
+    # plot_number_ratings_number_items()
+    # get_recipes_avg_scores()
+    plot_data()
