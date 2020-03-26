@@ -4,7 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 import statistics as stats
 import pandas as pd
-from food.healthy_RS import get_ids_recipes_CF_coverage_set, get_ids_healthy_recipes_coverage_set
+import food.RS_utils as rs_utils
 
 X_recipes = 10
 X_users = 10
@@ -300,32 +300,64 @@ def get_recipes_avg_scores(plot_bool=False):
 
 
 def plot_data():
+    with open(json_recipes_users_DB_path, 'r') as fjson:
+        content = json.load(fjson)
+    all_recipes = content['recipes_data']
+
     ratings_dict = get_recipes_avg_scores()
 
-    healthy_recipes_ids = ['/recipes/' + r for r in get_ids_healthy_recipes_coverage_set()]
-    CF_recipes_ids = ['/recipes/' + r for r in get_ids_recipes_CF_coverage_set()]
+    healthy_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_healthy_recipes_coverage_set()]
+    CF_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_recipes_CF_coverage_set()]
     # print(healthy_recipes_ids)
     # print(CF_recipes_ids)
 
-    x_CF_recipes, y_CF_recipes = list(), list()
-    x_healthy_recipes, y_healthy_recipes = list(), list()
-    x_intersection, y_intersection = list(), list()
-    x_other_recipes, y_other_recipes = list(), list()
+    x_CF_recipes, y_CF_recipes, h_CF_recipes, bbc_s_CF, bbc_rc_CF = list(), list(), list(), list(), list()
+    x_healthy_recipes, y_healthy_recipes, h_healthy_recipes, bbc_s_healthy, bbc_rc_healthy = list(), list(), list(), list(), list()
+    x_intersection, y_intersection, h_intersection, bbc_s_intersection, bbc_rc_intersection = list(), list(), list(), list(), list()
+    x_other_recipes, y_other_recipes, h_other_recipes, bbc_s_others, bbc_rc_others = list(), list(), list(), list(), list()
+
+    x_all, y_all, h_all, bbc_s_all, bbc_rc_all = list(), list(), list(), list(), list()
 
     for r, ratings_data in ratings_dict.items():
         # print(r)
+        recipe = all_recipes[r]
+        h = rs_utils.FSA_heathsclore(recipe)
+        bbc_s = rs_utils.get_bbc_score(recipe)
+        bbc_rc = rs_utils.get_bbc_rating_count(recipe)
         if r in healthy_recipes_ids and r in CF_recipes_ids:
             x_intersection.append(ratings_data[0])
+            x_CF_recipes.append(ratings_data[0])
+            x_healthy_recipes.append(ratings_data[0])
             y_intersection.append(ratings_data[1])
+            y_CF_recipes.append(ratings_data[1])
+            y_healthy_recipes.append(ratings_data[1])
+            h_intersection.append(h)
+            h_CF_recipes.append(h)
+            h_healthy_recipes.append(h)
+            bbc_s_intersection.append(bbc_s)
+            bbc_s_CF.append(bbc_s)
+            bbc_s_healthy.append(bbc_s)
+            bbc_rc_intersection.append(bbc_rc)
+            bbc_rc_CF.append(bbc_rc)
+            bbc_rc_healthy.append(bbc_rc)
         elif r in healthy_recipes_ids:
             x_healthy_recipes.append(ratings_data[0])
             y_healthy_recipes.append(ratings_data[1])
+            h_healthy_recipes.append(h)
+            bbc_s_healthy.append(bbc_s)
+            bbc_rc_healthy.append(bbc_rc)
         elif r in CF_recipes_ids:
             x_CF_recipes.append(ratings_data[0])
             y_CF_recipes.append(ratings_data[1])
+            h_CF_recipes.append(h)
+            bbc_s_CF.append(bbc_s)
+            bbc_rc_CF.append(bbc_rc)
         else:
             x_other_recipes.append(ratings_data[0])
             y_other_recipes.append(ratings_data[1])
+            h_other_recipes.append(h)
+            bbc_s_others.append(bbc_s)
+            bbc_rc_others.append(bbc_rc)
 
     plt.scatter(x_other_recipes, y_other_recipes, c='grey', label="Others")
     plt.scatter(x_healthy_recipes, y_healthy_recipes, c='green', label="Healthy recipes")
@@ -335,8 +367,36 @@ def plot_data():
     plt.xlabel("Number of ratings")
     plt.title("Popularity of recipes")
     plt.legend()
-    plt.show()
+    # plt.show()
 
+    rs_utils.print_list_distribution(h_CF_recipes)
+
+    x_all = x_CF_recipes + x_healthy_recipes + x_other_recipes
+    x_all = rs_utils.diff_list(x_all, x_intersection)
+
+    y_all = y_CF_recipes + y_healthy_recipes + y_other_recipes
+    y_all = rs_utils.diff_list(y_all, y_intersection)
+
+    h_all = h_CF_recipes + h_healthy_recipes + h_other_recipes
+    h_all = rs_utils.diff_list(h_all, h_intersection)
+
+    bbc_s_all = bbc_s_CF + bbc_s_healthy + bbc_s_others
+    bbc_s_all = rs_utils.diff_list(bbc_s_all, bbc_s_intersection)
+
+    bbc_rc_all = bbc_rc_CF + bbc_rc_healthy + bbc_rc_others
+    bbc_rc_all = rs_utils.diff_list(bbc_rc_all, bbc_rc_intersection)
+
+    csv_rows = list()
+    csv_rows.append(["Set", "Ratings Avg", "Ratings stddev", "Ratings Count Avg", "Ratings Count std" "BBC ratings Avg", "BBC ratings stddev", "BBC ratings c avg", "BBC ratings c std", "FSA scores avg", "FSA scores std"])
+    csv_rows.append(["CF", stats.mean(y_CF_recipes), stats.stdev(y_CF_recipes), stats.mean(x_CF_recipes), stats.stdev(x_CF_recipes), stats.mean(bbc_s_CF), stats.stdev(bbc_s_CF), stats.mean(bbc_rc_CF), stats.stdev(bbc_rc_CF), stats.mean(h_CF_recipes), stats.stdev(h_CF_recipes)])
+    csv_rows.append(["Healthy", stats.mean(y_healthy_recipes), stats.stdev(y_healthy_recipes), stats.mean(x_healthy_recipes), stats.stdev(x_healthy_recipes), stats.mean(bbc_s_healthy), stats.stdev(bbc_s_healthy), stats.mean(bbc_rc_healthy), stats.stdev(bbc_rc_healthy), stats.mean(h_healthy_recipes), stats.stdev(h_healthy_recipes)])
+    csv_rows.append(["Other", stats.mean(y_other_recipes), stats.stdev(y_other_recipes), stats.mean(x_other_recipes), stats.stdev(x_other_recipes), stats.mean(bbc_s_others), stats.stdev(bbc_s_others), stats.mean(bbc_rc_others), stats.stdev(bbc_rc_others), stats.mean(h_other_recipes), stats.stdev(h_other_recipes)])
+    csv_rows.append(["All", stats.mean(y_all), stats.stdev(y_all), stats.mean(x_all), stats.stdev(x_all), stats.mean(bbc_s_all), stats.stdev(bbc_s_all), stats.mean(bbc_rc_all), stats.stdev(bbc_rc_all), stats.mean(h_all), stats.stdev(h_all)])
+
+    with open("food/resources/recipes_DB/stats_RS_sets.csv", 'w') as csvf:
+        csv_writer = csv.writer(csvf)
+        for row in csv_rows:
+            csv_writer.writerow(row)
 
 
 

@@ -269,7 +269,6 @@ def get_reco():
                 recipes_rated_by_teresahall = ratings_df.loc[ratings_df['user'] == user_name, 'item']
                 if i == 0:
                     ratings_df_2 = ratings_df.set_index('user', drop=False)
-                    # print(ratings_df_2.loc[user_name, 'item':'rating'])
                 # remove the recipes that teresahall has rated from the list of all recipe ids
                 recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_teresahall)
 
@@ -278,8 +277,6 @@ def get_reco():
                 predictions = algo.test(testset)
                 random.shuffle(predictions)
                 est_list = [pred.est for pred in predictions]
-                # print(est_list)
-                # print(stats.mean(est_list), stats.stdev(est_list), min(est_list), max(est_list), est_list.count(5))
 
                 # get best prediction
                 pred_ratings = np.array([pred.est for pred in predictions])
@@ -291,8 +288,6 @@ def get_reco():
                     best_recipe.append(recipe_id)
 
             best_recipes_count = list()
-            # print("with", algo_name)
-            # print("x = ", len(set(best_recipe)))
             for r in set(best_recipe):
                 best_recipes_count.append([r, best_recipe.count(r)])
 
