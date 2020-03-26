@@ -120,6 +120,14 @@ def recipe_DB_heathscores_analysis():
     # for x in recipes_hs_list:
     #     print(x[0], x[1])
 
+def get_reco():
+    healthy_recipes = get_ids_healthy_recipes_coverage_set()
+    random.shuffle(healthy_recipes)
+    reco = healthy_recipes[:6]
+    for r in reco:
+        print(r)
+    return reco
+
 
 def compare_coverage_sets_healthy_reco_vs_CF_reco():
     healthy_recipes_list, CF_recipes_list = get_ids_healthy_recipes_coverage_set(), get_ids_recipes_CF_coverage_set()
@@ -131,4 +139,5 @@ def compare_coverage_sets_healthy_reco_vs_CF_reco():
 
 if __name__ == "__main__":
     # recipe_DB_heathscores_analysis()
-    compare_coverage_sets_healthy_reco_vs_CF_reco()
+    # compare_coverage_sets_healthy_reco_vs_CF_reco()
+    get_reco()

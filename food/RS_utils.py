@@ -1,5 +1,5 @@
 import food.food_config as fc
-from copy import deepcopy
+import json
 
 X_recipes = 10
 X_users = 10
@@ -71,6 +71,7 @@ def get_ids_recipes_CF_coverage_set():
         for line in CF_reco_f:
             CF_recipes_list.append(line.split()[0])
     return CF_recipes_list
+
 
 
 def diff_list(l1, l2):

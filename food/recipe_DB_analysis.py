@@ -387,7 +387,7 @@ def plot_data():
     bbc_rc_all = rs_utils.diff_list(bbc_rc_all, bbc_rc_intersection)
 
     csv_rows = list()
-    csv_rows.append(["Set", "Ratings Avg", "Ratings stddev", "Ratings Count Avg", "Ratings Count std" "BBC ratings Avg", "BBC ratings stddev", "BBC ratings c avg", "BBC ratings c std", "FSA scores avg", "FSA scores std"])
+    csv_rows.append(["Set", "Ratings Avg", "Ratings stddev", "Ratings Count Avg", "Ratings Count std", "BBC ratings Avg", "BBC ratings stddev", "BBC ratings c avg", "BBC ratings c std", "FSA scores avg", "FSA scores std"])
     csv_rows.append(["CF", stats.mean(y_CF_recipes), stats.stdev(y_CF_recipes), stats.mean(x_CF_recipes), stats.stdev(x_CF_recipes), stats.mean(bbc_s_CF), stats.stdev(bbc_s_CF), stats.mean(bbc_rc_CF), stats.stdev(bbc_rc_CF), stats.mean(h_CF_recipes), stats.stdev(h_CF_recipes)])
     csv_rows.append(["Healthy", stats.mean(y_healthy_recipes), stats.stdev(y_healthy_recipes), stats.mean(x_healthy_recipes), stats.stdev(x_healthy_recipes), stats.mean(bbc_s_healthy), stats.stdev(bbc_s_healthy), stats.mean(bbc_rc_healthy), stats.stdev(bbc_rc_healthy), stats.mean(h_healthy_recipes), stats.stdev(h_healthy_recipes)])
     csv_rows.append(["Other", stats.mean(y_other_recipes), stats.stdev(y_other_recipes), stats.mean(x_other_recipes), stats.stdev(x_other_recipes), stats.mean(bbc_s_others), stats.stdev(bbc_s_others), stats.mean(bbc_rc_others), stats.stdev(bbc_rc_others), stats.mean(h_other_recipes), stats.stdev(h_other_recipes)])
