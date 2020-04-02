@@ -112,11 +112,11 @@ def recipe_DB_heathscores_analysis():
     for k, v in count_scores.items():
         print(k, v['total'], v['H_tag'])
 
-    print("-----")
-
-    random.shuffle(recipes_hs_list)
-    recipes_hs_list = list(sorted(recipes_hs_list, key=lambda x: x[1]))
-    print(len(recipes_hs_list))
+    # print("-----")
+    #
+    # random.shuffle(recipes_hs_list)
+    # recipes_hs_list = list(sorted(recipes_hs_list, key=lambda x: x[1]))
+    # print(len(recipes_hs_list))
     # for x in recipes_hs_list:
     #     print(x[0], x[1])
 
@@ -138,6 +138,6 @@ def compare_coverage_sets_healthy_reco_vs_CF_reco():
 
 
 if __name__ == "__main__":
-    # recipe_DB_heathscores_analysis()
+    recipe_DB_heathscores_analysis()
     # compare_coverage_sets_healthy_reco_vs_CF_reco()
-    get_reco()
+    # get_reco()

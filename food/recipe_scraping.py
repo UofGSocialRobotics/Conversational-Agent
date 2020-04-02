@@ -44,6 +44,8 @@ for user, data in users_comments_data.items():
         users_with_more_than_5_comments += 1
 print("n users with > 5 comments = %d" % users_with_more_than_5_comments)
 
+print("n recipes = %d" % len(recipes_dict))
+
 to_scrap = [
     #test
     'https://www.bbcgoodfood.com/recipes/spinach-sweet-potato-lentil-dhal'
@@ -310,8 +312,10 @@ def scrap_comments(scraper, url):
 
 
 
+
 if __name__ == "__main__":
+    get_seed_ingredients()
     # find_recipes(get_seed_ingredients())
-    scraping()
+    # scraping()
     # scrap_recipe_at()
     # analysis(print_unparsed_ingredients=False)

@@ -7,6 +7,7 @@ file_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_u
 
 healthy_reco_coverage_file_path = 'food/resources/recipes_DB/healthy_reco_coverage.txt'
 CF_reco_coverage_file_path = 'food/resources/recipes_DB/CF_reco_coverage_2.txt'
+CFhBias_coverage_file_path = 'food/resources/recipes_DB/CFHbias_reco_coverage.txt'
 
 def print_list_distribution(l):
     for elt in set(l):
@@ -64,6 +65,14 @@ def get_ids_healthy_recipes_coverage_set():
         for line in healthy_reco_f:
             healthy_recipes_list.append(line[9:].split()[0])
     return healthy_recipes_list
+
+
+def get_ids_CFhBias_recipes_coverage_set():
+    recipes_list = list()
+    with open(CFhBias_coverage_file_path, 'r') as f:
+        for line in f:
+            recipes_list.append(line[9:].split()[0])
+    return recipes_list
 
 def get_ids_recipes_CF_coverage_set():
     CF_recipes_list = list()

@@ -287,7 +287,7 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
             for x in pred_ratings_list:
                 rid, pred = x[0], x[1]
                 h = rs_utils.FSA_heathsclore(content['recipes_data'][rid])
-                pred = (pred/5 + float(h-4)/12) / 2 * 5
+                pred = (pred/5 + (1 - float(h-4)/8)) / 2 * 5
                 new_pred_ratings_list.append([rid, pred])
             pred_ratings_list = new_pred_ratings_list
         pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list, key=lambda x: x[1])))
@@ -313,7 +313,7 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
     return reco
 
 
-def get_coverage():
+def get_coverage(healthy_bias=False):
 
     best_recipes_for_all_users = list()
 
@@ -338,23 +338,23 @@ if __name__ == "__main__":
     # optimize_modelbased_CF_algos(data_BBCGoodFood)
     # compare_CF_algos()
 
-    ratings_list = [['/recipes/dads-chocolate-drop-cakes', 3],
-                    ['/recipes/best-ever-chocolate-brownies-recipe', 2],
-                    ['/recipes/ultimate-chocolate-cake', 5],
-                    ['/recipes/lemon-drizzle-cake', 4],
-                    ['/recipes/chilli-con-carne-recipe', 5],
-                    ['sweet-chilli-jam', 2],
-                    ['autumn-tomato-chutne', 5],
-                    ['spiced-vegetable-biryani', 3],
-                    ['sticky-lemon-chicken', 3],
-                    ['healthy-egg-chips', 0]]
-    user_name = 'lucile_uniqueID0101'
-    get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    print('-----')
-    get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
-    get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
-    get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
+    # ratings_list = [['/recipes/dads-chocolate-drop-cakes', 3],
+    #                 ['/recipes/best-ever-chocolate-brownies-recipe', 2],
+    #                 ['/recipes/ultimate-chocolate-cake', 5],
+    #                 ['/recipes/lemon-drizzle-cake', 4],
+    #                 ['/recipes/chilli-con-carne-recipe', 5],
+    #                 ['sweet-chilli-jam', 2],
+    #                 ['autumn-tomato-chutne', 5],
+    #                 ['spiced-vegetable-biryani', 3],
+    #                 ['sticky-lemon-chicken', 3],
+    #                 ['healthy-egg-chips', 0]]
+    # user_name = 'lucile_uniqueID0101'
+    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
+    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
+    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
+    # print('-----')
+    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
+    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
+    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
 
-    # get_coverage()
+    get_coverage(healthy_bias=True)
