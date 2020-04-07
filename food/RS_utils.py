@@ -1,13 +1,23 @@
 import food.food_config as fc
 import json
 
-X_recipes = 10
-X_users = 10
-file_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
+X_users = 8
+X_recipes = 8
+file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
 
-healthy_reco_coverage_file_path = 'food/resources/recipes_DB/healthy_reco_coverage.txt'
-CF_reco_coverage_file_path = 'food/resources/recipes_DB/CF_reco_coverage_2.txt'
+healthy_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Healthy_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
+CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
 CFhBias_coverage_file_path = 'food/resources/recipes_DB/CFHbias_reco_coverage.txt'
+
+
+pref, hybrid, healthy, prefhybrid, prefhealthy, healthyhybrid, others, _all = 'pref', 'hybrid', 'healthy', 'pref+hybrid', 'pref+healthy', 'healthy+hybrid', 'others', 'all'
+x, y, FSA_s, BBC_r, BBC_rc = 'x', 'y', 'FSA_score', 'bbc_rating', 'bbc_rating_count'
+colors = dict()
+colors[pref] = 'blue'
+colors[healthy] = '#57E13D'
+colors[others] = '#DEDFDF'
+colors[prefhealthy] = 'orange'
+
 
 def print_list_distribution(l):
     for elt in set(l):
@@ -60,10 +70,13 @@ def FSA_heathsclore(recipe):
 
 
 def get_ids_healthy_recipes_coverage_set():
+    # print("in get_ids_healthy_recipes_coverage_set")
     healthy_recipes_list = list()
     with open(healthy_reco_coverage_file_path, 'r') as healthy_reco_f:
         for line in healthy_reco_f:
-            healthy_recipes_list.append(line[9:].split()[0])
+            rid = line.split()[0]
+            # print(line[:-1], rid)
+            healthy_recipes_list.append(rid)
     return healthy_recipes_list
 
 
@@ -78,7 +91,7 @@ def get_ids_recipes_CF_coverage_set():
     CF_recipes_list = list()
     with open(CF_reco_coverage_file_path, 'r') as CF_reco_f:
         for line in CF_reco_f:
-            CF_recipes_list.append(line.split()[0])
+            CF_recipes_list.append(line[9:-1])
     return CF_recipes_list
 
 

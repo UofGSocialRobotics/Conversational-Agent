@@ -29,9 +29,9 @@ BBCGoodFood_dataset_str = 'BBCGoodFood'
 movieLens_dataset_str = 'MovieLens'
 
 X_recipes = 10
-X_users = 10
-json_file_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
-file_path = 'food/resources/recipes_DB/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.csv'
+X_users = 8
+json_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
+file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.csv'
 ratings_df = pd.read_csv(file_path)
 reader = Reader(rating_scale=(0, 5))
 data_BBCGoodFood = Dataset.load_from_df(ratings_df[['user', 'item', 'rating']], reader)
@@ -71,10 +71,10 @@ def optimize_memorybased_CF_algo(data):
 
 def optimize_modelbased_CF_algos(data):
     param_grid = {
-        "n_factors": [1, 2, 3, 4],
-        "n_epochs": [8, 9, 10, 11, 12],
-        "lr_all": [0.02, 0.03, 0.04, 0.05],
-        "reg_all": [0.05, 0.1, 0.2, 0.3]
+        "n_factors": [9, 10, 11],
+        "n_epochs": [33, 35, 37],
+        "lr_all": [0.003],
+        "reg_all": [0.3, 0.4, 0.5]
     }
     gs = GridSearchCV(SVD, param_grid, measures=["rmse", "mae"], cv=3)
 
@@ -241,8 +241,8 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
         # algo_name = 'SVD-1-12-0.02-0.05-bestMAE'
         # algo = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
 
-        algo_name = 'SVD-3-8-0.02-0.3-bestRMSE'
-        algo = SVD(n_factors=3, n_epochs=8, lr_all=0.02, reg_all=0.3)
+        algo_name = 'SVD-15-30-0.003-0.3-bestRMSE'
+        algo = SVD(n_factors=15, n_epochs=30, lr_all=0.003, reg_all=0.3)
 
         # algo_name = 'NMF-21-2-bestRMS'
         # algo = NMF(n_factors=21, n_epochs=2)
@@ -324,7 +324,7 @@ def get_coverage(healthy_bias=False):
 
         if i_u < 100000:
 
-            reco = get_reco(user_name=u)
+            reco = get_reco(user_name=u, healthy_bias=False)
 
             for r in reco:
                 if r not in best_recipes_for_all_users:
