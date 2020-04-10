@@ -8,6 +8,7 @@ from food import DM as food_DM
 from food import NLG as food_NLG
 from food import NLU as food_NLU
 from food import heath_diagnostic
+from food import RS as food_RS
 import ca_logging as logging
 import data_collection
 import config
@@ -46,7 +47,7 @@ class Modules:
             # self.DataCollector = data_collection.DataCollector
             dataCollector_config = {"module": data_collection.DataCollector, "name": "DataCollector", "subscribes": config.DataCollector_subscribes, "publishes": config.DataCollector_publishes, "ack_msg": config.FIREBASE_KEY_ACK}
             self.modules = list()
-            self.modules.append(dataCollector_config)
+            # self.modules.append(dataCollector_config)
 
     def set_domain(self, domain):
         if domain == "movies":
@@ -63,8 +64,13 @@ class Modules:
             # SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": config.SentimentAnalysis_subscribes, "publishes": config.SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": config.HealthDiagnostic_subscribes, "publishes": config.HealthDiagnostic_publishes}
             # self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
+            # RS_config = {"module": RS, "name": "RS", "subscribes": config.RS_subrscribes, "publishes": config.RS_publishes}
             self.modules += [NLU_config, DM_config, NLG_config, HeathDiagnostic_config]
             logging.log.info("(config.py) Set domain as food.")
+        elif domain == "RS_eval":
+            RS_config = {"module": food_RS.RS, "name": "RS", "subscribes": config.RS_subrscribes, "publishes": config.RS_publishes}
+            self.modules += [RS_config]
+            logging.log.info("(config.py) Set domain as RS_eval.")
         else:
             logging.log.error("No %s domain" % domain)
             exit(0)

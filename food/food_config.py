@@ -171,7 +171,10 @@ CALORIES_PER_GRAM[carbs] = 4
 CALORIES_PER_GRAM[protein] = 4
 CALORIES_PER_GRAM[sugars] = 4
 
-
+rid = "recipe_id"
+uid = 'user_id'
+rating = "rating"
+reco = "recommendation"
 
 
 

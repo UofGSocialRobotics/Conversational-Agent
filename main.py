@@ -4,6 +4,8 @@ import argparse
 import threading
 import config_modules
 
+from food.collaborative_filtering import CFRS
+
 import server_using_firebase
 
 def main():
@@ -28,6 +30,7 @@ if __name__ == '__main__':
     argp = argparse.ArgumentParser()
     argp.add_argument("--food", help="Movie recommendation system", action="store_true")
     argp.add_argument("--movies", help="Food recommendation system", action="store_true")
+    argp.add_argument("--rseval", help="Evaluation of recommendation system (RecSys paper)", action="store_true")
     argp.add_argument("--gui", help="To get a GUI to stop the system", action="store_true")
     # argp.add_argument("--debug", help="Sentence to debug", action="store")
 
@@ -37,6 +40,10 @@ if __name__ == '__main__':
         config_modules.modules.set_domain("movies")
     elif args.food:
         config_modules.modules.set_domain("food")
+    elif args.rseval:
+        config_modules.modules.set_domain("RS_eval")
+        cfrs = CFRS.getInstance()
+        cfrs.start()
     else:
         argp.print_help()
         exit(0)

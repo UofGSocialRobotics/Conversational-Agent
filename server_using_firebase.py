@@ -194,7 +194,7 @@ class ServerUsingFirebase:
 
     def reset_timer(self, client_id):
         if client_id not in self.timer_threads.keys():
-            log.warn("%s: client is already stopped!" % self.name)
+            log.warn("%s: client %s  is already stopped!" % (self.name, client_id))
         else:
             self.timer_threads[client_id].cancel()
             self.start_timer(client_id)
@@ -214,8 +214,11 @@ class ServerUsingFirebase:
 
         log.debug("%s: new client, id = %s" % (self.name, client_id))
         # Listeners: for modules
-        self.subscribe_whiteboard(config.MSG_NLG + client_id)
-        self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
+        if config.DOMAIN == config.DOMAIN_RS_EVAL:
+            self.subscribe_whiteboard(config.MSG_RS_OUT + client_id)
+        else:
+            self.subscribe_whiteboard(config.MSG_NLG + client_id)
+            self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
         # Listener: for client
         dialog_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DIALOG))
         datacol_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DATACOLLECTION))
@@ -240,7 +243,7 @@ class ServerUsingFirebase:
         client_id = topic.split("/")[-1]
         if config.MSG_DATACOL_OUT in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
-        elif config.MSG_NLG in topic:
+        elif config.MSG_NLG in topic or config.MSG_RS_OUT in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
             if isinstance(message, dict) and "intent" in message.keys() and message["intent"] == "bye":
                 self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
@@ -261,7 +264,7 @@ class ServerUsingFirebase:
         self.clients_services[client_id] = list()
         for module_config in config_modules.modules.modules:
             args = list(module_config.values())[2:]
-            print(module_config)
+            # print(module_config)
             new_module_name = module_config["name"]
             if new_module_name == "NLG":
                 if config.aamas_study_CS:
@@ -274,6 +277,7 @@ class ServerUsingFirebase:
                 else:
                     cs = config.exp_cs_control
                 args.append(cs)
+            # print(module_config["module"])
             new_module = module_config["module"](client_id, *args)                
             
             self.clients_services[client_id].append(new_module)

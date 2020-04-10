@@ -356,8 +356,8 @@ def get_datasets_stats(bool_plot=False):
 
     healthy_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_healthy_recipes_coverage_set()]
     CF_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_recipes_CF_coverage_set()]
-    # CFHbias_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_CFhBias_recipes_coverage_set()]
-    CFHbias_recipes_ids = []
+    hybrid_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_CFhBias_recipes_coverage_set()]
+    # hybrid_recipes_ids = []
     # print(healthy_recipes_ids)
     # print(CF_recipes_ids)
 
@@ -383,7 +383,9 @@ def get_datasets_stats(bool_plot=False):
     print("Going through %d recipes" % len(ratings_dict.keys()))
     print("Coverage pref-based algo =", len(CF_recipes_ids))
     print("Coverage healthy-based algo =", len(healthy_recipes_ids))
+    print("Coverage hybrid-based algo =", len(hybrid_recipes_ids))
 
+    only_pref, only_hybrid, only_healthy = list(), list(), list()
 
     for r, ratings_data in ratings_dict.items():
         # print(r)
@@ -393,22 +395,49 @@ def get_datasets_stats(bool_plot=False):
         h = rs_utils.FSA_heathsclore(recipe)
         bbc_r = rs_utils.get_bbc_score(recipe)
         bbc_rc = rs_utils.get_bbc_rating_count(recipe)
+        data_to_add_in = list()
+
+
         # --- 3 intersections to look at
+        # in_intersection = False
         if r in healthy_recipes_ids and r in CF_recipes_ids:
-            data_to_add_in = [rs_utils.pref, rs_utils.healthy, rs_utils.prefhealthy]
-        elif r in CFHbias_recipes_ids and r in CF_recipes_ids:
-            data_to_add_in = [rs_utils.hybrid, rs_utils.pref, rs_utils.prefhybrid]
-        elif r in CFHbias_recipes_ids and r in healthy_recipes_ids:
-            data_to_add_in = [rs_utils.hybrid, rs_utils.healthy, rs_utils.healthyhybrid]
-        elif r in CF_recipes_ids:
-            data_to_add_in = [rs_utils.pref]
-        elif r in healthy_recipes_ids:
-            data_to_add_in = [rs_utils.healthy]
-        elif r in CFHbias_recipes_ids:
-            data_to_add_in = [rs_utils.hybrid]
-        else:
+            data_to_add_in.append(rs_utils.prefhealthy)
+            # in_intersection = True
+        if r in hybrid_recipes_ids and r in CF_recipes_ids:
+            data_to_add_in.append(rs_utils.prefhybrid)
+            # in_intersection = True
+        if r in hybrid_recipes_ids and r in healthy_recipes_ids:
+            data_to_add_in.append(rs_utils.healthyhybrid)
+            # in_intersection = True
+
+        # if not in_intersection:
+        if r in CF_recipes_ids:
+            data_to_add_in.append(rs_utils.pref)
+            # in_intersection = True
+        if r in healthy_recipes_ids:
+            data_to_add_in.append(rs_utils.healthy)
+            # in_intersection = True
+        if r in hybrid_recipes_ids:
+            data_to_add_in.append(rs_utils.hybrid)
+            # in_intersection = True
+
+        # print(hybrid_recipes_ids)
+        if len(data_to_add_in) == 1:
+            if rs_utils.pref in data_to_add_in:
+                only_pref.append(r)
+            elif rs_utils.healthy in data_to_add_in:
+                only_healthy.append(r)
+            elif rs_utils.hybrid in data_to_add_in:
+                only_hybrid.append(r)
+
+        # if not in_intersection:
+        if not data_to_add_in:
             data_to_add_in = [rs_utils.others]
+
+
         data_to_add_in.append(rs_utils._all)
+
+        data_to_add_in = list(set(data_to_add_in))
 
 
         for k in data_to_add_in:
@@ -419,10 +448,19 @@ def get_datasets_stats(bool_plot=False):
             data[k][rs_utils.BBC_rc].append(bbc_rc)
 
 
-    data_to_plot = [rs_utils.others, rs_utils.pref, rs_utils.healthy, rs_utils.prefhealthy]
+    data_to_plot = [rs_utils.others, rs_utils.pref, rs_utils.healthy, rs_utils.hybrid, rs_utils.prefhealthy, rs_utils.healthyhybrid, rs_utils.prefhybrid]
     if bool_plot:
         for k in data_to_plot:
-            plt.scatter(data[k][rs_utils.x], data[k][rs_utils.y], c=rs_utils.colors[k], label=k+" ("+len(data[k][rs_utils.x]).__str__()+")")
+            if k == rs_utils.pref:
+                sub_label = "\\"+len(only_pref).__str__()
+            elif k == rs_utils.healthy:
+                sub_label = "\\"+len(only_healthy).__str__()
+            elif k == rs_utils.hybrid:
+                sub_label = "\\"+len(only_hybrid).__str__()
+            else:
+                sub_label = ""
+            label_str = k+" ("+len(data[k][rs_utils.x]).__str__()+sub_label+")"
+            plt.scatter(data[k][rs_utils.x], data[k][rs_utils.y], c=rs_utils.colors[k], label=label_str)
         # plt.scatter(x_other_recipes, y_other_recipes, c='grey', label="Others")
         # plt.scatter(x_healthy_recipes, y_healthy_recipes, c='green', label="Healthy recipes")
         # plt.scatter(x_CF_recipes, y_CF_recipes, c='blue', label='CF recipes')
@@ -458,20 +496,20 @@ def get_datasets_stats(bool_plot=False):
         new_row = list()
         new_row.append(k)
 
-        new_row.append(stats.mean(data[k][rs_utils.y]))
-        new_row.append(stats.stdev(data[k][rs_utils.y]))
+        new_row.append(rs_utils.get_mean(data[k][rs_utils.y]))
+        new_row.append(rs_utils.get_std(data[k][rs_utils.y]))
 
-        new_row.append(stats.mean(data[k][rs_utils.x]))
-        new_row.append(stats.stdev(data[k][rs_utils.x]))
+        new_row.append(rs_utils.get_mean(data[k][rs_utils.x]))
+        new_row.append(rs_utils.get_std(data[k][rs_utils.x]))
 
-        new_row.append(stats.mean(data[k][rs_utils.BBC_r]))
-        new_row.append(stats.stdev(data[k][rs_utils.BBC_r]))
+        new_row.append(rs_utils.get_mean(data[k][rs_utils.BBC_r]))
+        new_row.append(rs_utils.get_std(data[k][rs_utils.BBC_r]))
 
-        new_row.append(stats.mean(data[k][rs_utils.BBC_rc]))
-        new_row.append(stats.stdev(data[k][rs_utils.BBC_rc]))
+        new_row.append(rs_utils.get_mean(data[k][rs_utils.BBC_rc]))
+        new_row.append(rs_utils.get_std(data[k][rs_utils.BBC_rc]))
 
-        new_row.append(stats.mean(data[k][rs_utils.FSA_s]))
-        new_row.append(stats.stdev(data[k][rs_utils.FSA_s]))
+        new_row.append(rs_utils.get_mean(data[k][rs_utils.FSA_s]))
+        new_row.append(rs_utils.get_std(data[k][rs_utils.FSA_s]))
 
     # csv_rows.append(["Healthy", stats.mean(y_healthy_recipes), stats.stdev(y_healthy_recipes), stats.mean(x_healthy_recipes), stats.stdev(x_healthy_recipes), stats.mean(bbc_s_healthy), stats.stdev(bbc_s_healthy), stats.mean(bbc_rc_healthy), stats.stdev(bbc_rc_healthy), stats.mean(h_healthy_recipes), stats.stdev(h_healthy_recipes)])
     # csv_rows.append(["Other", stats.mean(y_other_recipes), stats.stdev(y_other_recipes), stats.mean(x_other_recipes), stats.stdev(x_other_recipes), stats.mean(bbc_s_others), stats.stdev(bbc_s_others), stats.mean(bbc_rc_others), stats.stdev(bbc_rc_others), stats.mean(h_other_recipes), stats.stdev(h_other_recipes)])

@@ -1,7 +1,8 @@
 import cryptography.fernet as fernet
 import json
 
-
+DOMAIN_RS_EVAL = "RS_eval"
+DOMAIN = DOMAIN_RS_EVAL
 
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
@@ -80,6 +81,10 @@ MSG_DATACOL_OUT = "DataCollector_out/"
 MSG_HEALTH_DIAGNOSTIC_IN = "HealthDiagnostic_in/"
 MSG_HEALTH_DIAGNOSTIC_OUT = "HealthDiagnostic_out/"
 
+## RS
+MSG_RS_IN = "RS_in"
+MSG_RS_OUT = "RS_out"
+
 # Client to server, message content:
 MSG_CONNECTION = "client connected"
 
@@ -87,14 +92,16 @@ MSG_CONNECTION = "client connected"
 MSG_ACK_AMT_INFO = "ack amt info"
 MSG_ACK_CONNECTION = "ack new connection"
 
+MSG_GET_RECO = "get reco"
+
 
 ## NLU
 NLU_subscribes = [MSG_SERVER_IN, MSG_DM_CONV_STATE]
 NLU_publishes = MSG_NLU
 
 ## DM
-DM_subscribes = [MSG_NLU, MSG_SA]
-DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT, MSG_DM_CONV_STATE]
+DM_subscribes = [MSG_NLU, MSG_SA,MSG_RS_OUT]
+DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT, MSG_DM_CONV_STATE, MSG_RS_IN]
 
 ## NLG
 NLG_subscribes = [MSG_DM, MSG_DM_RECIPE_LIST]
@@ -111,6 +118,12 @@ DataCollector_publishes = MSG_DATACOL_OUT
 ## Health Diagnostic
 HealthDiagnostic_subscribes = [MSG_HEALTH_DIAGNOSTIC_IN]
 HealthDiagnostic_publishes = MSG_HEALTH_DIAGNOSTIC_OUT
+
+## RS
+RS_subrscribes = [MSG_RS_IN]
+if DOMAIN == DOMAIN_RS_EVAL:
+    RS_subrscribes = [MSG_SERVER_IN]
+RS_publishes = MSG_RS_OUT
 
 ####################################################################################################
 ##                                        Firebase Keys                                           ##

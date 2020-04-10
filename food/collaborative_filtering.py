@@ -10,6 +10,8 @@ import random
 import time
 import json
 
+from ca_logging import log
+
 from surprise import Dataset
 from surprise import SVD, NMF
 from surprise.model_selection import KFold
@@ -28,12 +30,12 @@ flatten = lambda l: [item for sublist in l for item in sublist]
 BBCGoodFood_dataset_str = 'BBCGoodFood'
 movieLens_dataset_str = 'MovieLens'
 
-X_recipes = 10
-X_users = 8
+X_recipes = rs_utils.X_recipes
+X_users = rs_utils.X_users
 json_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
 file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.csv'
 ratings_df = pd.read_csv(file_path)
-reader = Reader(rating_scale=(0, 5))
+reader = Reader(rating_scale=(1, 5))
 data_BBCGoodFood = Dataset.load_from_df(ratings_df[['user', 'item', 'rating']], reader)
 
 data_MovieLens = Dataset.load_builtin('ml-100k')
@@ -223,7 +225,7 @@ def compare_CF_algos():
 
 
 
-def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
+def get_reco(algo_list, user_name, healthy_bias=False, ratings_list=list(), verbose=False):
     if verbose:
         print(user_name)
 
@@ -234,29 +236,7 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
 
     best_recipe = list()
 
-    for i in range(0,10):
-        # print('-----------')
-        kf = KFold(n_splits=5)
-
-        # algo_name = 'SVD-1-12-0.02-0.05-bestMAE'
-        # algo = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
-
-        algo_name = 'SVD-15-30-0.003-0.3-bestRMSE'
-        algo = SVD(n_factors=15, n_epochs=30, lr_all=0.003, reg_all=0.3)
-
-        # algo_name = 'NMF-21-2-bestRMS'
-        # algo = NMF(n_factors=21, n_epochs=2)
-
-        # algo_name = 'NMF-15-2-bestRMSE'
-        # algo = NMF(n_factors=15, n_epochs=2)
-
-        # sim_options = {
-        #     "name": "pearson",
-        #     "min_support": 5,
-        #     "user_based": True,  # Compute  similarities between items
-        # }
-        # algo_name = 'User-b KNNwMeans'
-        # algo = KNNWithMeans(k=10, sim_options=sim_options)
+    for algo in algo_list:
 
         idx = ratings_df.last_valid_index()
         for ratings_data in ratings_list:
@@ -264,16 +244,13 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
             idx += 1
             ratings_df.loc[idx] = [recipe_id, user_name, rating]
 
-        for trainset, testset in kf.split(data_BBCGoodFood):
-            algo.fit(trainset)
-
         #get a list of all recipes ids
         recipes_ids = ratings_df['item'].unique()
-        recipes_rated_by_teresahall = ratings_df.loc[ratings_df['user'] == user_name, 'item']
-        if i == 0:
-            ratings_df_2 = ratings_df.set_index('user', drop=False)
+        recipes_rated_by_user = ratings_df.loc[ratings_df['user'] == user_name, 'item']
+        # if i == 0:
+        #     ratings_df_2 = ratings_df.set_index('user', drop=False)
         # remove the recipes that teresahall has rated from the list of all recipe ids
-        recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_teresahall)
+        recipes_to_pred = np.setdiff1d(recipes_ids, recipes_rated_by_user)
 
         # get predictions
         testset = [[user_name, item, 4.] for item in recipes_to_pred]
@@ -282,13 +259,27 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
 
         # get best prediction
         pred_ratings_list = [[pred.iid, pred.est] for pred in predictions]
+        n_healthy = 0
         if healthy_bias:
             new_pred_ratings_list = list()
             for x in pred_ratings_list:
                 rid, pred = x[0], x[1]
                 h = rs_utils.FSA_heathsclore(content['recipes_data'][rid])
-                pred = (pred/5 + (1 - float(h-4)/8)) / 2 * 5
+                # h_scaled = 1 - float(h-4)/8
+                if h < 7:
+                    h_scaled = 3
+                elif h > 9:
+                    h_scaled = 1
+                else:
+                    h_scaled = 2
+                h_scaled = h_scaled / 3
+                if h_scaled == 1:
+                    n_healthy += 1
+                pred_scaled = pred/5
+                # print(pred_scaled, h_scaled)
+                pred = (rs_utils.coef_pref*pred_scaled + rs_utils.coef_healthy*h_scaled) / (rs_utils.coef_pref + rs_utils.coef_healthy) * 5
                 new_pred_ratings_list.append([rid, pred])
+            # print(n_healthy, len(pred_ratings_list))
             pred_ratings_list = new_pred_ratings_list
         pred_ratings_list_sorted = list(reversed(sorted(pred_ratings_list, key=lambda x: x[1])))
 
@@ -303,7 +294,10 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
 
         best_recipes_count = list(reversed(sorted(best_recipes_count, key=lambda x: x[1])))
 
-    reco = [x[0] for x in best_recipes_count[:5]]
+    reco = [x[0] for x in best_recipes_count[:rs_utils.from_n_best]]
+    if rs_utils.n_reco != rs_utils.from_n_best:
+        random.shuffle(reco)
+        reco = reco[:rs_utils.n_reco]
 
     if verbose:
         print(time.time() - start)
@@ -313,7 +307,7 @@ def get_reco(user_name, healthy_bias=False, ratings_list=list(), verbose=False):
     return reco
 
 
-def get_coverage(healthy_bias=False):
+def get_coverage(algo_list, healthy_bias=False, verbose=False):
 
     best_recipes_for_all_users = list()
 
@@ -324,7 +318,7 @@ def get_coverage(healthy_bias=False):
 
         if i_u < 100000:
 
-            reco = get_reco(user_name=u, healthy_bias=False)
+            reco = get_reco(algo_list=algo_list, user_name=u, healthy_bias=healthy_bias, verbose=verbose)
 
             for r in reco:
                 if r not in best_recipes_for_all_users:
@@ -333,28 +327,67 @@ def get_coverage(healthy_bias=False):
     for x in best_recipes_for_all_users:
         print(x)
 
+
+class CFRS:
+    """Singleton class"""
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """
+        :return: the unique ServerUsingFirebase object
+        """
+        if CFRS.__instance == None:
+            CFRS()
+        return CFRS.__instance
+
+
+    def __init__(self, healthy_bias=False):
+        if CFRS.__instance != None:
+            log.debug("Calling constructor of CFRS")
+        else:
+            CFRS.__instance = self
+            self.healthy_bias = healthy_bias
+
+            self.n_algos = 10
+            self.algo_list = list()
+
+
+    def start(self):
+        log.info("Starting CFRS, training...")
+
+        for i in range(self.n_algos):
+            kf = KFold(n_splits=5)
+            algo = SVD(n_factors=rs_utils.svd_n_epochs, n_epochs=rs_utils.svd_n_epochs, lr_all=rs_utils.svd_lr_all, reg_all=rs_utils.svd_reg_all)
+            for trainset, testset in kf.split(data_BBCGoodFood):
+                algo.fit(trainset)
+
+        self.algo_list.append(algo)
+
+        log.info("Ready to start!!")
+
+    def get_coverage(self):
+        return get_coverage(algo_list=self.algo_list, healthy_bias=self.healthy_bias, verbose=False)
+
+
+    def get_reco(self, user_name, ratings_list):
+        return get_reco(self.algo_list, user_name, healthy_bias=self.healthy_bias, ratings_list=ratings_list, verbose=False)
+
+
+
 if __name__ == "__main__":
-    # optimize_memorybased_CF_algo(data_BBCGoodFood)
-    # optimize_modelbased_CF_algos(data_BBCGoodFood)
-    # compare_CF_algos()
+    cfrs = CFRS()
+    # cfrs.get_coverage()
 
-    # ratings_list = [['/recipes/dads-chocolate-drop-cakes', 3],
-    #                 ['/recipes/best-ever-chocolate-brownies-recipe', 2],
-    #                 ['/recipes/ultimate-chocolate-cake', 5],
-    #                 ['/recipes/lemon-drizzle-cake', 4],
-    #                 ['/recipes/chilli-con-carne-recipe', 5],
-    #                 ['sweet-chilli-jam', 2],
-    #                 ['autumn-tomato-chutne', 5],
-    #                 ['spiced-vegetable-biryani', 3],
-    #                 ['sticky-lemon-chicken', 3],
-    #                 ['healthy-egg-chips', 0]]
-    # user_name = 'lucile_uniqueID0101'
-    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    # get_reco(user_name=user_name, healthy_bias=False, ratings_list=ratings_list, verbose=True)
-    # print('-----')
-    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
-    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
-    # get_reco(user_name=user_name, healthy_bias=True, ratings_list=ratings_list, verbose=True)
-
-    get_coverage(healthy_bias=True)
+    ratings_list = [['/recipes/dads-chocolate-drop-cakes', 3],
+                    ['/recipes/best-ever-chocolate-brownies-recipe', 2],
+                    ['/recipes/ultimate-chocolate-cake', 5],
+                    ['/recipes/lemon-drizzle-cake', 4],
+                    ['/recipes/chilli-con-carne-recipe', 5],
+                    ['sweet-chilli-jam', 2],
+                    ['autumn-tomato-chutne', 5],
+                    ['spiced-vegetable-biryani', 3],
+                    ['sticky-lemon-chicken', 3],
+                    ['healthy-egg-chips', 0]]
+    user_name = 'lucile_uniqueID0101'
+    print(cfrs.get_reco(user_name, ratings_list))

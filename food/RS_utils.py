@@ -1,22 +1,42 @@
 import food.food_config as fc
 import json
+import statistics as stats
 
 X_users = 8
 X_recipes = 8
 file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
 
 healthy_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Healthy_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
-CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
-CFhBias_coverage_file_path = 'food/resources/recipes_DB/CFHbias_reco_coverage.txt'
+CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'_pretrained.txt'
+CFhBias_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Hybrid_FSAcategories_u'+X_users.__str__()+'r'+X_recipes.__str__()+'_5outof10.txt'
 
+coef_pref = 1
+coef_healthy = 1
+
+n_reco = 5
+from_n_best = 10
 
 pref, hybrid, healthy, prefhybrid, prefhealthy, healthyhybrid, others, _all = 'pref', 'hybrid', 'healthy', 'pref+hybrid', 'pref+healthy', 'healthy+hybrid', 'others', 'all'
 x, y, FSA_s, BBC_r, BBC_rc = 'x', 'y', 'FSA_score', 'bbc_rating', 'bbc_rating_count'
 colors = dict()
 colors[pref] = 'blue'
 colors[healthy] = '#57E13D'
+colors[hybrid] = '#3DE1CD'
 colors[others] = '#DEDFDF'
 colors[prefhealthy] = 'orange'
+colors[prefhybrid] = 'red'
+colors[healthyhybrid] = '#EBE400'
+
+
+svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = False, False, False, False
+if X_users == 7 and X_recipes == 10:
+    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 15, 30, 0.003, 0.3
+elif X_users == 8 and X_recipes == 10:
+    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 4, 24, 0.004, 0.06
+elif X_users == 8 and X_recipes == 8:
+    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 10, 35, 0.003, 0.3
+else:
+    raise ValueError("Don's know any parameters for SVD with n users = %d and n recipes = %d" % (X_users, X_recipes))
 
 
 def print_list_distribution(l):
@@ -84,14 +104,14 @@ def get_ids_CFhBias_recipes_coverage_set():
     recipes_list = list()
     with open(CFhBias_coverage_file_path, 'r') as f:
         for line in f:
-            recipes_list.append(line[9:].split()[0])
+            recipes_list.append(line[9:].replace("\n", ""))
     return recipes_list
 
 def get_ids_recipes_CF_coverage_set():
     CF_recipes_list = list()
     with open(CF_reco_coverage_file_path, 'r') as CF_reco_f:
         for line in CF_reco_f:
-            CF_recipes_list.append(line[9:-1])
+            CF_recipes_list.append(line[9:-1].replace("\n", ""))
     return CF_recipes_list
 
 
@@ -106,3 +126,16 @@ def diff_list(l1, l2):
     if l2:
         raise ValueError("Some elements of list to substract are not included in main list!")
     return res
+
+
+def get_mean(l):
+    try:
+        stats.mean(l)
+    except stats.StatisticsError:
+        return "NA"
+
+def get_std(l):
+    try:
+        stats.stdev(l)
+    except stats.StatisticsError:
+        return "NA"
