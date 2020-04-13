@@ -1,8 +1,11 @@
 import re
+import json
+import random
 
 import whiteboard_client as wbc
 import helper_functions as helper
 from food.collaborative_filtering import CFRS
+import food.RS_utils as rs_utils
 import config
 import food.food_config as fc
 from ca_logging import log
@@ -17,6 +20,18 @@ class RS(wbc.WhiteBoardClient):
         self.ratings_list = list()
 
         self.rs = CFRS.getInstance()
+
+        with open(rs_utils.file_path, 'r') as f:
+            content = json.load(f)
+        self.recipes_dict = content['recipes_data']
+
+
+    def send_random_recipe(self):
+        r = random.choice(list(self.recipes_dict.values()))
+        r['comments'] = None
+        del r['comments']
+        msg = {"intent": "get_rating", "recipe": r}
+        self.publish(msg)
 
 
     def get_reco(self):
@@ -43,4 +58,5 @@ class RS(wbc.WhiteBoardClient):
         else:
             rid, r = self.parse_client_msg(msg)
             self.ratings_list.append([rid, r])
-            print(self.ratings_list)
+            log.debug(self.ratings_list)
+            self.send_random_recipe()

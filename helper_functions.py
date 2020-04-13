@@ -15,7 +15,6 @@ def int_to_word(n):
 
 def print_message(name,action,msg_txt,topic):
     msg_to_print = copy.deepcopy(msg_txt)
-    # print(type(msg_txt))
     if isinstance(msg_txt,dict) and "intent" in msg_txt.keys():
         if "user_model" in msg_txt.keys():
             msg_to_print['user_model']['liked_recipe'] = get_new_recipe_list_with_main_info_only(msg_txt['user_model']['liked_recipe'])
@@ -44,10 +43,12 @@ def just_get_recipe_main_info(recipe_dict):
     new_dict = dict()
     # print(recipe_dict)
     new_dict["title"] = recipe_dict['title']
-    new_dict['vegan'] = recipe_dict['vegan']
-    new_dict['spoonacularSourceUrl'] = recipe_dict['spoonacularSourceUrl']
-    if 'seed_ingredient' in new_dict.keys():
-        new_dict['seed_ingredient'] = recipe_dict['seed_ingredient']
+    # new_dict['vegan'] = recipe_dict['vegan']
+    # new_dict['spoonacularSourceUrl'] = recipe_dict['spoonacularSourceUrl']
+    # if 'seed_ingredient' in new_dict.keys():
+    #     new_dict['seed_ingredient'] = recipe_dict['seed_ingredient']
+    new_dict['id'] = recipe_dict['id']
+    new_dict['url'] = recipe_dict['url']
     new_dict["..."] = "..."
     return new_dict
 

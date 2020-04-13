@@ -82,8 +82,8 @@ MSG_HEALTH_DIAGNOSTIC_IN = "HealthDiagnostic_in/"
 MSG_HEALTH_DIAGNOSTIC_OUT = "HealthDiagnostic_out/"
 
 ## RS
-MSG_RS_IN = "RS_in"
-MSG_RS_OUT = "RS_out"
+MSG_RS_IN = "RS_in/"
+MSG_RS_OUT = "RS_out/"
 
 # Client to server, message content:
 MSG_CONNECTION = "client connected"
@@ -140,6 +140,7 @@ FIREBASE_KEY_ACKFOR = "for"
 
 # Dialog keys
 FIREBASE_KEY_DIALOG = "dialog"
+FIREBASE_KEY_RECIPE = "recipe"
 FIREBASE_KEY_TEXT = "text"
 FIREBASE_KEY_SOURCE = "source"
 FIREBASE_VALUE_SOURCE_CLIENT = "client"

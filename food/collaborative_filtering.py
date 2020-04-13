@@ -349,7 +349,7 @@ class CFRS:
             CFRS.__instance = self
             self.healthy_bias = healthy_bias
 
-            self.n_algos = 10
+            self.n_algos = rs_utils.n_alogs
             self.algo_list = list()
 
 

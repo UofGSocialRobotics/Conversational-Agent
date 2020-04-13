@@ -137,11 +137,11 @@ class ServerUsingFirebase:
 
      # @overrides(ds_manager.DSManager)
     def publish_for_client(self, message, client_id, firebase_key):
-        # log.debug("In publish_for_client")
+        log.debug("In publish_for_client")
         if client_id in self.clients_services:
             # ref = self.firebase_db.child(config.FIREBASE_KEY_SESSIONS).child(client_id)
-            if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND:
-                timestamp = datetime.datetime.now().__str__()
+            if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND or firebase_key == config.FIREBASE_KEY_RECIPE:
+
                 if firebase_key == config.FIREBASE_KEY_DIALOG:
                     message_to_send, sentences_and_delays = dict(), None
                     for key, value in message.items():
@@ -168,6 +168,18 @@ class ServerUsingFirebase:
                         for_data_col[config_data_collection.DIALOG] = message_to_send
                         whiteboard.publish(message=for_data_col, topic=topic)
 
+                elif firebase_key == config.FIREBASE_KEY_RECIPE:
+                    timestamp = datetime.datetime.now().__str__()
+                    message_to_send = message
+                    message_to_send[config.FIREBASE_KEY_DATETIME] = timestamp
+                    message_to_send[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
+                    self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=config.FIREBASE_KEY_DIALOG))
+                    # publish for data collection
+                    topic = config.MSG_DATACOL_IN + client_id
+                    for_data_col = dict()
+                    for_data_col[config_data_collection.DIALOG] = message_to_send
+                    whiteboard.publish(message=for_data_col, topic=topic)
+
                 elif firebase_key == config.FIREBASE_KEY_XP_COND or (isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys()):
                     self.firebase_root_ref.update_at(message, path=get_path_in_sessions(client_id))
 
@@ -175,9 +187,9 @@ class ServerUsingFirebase:
                     data = dict()
                     data[config.FIREBASE_KEY_ACK] = True
                     self.firebase_root_ref.update_at(data, path=get_path_in_sessions(client_id))
-                helper.print_message(self.name, "published", message.__str__(), topic=firebase_key)
+                helper.print_message(self.name, "published", message, topic=firebase_key)
             else:
-                log.error("Calling publish_for_client with firebase key %s. Was expecting topic %s or %s" % (firebase_key, config.FIREBASE_KEY_ACK, config.FIREBASE_KEY_DIALOG))
+                log.error("Calling publish_for_client with firebase key %s. Was expecting topic %s, %s or %s" % (firebase_key, config.FIREBASE_KEY_ACK, config.FIREBASE_KEY_DIALOG, config.FIREBASE_KEY_RECIPE))
                 self.quit()
         else:
             log.error("%s, publish_for_client: unknown client %s" % (self.name, client_id))
@@ -243,10 +255,12 @@ class ServerUsingFirebase:
         client_id = topic.split("/")[-1]
         if config.MSG_DATACOL_OUT in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
-        elif config.MSG_NLG in topic or config.MSG_RS_OUT in topic:
+        elif config.MSG_NLG in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
             if isinstance(message, dict) and "intent" in message.keys() and message["intent"] == "bye":
                 self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
+        elif config.MSG_RS_OUT in topic:
+            self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_RECIPE)
         else:
             log.critical("Not implemented yet")
 
