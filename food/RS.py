@@ -25,28 +25,52 @@ class RS(wbc.WhiteBoardClient):
             content = json.load(f)
         self.recipes_dict = content['recipes_data']
 
+        self.already_sent = list()
+
 
     def send_random_recipe(self):
-        r = random.choice(list(self.recipes_dict.values()))
+        left_to_chose_from = [rid for rid in list(self.recipes_dict.keys()) if not rid in self.already_sent]
+        rid = random.choice(left_to_chose_from)
+        r = self.recipes_dict[rid]
+        # r = self.recipes_dict['/recipes/parmesan-spring-chicken']
+
         r['comments'] = None
         del r['comments']
         ingredients_list = r['ingredients']
-        n_ingredients = len(ingredients_list)
         # print(type(n_ingredients))
+        n_ingredients = len(ingredients_list)
         n_ingredients_by_col, remainder = n_ingredients // 3, n_ingredients % 3
-        # print(n_ingredients_by_col, remainder)
+        log.debug(rid)
+        log.debug(n_ingredients)
+        log.debug("%d, %d" % (n_ingredients_by_col, remainder))
         extra_in_col_1 = 0 if remainder == 0 else 1
         extra_in_col_2 = 1 if remainder == 2 else 0
         limit_col1 = n_ingredients_by_col+extra_in_col_1
         limit_col2 = n_ingredients_by_col*2+extra_in_col_1+extra_in_col_2
-        col1 = ingredients_list[:limit_col1]
-        col2 = ingredients_list[limit_col1:limit_col2]
-        col3 = ingredients_list[limit_col2:]
+        log.debug("%d, %d" % (limit_col1, limit_col2))
+        log.debug(ingredients_list)
+        if limit_col1 == 1:
+            col1 = [ingredients_list[0]]
+        else:
+            col1 = ingredients_list[:limit_col1]
+        if (limit_col2 - limit_col1) == 1:
+            col2 = [ingredients_list[limit_col1]]
+        elif (limit_col2 - limit_col1) == 0:
+            col2 = []
+        else:
+            col2 = ingredients_list[limit_col1:limit_col2]
+        if n_ingredients - limit_col2 == 1:
+            col3 = [ingredients_list[limit_col2]]
+        elif n_ingredients - limit_col2 == 0:
+            col3 = []
+        else:
+            col3 = ingredients_list[limit_col2:]
         # print(n_ingredients, n_ingredients_by_col, remainder, extra_in_col_1, extra_in_col_2)
         # print(limit_col1, limit_col2)
         r['ingredients'] = dict()
         r['ingredients']["col1"], r['ingredients']["col2"], r['ingredients']["col3"] = col1, col2, col3
         msg = {"intent": "get_rating", "recipe": r}
+        self.already_sent.append(rid)
         self.publish(msg)
 
 

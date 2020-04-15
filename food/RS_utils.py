@@ -2,8 +2,8 @@ import food.food_config as fc
 import json
 import statistics as stats
 
-X_users = 8
-X_recipes = 8
+X_users = 7
+X_recipes = 10
 file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
 
 healthy_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Healthy_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
@@ -28,11 +28,20 @@ colors[others] = '#DEDFDF'
 colors[prefhealthy] = 'orange'
 colors[prefhybrid] = 'red'
 colors[healthyhybrid] = '#EBE400'
+colors[_all] = '#FFFFFF'
+
+color_FSA_green = "#11BF00"
+color_FSA_green_h_tag = "#9AE992"
+color_FSA_amber = "#FD8A1E"
+color_FSA_amber_h_tag = "#FFC38A"
+color_FSA_red = "#FE2C2C"
+color_FSA_red_h_tag = "#FC8F8F"
 
 
 svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = False, False, False, False
 if X_users == 7 and X_recipes == 10:
     svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 15, 30, 0.003, 0.3
+    svd_best_RMSE_name = 'SVD-15-30-0.003-0.3-bestRMSE'
 elif X_users == 8 and X_recipes == 10:
     svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 4, 24, 0.004, 0.06
 elif X_users == 8 and X_recipes == 8:
@@ -47,6 +56,7 @@ def print_list_distribution(l):
 
 
 def is_tagged_healthy(recipe):
+    print(recipe['additional_info'])
     return "H" if 'Healthy' in recipe['additional_info'] else ""
 
 
@@ -132,12 +142,12 @@ def diff_list(l1, l2):
 
 def get_mean(l):
     try:
-        stats.mean(l)
+        return stats.mean(l)
     except stats.StatisticsError:
         return "NA"
 
 def get_std(l):
     try:
-        stats.stdev(l)
+        return stats.stdev(l)
     except stats.StatisticsError:
         return "NA"
