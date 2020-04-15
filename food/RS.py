@@ -26,14 +26,24 @@ class RS(wbc.WhiteBoardClient):
         self.recipes_dict = content['recipes_data']
 
         self.already_sent = list()
+        self.reco_list = None
 
+
+    def send_reco(self):
+        log.info("Will send recommended recipe")
+        rid = self.reco_list.pop(0)
+        log.debug(rid)
+        self.send_recipe(rid)
 
     def send_random_recipe(self):
+        log.info("Will send random recipe")
         left_to_chose_from = [rid for rid in list(self.recipes_dict.keys()) if not rid in self.already_sent]
         rid = random.choice(left_to_chose_from)
-        r = self.recipes_dict[rid]
         # r = self.recipes_dict['/recipes/parmesan-spring-chicken']
+        self.send_recipe(rid)
 
+    def send_recipe(self, rid):
+        r = self.recipes_dict[rid]
         r['comments'] = None
         del r['comments']
         ingredients_list = r['ingredients']
@@ -97,6 +107,16 @@ class RS(wbc.WhiteBoardClient):
 
         else:
             rid, r = self.parse_client_msg(msg)
-            self.ratings_list.append([rid, r])
-            log.debug(self.ratings_list)
-            self.send_random_recipe()
+            if rid != "rid":
+                self.ratings_list.append([rid, r])
+                log.debug(self.ratings_list)
+            if len(self.ratings_list) < rs_utils.n_recipes_before_reco:
+                self.send_random_recipe()
+            else:
+                if not self.reco_list:
+                    self.reco_list = self.rs.get_reco(user_name=self.user_name, ratings_list=self.ratings_list)
+                    log.debug("Got recommendations!")
+                    log.debug(self.reco_list)
+                    self.publish({"intent": "goto_eval_intro"})
+                else:
+                    self.send_reco()

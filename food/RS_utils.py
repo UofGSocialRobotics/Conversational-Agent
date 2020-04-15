@@ -17,6 +17,7 @@ n_reco = 5
 from_n_best = 10
 
 n_alogs = 2
+n_recipes_before_reco = 3
 
 pref, hybrid, healthy, prefhybrid, prefhealthy, healthyhybrid, others, _all = 'pref', 'hybrid', 'healthy', 'pref+hybrid', 'pref+healthy', 'healthy+hybrid', 'others', 'all'
 x, y, FSA_s, BBC_r, BBC_rc = 'x', 'y', 'FSA_score', 'bbc_rating', 'bbc_rating_count'
