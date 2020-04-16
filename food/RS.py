@@ -17,7 +17,8 @@ class RS(wbc.WhiteBoardClient):
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, name="RS"+clientid, subscribes=subscribes, publishes=publishes, resp_time=resp_time)
 
-        self.ratings_list = list()
+        self.ratings_pref_gathering_list = list()
+        self.ratings_reco_list = list()
 
         self.rs = CFRS.getInstance()
 
@@ -85,9 +86,9 @@ class RS(wbc.WhiteBoardClient):
 
 
     def get_reco(self):
-        if len(self.ratings_list) < 10:
+        if len(self.ratings_pref_gathering_list) < 10:
             raise ValueError("Not enough ratings to give reco!")
-        return self.rs.get_reco(self.user_name, self.ratings_list)
+        return self.rs.get_reco(self.user_name, self.ratings_pref_gathering_list)
 
 
     def parse_client_msg(self, msg):
@@ -100,23 +101,41 @@ class RS(wbc.WhiteBoardClient):
         # print(msg, topic)
         super(RS, self).treat_message(msg,topic)
 
-        if msg == config.MSG_GET_RECO:
-            reco = self.get_reco(self.user_name, self.ratings_list)
-            data = {fc.reco: reco}
-            self.publish(data)
+        # if msg == config.MSG_GET_RECO:
+        #     reco = self.get_reco(self.user_name, self.ratings_pref_gathering_list)
+        #     data = {fc.reco: reco}
+        #     self.publish(data)
+        n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
 
-        else:
+        if msg != "start_rs_eval":
             rid, r = self.parse_client_msg(msg)
             if rid != "rid":
-                self.ratings_list.append([rid, r])
-                log.debug(self.ratings_list)
-            if len(self.ratings_list) < rs_utils.n_recipes_before_reco:
-                self.send_random_recipe()
-            else:
-                if not self.reco_list:
-                    self.reco_list = self.rs.get_reco(user_name=self.user_name, ratings_list=self.ratings_list)
-                    log.debug("Got recommendations!")
-                    log.debug(self.reco_list)
-                    self.publish({"intent": "goto_eval_intro"})
+                if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
+                    self.ratings_pref_gathering_list.append([rid, r])
+                    log.debug(self.ratings_pref_gathering_list)
+                    log.debug("self.ratings_pref_gathering_list")
                 else:
-                    self.send_reco()
+                    self.ratings_reco_list.append([rid, r])
+                    log.debug(self.ratings_reco_list)
+                    log.debug("self.ratings_reco_list")
+
+        n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
+
+        # Haven't collected enough preferences before making reco
+        if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
+            self.send_random_recipe()
+        else:
+            # Haven't made any reco yet
+            n_ratings_reco = len(self.ratings_reco_list)
+            print(self.reco_list)
+            if n_ratings_reco == 0 and not self.reco_list:
+                self.reco_list = self.rs.get_reco(user_name=self.user_name, ratings_list=self.ratings_pref_gathering_list)
+                log.debug("Got recommendations!")
+                log.debug(self.reco_list)
+                self.publish({"intent": "goto_eval_intro"})
+            # Made enough reco
+            elif n_ratings_reco == 5:
+                self.publish({"intent": "go_to_post_study"})
+
+            else:
+                self.send_reco()
