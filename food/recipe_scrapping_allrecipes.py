@@ -254,36 +254,6 @@ with open(RECIPES_USERS_DB_PATH, 'r') as jsonf:
 ## -----------------------------------------  Scrapping functions -----------------------------------  ##
 
 
-def get_int(string1):
-    return int(re.search(r'\d+', string1).group())
-
-
-def convert_timestring_to_intminutes(timestring):
-    if timestring == '0S':
-        return -1
-    if 'H' in timestring:
-        timestring = timestring.replace('H', " H ")
-    if 'M' in timestring:
-        timestring = timestring.replace('M', " M ")
-    timestring.strip()
-    splited = timestring.split()
-    int_list = list()
-    for elt in splited:
-        if elt == 'min' or elt == 'mins' or elt == 'M':
-            int_list.append(1)
-        elif elt == 'hr' or elt == 'hrs' or elt == 'H':
-            int_list.append(60)
-        else:
-            int_list.append(get_int(elt))
-    if not (len(int_list) == 2 or len(int_list) == 4):
-        raise ValueError("Cannot convert %s to minutes!" % timestring)
-    else:
-        t = int_list[0] * int_list[1]
-        if len(int_list) == 4:
-            t += (int_list[2] * int_list[3])
-    return t
-
-
 def scrap_title(soup):
     title = soup.find('div', {'class': 'headline-wrapper'}).text.strip()
     return title

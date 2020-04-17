@@ -1,6 +1,7 @@
 import food.food_config as fc
 import json
 import statistics as stats
+import re
 
 X_users = 7
 X_recipes = 10
@@ -152,3 +153,69 @@ def get_std(l):
         return stats.stdev(l)
     except stats.StatisticsError:
         return "NA"
+
+
+def get_int(string1):
+    try:
+        return int(re.search(r'\d+', string1).group())
+    except AttributeError:
+        return 0
+
+
+def remove_prepcookservings(str1):
+    str1 = str1.replace("Prep:", "")
+    str1 = str1.replace("Cook:", "")
+    str1 = str1.replace("Total:", "")
+    if "-" in str1 and "Serves" not in str1:
+        str1 = str1.split("-")[1]
+    str1 = str1.replace("Serves", "")
+    str1 = str1.replace(",", "")
+    str1 = str1.strip()
+    return str1
+
+def convert_timestring_to_intminutes(timestring):
+    if timestring == '0S':
+        return -1
+    if 'H' in timestring:
+        timestring = timestring.replace('H', " H ")
+    if 'M' in timestring:
+        timestring = timestring.replace('M', " M ")
+    timestring.strip()
+    splited = timestring.split()
+    int_list = list()
+    for elt in splited:
+        if elt == 'min' or elt == 'mins' or elt == 'M':
+            int_list.append(1)
+        elif elt == 'hr' or elt == 'hrs' or elt == 'H':
+            int_list.append(60)
+        else:
+            int_list.append(get_int(elt))
+    if not (len(int_list) == 2 or len(int_list) == 4):
+        raise ValueError("Cannot convert %s to minutes!" % timestring)
+    else:
+        t = int_list[0] * int_list[1]
+        if len(int_list) == 4:
+            t += (int_list[2] * int_list[3])
+    return t
+
+
+def convert_timeInt_to_timeStr(timeInt):
+    if timeInt == 0:
+        return None
+    h = timeInt // 60
+    m = timeInt % 60
+    h_str = ""
+    if h == 1:
+        h_str = h.__str__() + " hr"
+    elif h > 1:
+        h_str = h.__str__() + "hrs"
+    m_str = ""
+    if m == 1:
+        m_str = m.__str__() + "min"
+    elif m > 1:
+        m_str = m.__str__() + "mins"
+    total_str = h_str
+    if total_str != "":
+        total_str += ", "
+    total_str += m_str
+    return total_str

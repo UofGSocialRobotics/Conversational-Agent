@@ -1,17 +1,12 @@
 from recipe_scrapers import scrape_me
 import json
 import food.food_dataparser as food_dataparser
-import dataparser
-import food.NLU as NLU
-import spacy
-import nlu_helper_functions as nlu_helper
 import re
-import food.food_config as fc
 from bs4 import BeautifulSoup
-# from selenium import webdriver
 import requests
 import sys
 import os
+import food.RS_utils as rs_utils
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
@@ -19,14 +14,16 @@ HEADERS = {
 
 INGREDIENTS_CATEGORIES_TO_SCRAP = ['vegetables', 'fruits', 'pulses', 'gourds', 'meat', 'fish', 'eggs', 'dishes', 'pasta', 'cereals']
 
+file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes_users_DB.json'
+
 explored_ingredients = list()
 recipes_to_ratings = dict()
 ingredients_to_recipes = dict()
 recipes_to_scrap_list = list()
 
 
-if os.path.isfile('food/resources/recipes_DB/recipes_users_DB.json'):
-    with open('food/resources/recipes_DB/recipes_users_DB.json', 'r') as f_recipe_user_data:
+if os.path.isfile(file_path):
+    with open(file_path, 'r') as f_recipe_user_data:
         content = json.load(f_recipe_user_data)
         recipes_dict = content['recipes_data']
         users_names = content['users_list']
@@ -49,70 +46,6 @@ print("n recipes = %d" % len(recipes_dict))
 to_scrap = [
     #test
     'https://www.bbcgoodfood.com/recipes/spinach-sweet-potato-lentil-dhal'
-    # chicken
-    # 'https://www.bbcgoodfood.com/recipes/caesar-salad-crispy-chicken', # 5min, salad
-    # 'https://www.bbcgoodfood.com/recipes/sweet-potato-chicken-curry',  # curry
-    # 'https://www.bbcgoodfood.com/recipes/summer-winter-chicken', # first res
-    # 'https://www.bbcgoodfood.com/recipes/chicken-noodle-soup', # soup
-    # 'https://www.bbcgoodfood.com/recipes/crispy-greek-style-pie', # pie
-    # 'https://www.bbcgoodfood.com/recipes/easiest-ever-paella', # paella
-    # 'https://www.bbcgoodfood.com/recipes/chicken-breast-avocado-salad', # salad, chicken breast
-    # 'https://www.bbcgoodfood.com/recipes/moroccan-chicken-one-pot', #healthy
-    # 'https://www.bbcgoodfood.com/recipes/italian-stuffed-chicken', # GF
-    # 'https://www.bbcgoodfood.com/recipes/7997/sticky-chicken-with-sherry-almonds-and-dates', # dairy free
-    # 'https://www.bbcgoodfood.com/recipes/roast-chicken-roots', #GF
-    # 'https://www.bbcgoodfood.com/recipes/quick-chicken-hummus-bowl', # 5min
-    # 'https://www.bbcgoodfood.com/recipes/chilli-chicken-honey-soy', # 5min
-    #
-    # #avocado
-    # 'https://www.bbcgoodfood.com/recipes/linguine-avocado-tomato-lime', # vegan
-    # 'https://www.bbcgoodfood.com/recipes/avocado-panzanella', # vegan
-    #
-    # # beef
-    # 'https://www.bbcgoodfood.com/recipes/beef-stroganoff-herby-pasta', # 30 min
-    # 'https://www.bbcgoodfood.com/recipes/beef-bourguignon-celeriac-mash', # 3h
-    # 'https://www.bbcgoodfood.com/recipes/crispy-chilli-beef', #40min
-    # 'https://www.bbcgoodfood.com/recipes/quick-beef-broccoli-noodles', # 20min
-    #
-    # # broccoli
-    # 'https://www.bbcgoodfood.com/recipes/tortellini-pesto-broccoli', # 10min
-    # 'https://www.bbcgoodfood.com/recipes/parmesan-broccoli', # vegetarian
-    # 'https://www.bbcgoodfood.com/recipes/broccoli-stilton-soup', # soup
-    #
-    # # cabbage
-    # 'https://www.bbcgoodfood.com/recipes/baked-haddock-cabbage-risotto',
-    # 'https://www.bbcgoodfood.com/recipes/gujarati-cabbage-coconut-potato',
-    # 'https://www.bbcgoodfood.com/recipes/squash-cabbage-sabzi',
-    #
-    # # cauloflower
-    # 'https://www.bbcgoodfood.com/recipes/cauliflower-cheese-0',
-    # 'https://www.bbcgoodfood.com/recipes/cauliflower-rice', # 10 min
-    # 'https://www.bbcgoodfood.com/recipes/roasted-cauliflower-garlic-bay-lemon', #vegan
-    #
-    # # cheese
-    # 'https://www.bbcgoodfood.com/recipes/gnocchi-mushrooms-blue-cheese',
-    # 'https://www.bbcgoodfood.com/recipes/leek-cheese-bacon-tart', #tart
-    # 'https://www.bbcgoodfood.com/recipes/goats-cheese-thyme-stuffed-chicken',
-    #
-    # # chillies
-    # 'https://www.bbcgoodfood.com/recipes/red-lentil-chickpea-chilli-soup',
-    # 'https://www.bbcgoodfood.com/recipes/chilli-cheese-omelette', # 10min
-    # 'https://www.bbcgoodfood.com/recipes/stir-fried-curly-kale-chilli-garlic', # 10min, vegan
-    #
-    # # eggs
-    # 'https://www.bbcgoodfood.com/recipes/scrambled-egg-stir-fry', # 10min
-    # 'https://www.bbcgoodfood.com/recipes/veggie-egg-fried-rice', # vegetarian
-    # 'https://www.bbcgoodfood.com/recipes/baked-eggs-spinach-tomato', # GF
-    #
-    # # fish
-    # 'https://www.bbcgoodfood.com/recipes/thai-style-steamed-fish',
-    # 'https://www.bbcgoodfood.com/recipes/super-quick-fish-curry',
-    # 'https://www.bbcgoodfood.com/recipes/fish-tacos', # healthy
-    #
-    # # salmon
-    # 'https://www.bbcgoodfood.com/recipes/pasta-salmon-peas',
-    # 'https://www.bbcgoodfood.com/recipes/superhealthy-salmon-burgers',
-    # 'https://www.bbcgoodfood.com/recipes/salmon-spinach-tartare-cream',
 ]
 
 def get_seed_ingredients():
@@ -227,8 +160,9 @@ def save_recipes_users_data():
     recipes_users_data['recipes_data'] = recipes_dict
     recipes_users_data['users_list'] = users_names
     recipes_users_data['users_data'] = users_comments_data
-    with open('food/resources/recipes_DB/recipes_users_DB.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(recipes_users_data, f, indent=True)
+        print("Save data in", file_path)
 
 
 def scrap_recipe_at(url='https://www.bbcgoodfood.com/recipes/aubergine-goats-cheese-pasta', id=-1, i=-1):
@@ -310,12 +244,107 @@ def scrap_comments(scraper, url):
         next_page += 1
     return comments
 
+def scrap_missing_info(recipe_url="https://www.bbcgoodfood.com/recipes/rarebit-pork-chops"):
+    soup = BeautifulSoup(requests.get(recipe_url, headers=HEADERS).content, "html.parser")
+    # Prep time
+    prep_time_soup = BeautifulSoup(str(soup.find('span', {"class": 'recipe-details__cooking-time-prep'})), features="html5lib")
+    prep_time_html = prep_time_soup.find("span")
+    if prep_time_html:
+        prep_time_str = rs_utils.remove_prepcookservings(prep_time_html.text.strip())
+        prep_time_int = rs_utils.convert_timestring_to_intminutes(prep_time_str)
+    else:
+        # print("No prep time")
+        prep_time_str = None
+        prep_time_int = 0
+    # print(prep_time_str, prep_time_int)
+    # Cook time
+    new_soup = BeautifulSoup(str(soup.find('span', {"class": 'recipe-details__cooking-time-cook'})), features="html5lib")
+    cook_time_html = new_soup.find("span")
+    if cook_time_html:
+        cook_time_str = rs_utils.remove_prepcookservings(cook_time_html.text.strip())
+        cook_time_int = rs_utils.convert_timestring_to_intminutes(cook_time_str)
+    else:
+        # print("No cook time")
+        cook_time_str = None
+        cook_time_int = 0
+    # print(cook_time_str, cook_time_int)
+    total_time_int = prep_time_int + cook_time_int
+    if total_time_int == 0:
+        print(" ---------------- /!\\ no time info !!! /!\\ ----------------")
+    total_time_str = rs_utils.convert_timeInt_to_timeStr(total_time_int)
+    # Servings
+    new_soup = BeautifulSoup(str(soup.find('section', {"class": 'recipe-details__item recipe-details__item--servings'})), features="html5lib")
+    servings_str = rs_utils.remove_prepcookservings(new_soup.find("span").text.strip())
+    if servings_str:
+        servings_int = rs_utils.get_int(servings_str)
+    else:
+        servings_int = 0
+    # print(servings_str, servings_int)
+    # Description
+    description_str = soup.find('div', {"class": 'recipe-header__description'}).text.strip()
+    # print(elt_str)
+    return prep_time_str, prep_time_int, cook_time_str, cook_time_int, total_time_int, total_time_str, servings_str, servings_int, description_str
 
+
+def scrap_missing_info_for_recipes_DB():
+    i = 0
+    for rid, r in recipes_dict.items():
+        if i >= 100:
+            print(i, rid)
+            rurl = r['url']
+            rurl = rurl.replace("recipes//", "recipes/")
+            r["prep_time_str"], r["prep_time_int"], r["cook_time_str"], r["cook_time_int"], r["total_time_int"], r["total_time_str"], r["servings_str"], r["servings_int"], r["description"] = scrap_missing_info(rurl)
+            if ((i + 1) % 100) == 0:
+                save_recipes_users_data()
+        i += 1
+    save_recipes_users_data()
+
+def scrap_time_full(url):
+    soup = BeautifulSoup(requests.get(url, headers=HEADERS).content, "html.parser")
+    # Prep time
+    time_html = soup.find('span', {"class": 'recipe-details__cooking-time-full'})
+    if time_html:
+        time_str = time_html.text.strip()
+    else:
+        time_str = "--"
+    print(time_str)
+    return time_str
+
+
+
+
+def get_recipes_missing_total_time():
+    n, i = 0, 0
+    for rid, r in recipes_dict.items():
+        try:
+            i += 1
+            if r['total_time_int'] == 0:
+                print(rid)
+                rurl = r['url']
+                rurl = rurl.replace("recipes//", "recipes/")
+                r["total_time_str"] = scrap_time_full(rurl)
+                n += 1
+        except KeyError:
+            print("KeyError at %s (%d)" % (rid, i))
+            return
+    save_recipes_users_data()
+    print("\n-----\nRecipes with no total time: %d (%.2f%%)\n\n" % (n, float(n)/len(list(recipes_dict.values()))))
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["prep_time_str"])
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["prep_time_int"])
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["cook_time_str"])
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["cook_time_int"])
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["total_time_str"])
+    print(recipes_dict["/recipes/ultimate-vanilla-ice-cream"]["total_time_int"])
 
 
 if __name__ == "__main__":
-    get_seed_ingredients()
+    # get_seed_ingredients()
     # find_recipes(get_seed_ingredients())
     # scraping()
     # scrap_recipe_at()
     # analysis(print_unparsed_ingredients=False)
+
+    # scrap_missing_info()
+    # scrap_missing_info_for_recipes_DB()
+
+    get_recipes_missing_total_time()
