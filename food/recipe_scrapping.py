@@ -299,6 +299,7 @@ def scrap_missing_info_for_recipes_DB():
         i += 1
     save_recipes_users_data()
 
+
 def scrap_time_full(url):
     soup = BeautifulSoup(requests.get(url, headers=HEADERS).content, "html.parser")
     # Prep time
@@ -309,8 +310,6 @@ def scrap_time_full(url):
         time_str = "--"
     print(time_str)
     return time_str
-
-
 
 
 def get_recipes_missing_total_time():
