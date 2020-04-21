@@ -41,18 +41,6 @@ function extractItems() {
 	} catch(e) {
 		console.log(e);
 	}
-	// for (let idx of cant_get_pages){
-	// 	const new_url = 
-	// 	const new_url = url + idx_page.toString();
-	// 	console.log(new_url);
-	// 	await page.goto(new_url);
-	// 	const items = await page.evaluate(extractItemsSinglePage);	
-	// 	const n_reviews = items.length;
-	// 	console.log(items.length);
-	// 	for (i of items){
-	// 		if (all_items.indexOf(i) == -1) all_items.push(i);
-	// 	}
-	// }
 
 	await browser.close();
 
