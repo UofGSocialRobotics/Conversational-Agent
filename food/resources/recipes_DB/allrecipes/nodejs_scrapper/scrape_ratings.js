@@ -1,5 +1,6 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
+const { PerformanceObserver, performance } = require('perf_hooks');
 
 // function extractItems() {
 //   const extractedElements = document.querySelectorAll('li.cook-info > h4');
@@ -16,16 +17,23 @@ function getIntFromString(mystring){
 	return 1;
 }
 
+function extractNumberOfReviews(){
+	const extractElements = document.querySelectorAll('span.review-headline-count');
+	const items = [];
+	for (let element of extractElements) {	
+		items.push(parseInt(element.innerText.replace( /[^\d.]/g, '' )));
+	}
+	return items;
+}
+
+
+// ---------------------------------------------------------------------- //
+//							Extract Ratings from page		    		  //
+// ---------------------------------------------------------------------- //
 
 function extractItemsSinglePage() {
-	console.log("extractItemsSinglePage");
 	try{
 		const extractFullReviewsElements = document.querySelectorAll('div.recipe-review-wrapper');
-		// const extractedElements = document.querySelectorAll('a.recipe-review-author');
-		// const extractNames = document.querySelectorAll('span.reviewer-name');
-		// const extractDates = document.querySelectorAll('span.recipe-review-date');
-		// const extractRatings = document.querySelectorAll('span.review-star-text');
-		// const extractReviews = document.querySelectorAll('p[prop=reviewBody]');
 		const items = [];
 		var count = 0;
 		for (let element of extractFullReviewsElements) {
@@ -58,7 +66,12 @@ function extractItemsSinglePage() {
 	}
 }
 
-function enoughItems(items, n_min=1){
+
+// ---------------------------------------------------------------------- //
+//				Iterative calls if no answer to scrap reviews    		  //
+// ---------------------------------------------------------------------- //
+
+function enoughItems(items, n_min=10){
 	return (items.length >= n_min);
 }
 
@@ -93,6 +106,13 @@ async function extractItemsPageIdxNTrials(idx_page, page, url, n_trials_max){
 	}
 }
 
+function isDictInList(d, l){
+	for (let elt of l){
+		if (elt['id'] == d['id']) return true;
+	}
+	return false;
+}
+
 
 async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 	const all_items = [];
@@ -102,7 +122,7 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 		const items = await extractItemsPageIdxNTrials(idx_page, page, url, n_trials_max);
 		if (enoughItems(items)){
 			for (i of items){
-				if (all_items.indexOf(i) == -1) all_items.push(i);
+				if (!isDictInList(i, all_items)) all_items.push(i);
 			}
 		} else {
 			console.log("Failed");
@@ -114,6 +134,21 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 }
 
 
+// ---------------------------------------------------------------------- //
+//		Iterative calls if no answer to scrap number of reviews    		  //
+// ---------------------------------------------------------------------- //
+
+
+async function extractNumberOfReviewsNTrials(page, url, n_trials_max){
+	var tried_n_times = 0;
+	const new_url = url + '2';
+	while (tried_n_times < n_trials_max){
+		await page.goto(new_url);		
+		const items = await page.evaluate(extractNumberOfReviews);	
+		if (items.length > 0) return items[0];
+	}
+	return false;
+}
 
 // ---------------------------------------------------------------------- //
 //								MAIN FUNCTION				    		  //
@@ -129,37 +164,48 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 	const page = await browser.newPage();
 	page.setViewport({ width: 1280, height: 926 });
 
+	const n_trials_max = 5;
+
+	var start = performance.now();
+
 	// Navigate to the demo page.
 	// url = 'https://www.allrecipes.com/recipe/255462/lasagna-flatbread'
 	const url = 'https://www.allrecipes.com/recipe/19344/homemade-lasagna/?page='
-	const n_pages = 2;
-	const n_trials_max = 3;
 
+	// get number of reviews to scrape
+	const n_reviews = await extractNumberOfReviewsNTrials(page, url, n_trials_max);
+	console.log("Reviews to scrap:", n_reviews);
+
+	// get number of pages to scrape
+	const n_pages = Math.ceil(n_reviews / 9);
+	console.log("Pages to scrap:", n_pages);
+
+	// generate list of pages to scrape
 	const idx_pasges_to_try = [];
 	for (var i=2; i<=n_pages; i++) idx_pasges_to_try.push(i);
 
-	console.log(idx_pasges_to_try);
-
-	// const all_items = [];
+	// scrape reviews from all pages
 	const data = await extractItemsPages(idx_pasges_to_try, page, url, n_trials_max);
 	const all_items = data["all_items"];
 	const cant_get_pages = data['cant_get_pages'];
 
-
+	// print number of elemts scraped and indexes of pages that failed
 	try{
 		console.log(all_items.length);
 		console.log(cant_get_pages);
-		console.log(all_items);
+		// console.log(all_items);
 	} catch(e) {
 		console.log(e);
 	}
 
+
 	if (cant_get_pages){
+		// scrape pages that failed at first try
 		const new_data = await extractItemsPages(cant_get_pages, page, url, n_trials_max);
 		const new_all_items = data["all_items"];
 		const new_cant_get_pages = data['cant_get_pages'];
 
-
+		// print number of additional elements scraped and indexes of pages that failed
 		try{
 			console.log(new_all_items.length);
 			console.log(new_cant_get_pages);
@@ -167,6 +213,9 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 			console.log(e);
 		}
 	}
+
+	var end = performance.now();
+	console.log(end-start);
 
 	await browser.close();
 
