@@ -1,22 +1,55 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-function extractItems() {
-  const extractedElements = document.querySelectorAll('li.cook-info > h4');
-  const items = [];
-  for (let element of extractedElements) {
-  	items.push(element.innerText);
-  }
-  return items;
+// function extractItems() {
+//   const extractedElements = document.querySelectorAll('li.cook-info > h4');
+//   const items = [];
+//   for (let element of extractedElements) {
+//   	items.push(element.innerText);
+//   }
+//   return items;
+// }
+function getIntFromString(mystring){
+	// str2 = mystring.replace ( /[^\d.]/g, '' );
+	// return parseInt(str2);
+	// return mystring;
+	return 1;
 }
 
+
 function extractItemsSinglePage() {
+	console.log("extractItemsSinglePage");
 	try{
-		const extractedElements = document.querySelectorAll('a.recipe-review-author');
+		const extractFullReviewsElements = document.querySelectorAll('div.recipe-review-wrapper');
+		// const extractedElements = document.querySelectorAll('a.recipe-review-author');
+		// const extractNames = document.querySelectorAll('span.reviewer-name');
+		// const extractDates = document.querySelectorAll('span.recipe-review-date');
+		// const extractRatings = document.querySelectorAll('span.review-star-text');
+		// const extractReviews = document.querySelectorAll('p[prop=reviewBody]');
 		const items = [];
-		for (let element of extractedElements) {
-			var i = element.href;
-			if (items.indexOf(i) == -1) items.push(i);
+		var count = 0;
+		for (let element of extractFullReviewsElements) {
+			console.log(element);
+			// id
+			const id = element.querySelectorAll('a.recipe-review-author')[0].href.split(".com")[1];
+			// name
+			const name = element.querySelectorAll('span.reviewer-name')[0].innerText.trim();
+			//date
+			const extractDate = element.querySelectorAll('span.recipe-review-date');
+			var date = null;
+			if (extractDate.length > 0) date = extractDate[0].innerText.trim();
+			// rating
+			const extractRating = element.querySelectorAll('span.review-star-text');
+			var rating = null;
+			if (extractRating.length > 0) rating = parseInt(extractRating[0].innerText.trim().replace( /[^\d.]/g, '' ));
+			//review
+			const extractReview = element.querySelectorAll('div.recipe-review-body');
+			var review = null;
+			if (extractReview.length > 0) review = extractReview[0].innerText.trim();
+			// new item
+			const new_item = {"id": id, "name": name, "date": date, "rating": rating, "review": review};
+			if (rating != null && items.indexOf(new_item) == -1) items.push(new_item);
+			// items.push(id);
 		}
 		return items;
 	} catch(e){
@@ -25,8 +58,8 @@ function extractItemsSinglePage() {
 	}
 }
 
-function enoughItems(items, n_min=10){
-	return (items.length >= 10);
+function enoughItems(items, n_min=1){
+	return (items.length >= n_min);
 }
 
 async function extractItemsPageIdx(idx_page, page, url){
@@ -99,8 +132,8 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 	// Navigate to the demo page.
 	// url = 'https://www.allrecipes.com/recipe/255462/lasagna-flatbread'
 	const url = 'https://www.allrecipes.com/recipe/19344/homemade-lasagna/?page='
-	const n_pages = 28;
-	const n_trials_max = 10;
+	const n_pages = 2;
+	const n_trials_max = 3;
 
 	const idx_pasges_to_try = [];
 	for (var i=2; i<=n_pages; i++) idx_pasges_to_try.push(i);
@@ -112,42 +145,28 @@ async function extractItemsPages(idx_pasges_to_try, page, url, n_trials_max){
 	const all_items = data["all_items"];
 	const cant_get_pages = data['cant_get_pages'];
 
-	// const moreBtn = await page.$('div.recipe-reviews__more-container > div.more-button');
-	// await page.$eval('div.recipe-reviews__more-container > div.more-button', e => e.click());
-	// await page.$eval('div.recipe-reviews__more-container > div.more-button', e => e.click());
-	// await page.$eval('div.recipe-reviews__more-container > div.more-button', e => e.click());
-	// console.log(moreBtn);
 
 	try{
 		console.log(all_items.length);
 		console.log(cant_get_pages);
+		console.log(all_items);
 	} catch(e) {
 		console.log(e);
 	}
 
-	const new_data = await extractItemsPages(cant_get_pages, page, url, n_trials_max);
-	const new_all_items = data["all_items"];
-	const new_cant_get_pages = data['cant_get_pages'];
+	if (cant_get_pages){
+		const new_data = await extractItemsPages(cant_get_pages, page, url, n_trials_max);
+		const new_all_items = data["all_items"];
+		const new_cant_get_pages = data['cant_get_pages'];
 
 
-	try{
-		console.log(new_all_items.length);
-		console.log(new_cant_get_pages);
-	} catch(e) {
-		console.log(e);
+		try{
+			console.log(new_all_items.length);
+			console.log(new_cant_get_pages);
+		} catch(e) {
+			console.log(e);
+		}
 	}
-	// for (let idx of cant_get_pages){
-	// 	const new_url = 
-	// 	const new_url = url + idx_page.toString();
-	// 	console.log(new_url);
-	// 	await page.goto(new_url);
-	// 	const items = await page.evaluate(extractItemsSinglePage);	
-	// 	const n_reviews = items.length;
-	// 	console.log(items.length);
-	// 	for (i of items){
-	// 		if (all_items.indexOf(i) == -1) all_items.push(i);
-	// 	}
-	// }
 
 	await browser.close();
 
