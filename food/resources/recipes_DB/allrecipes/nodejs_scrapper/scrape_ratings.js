@@ -12,6 +12,81 @@ function extractNReviewsFromMainRecipePage(){
 	return parseInt(elts[1].innerText.replace( /[^\d.]/g, '' ));
 }
 
+function extractRecipe(){
+	const title = document.querySelectorAll('div.headline-wrapper > h1')[0].innerText;
+	// n ratings & reviews
+	const elts = document.querySelectorAll('ul.ugc-ratings-list > li');
+	const n_ratings = parseInt(elts[0].innerText.replace( /[^\d.]/g, '' ));
+	const n_reviews = parseInt(elts[1].innerText.replace( /[^\d.]/g, '' ));
+	// image url
+	const imageExtract = document.querySelectorAll('div.image-container > div')[0];
+	const key_str = Object.keys(imageExtract)[0];
+	const image_url = imageExtract[key_str]['src'];
+	// Time info
+	const asideExtract = document.querySelectorAll('aside.recipe-info-section');
+	const col1Extract = asideExtract[0].querySelectorAll('div.two-subcol-content-wrapper > div');
+	var time_info = {};
+	for (let elt of col1Extract){
+		const header = elt.querySelectorAll('div.recipe-meta-item-header')[0].innerText.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+		const value = elt.querySelectorAll('div.recipe-meta-item-body')[0].innerText.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+		time_info[header] = value;
+	}
+	// Instructions
+	const instructionsExtract = document.querySelectorAll('ul.instructions-section > li > div.section-body');
+	const instructions = [];
+	for (let elt of instructionsExtract){
+		instructions.push(elt.innerText.trim());
+	}
+	// ingredients
+	const ingredientsExtract = document.querySelectorAll('ul.ingredients-section > li.ingredients-item');
+	const ingredients = [];
+	for (let elt of ingredientsExtract){
+		ingredients.push(elt.innerText.trim());
+	}
+	// send res
+	const new_recipe = {
+		"title": title, 
+		"n_ratings":n_ratings, 
+		"n_reviews":n_reviews, 
+		"image_url": image_url, 
+		"time_info": time_info, 
+		"ingredients": ingredients,
+		"instructions": instructions};
+	return new_recipe;
+}
+
+function extractFullRecipeNutrition(){
+	const caloriessplitted = document.querySelectorAll('div.recipe-nutrition > div')[0].innerText.trim().split(" ");
+	const calories = parseInt(caloriessplitted[caloriessplitted.length - 1].replace( /[^\d.]/g, '' ));
+	// nutrients
+	const nutrientsExtract = document.querySelectorAll('div.nutrition-row');
+	const nutrients = {};
+	for (let elt of nutrientsExtract){
+		const name_all = elt.innerText.trim();
+		const value = elt.querySelectorAll('span.nutrient-value')[0].innerText.trim();
+		const daily_value_extract = elt.querySelectorAll('span.daily-value');
+		var daily_value = "";
+		if (daily_value_extract[0]) {
+			daily_value = daily_value_extract[0].innerText.trim();
+		}
+		const name = name_all.replace(value, "").replace(daily_value, "").trim();
+		if (daily_value != ""){
+			nutrients[name+" daily_value"] = daily_value;
+		}
+		nutrients[name] = value;
+		if (daily_value != ""){
+			nutrients[name+" daily_value"] = daily_value;
+		}
+	}
+	// send res
+	const full_nutrition = {
+		"calories": calories,
+		"nutrients": nutrients
+	}
+	return full_nutrition;
+}
+
+
 function extractItemsSinglePageEasy() {
 	try{
 		const extractFullReviewsElements = document.querySelectorAll('div.review-container');
@@ -91,12 +166,23 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 	}
 
 	console.log("Total reviws:", n_reviews_collected);
-	console.log("Percentage:", n_reviews_collected / n_reviews);
+	const percentage = n_reviews_collected / n_reviews;
+	console.log("Percentage:", percentage);
+
+	const reviews_data = {
+		"n_reviews_allrecipes": n_reviews,
+		"n_reviews_collected": n_reviews_collected,
+		"percentage": percentage,
+		"reviews": all_reviews
+	}
 
 	var end = performance.now();
 	console.log("Time (sec):", (end-start)/1000);
 
+	return reviews_data;
+
 }
+
 
 // ---------------------------------------------------------------------- //
 //								MAIN FUNCTION				    		  //
@@ -112,21 +198,21 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 	const page = await browser.newPage();
 	page.setViewport({ width: 1280, height: 926 });
 
-	// await mainExtractRatings(page);
 
 	var contents = fs.readFileSync('recipes_to_scrap_allrecipes_all.json');
 	var json_contents = JSON.parse(contents);
-	// console.log(json_contents);
-
-
-
-
-
-	// fs.writeFileSync('./reviews_test.txt', JSON.stringify(json_reviews));	
-
+	var idx_scraping = 0;
+	var reviews_all_recipes = {};
 	for (let recipeid of json_contents){
+		console.log("index recipe:", idx_scraping);
 		console.log(recipeid);
-		await mainExtractRatings(page, recipeid);
+		const reviews = await mainExtractRatings(page, recipeid);
+		reviews_all_recipes[recipeid] = reviews;
+		idx_scraping++;
+		if(idx_scraping % 10 == 0 || idx_scraping == 1){
+			console.log("wrote to file reviews_all_recipes.json");
+			fs.writeFileSync('./reviews_all_recipes.json', JSON.stringify(reviews_all_recipes));
+		}
 	}
 	
 
