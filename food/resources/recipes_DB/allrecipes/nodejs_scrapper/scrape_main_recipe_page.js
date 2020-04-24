@@ -9,6 +9,7 @@ const page_size = 9;
 
 const save_in = 'recipes_mainpage.json';
 const allrecipes_ids_to_scrape_file_path = 'recipes_to_scrap_allrecipes_all.json';
+const failed_path = 'mainrecipepage_failed.txt';
 
 
 function extractRecipe(){
@@ -100,15 +101,24 @@ function isDictInList(d, l){
 
 			console.log("\nIndex recipe:", idx_scraping);
 
-			const url_main_page = 'https://www.allrecipes.com/recipe/'+recipeid;
-			await page.goto(url_main_page);
-			const recipe_data = await page.evaluate(extractRecipe);
-			all_data[recipeid] = recipe_data;
-			idx_scraping++;
-			if(idx_scraping % 5 == 0 || idx_scraping == 1){
-				console.log("Wrote to file:", save_in);
-				const to_save = {...json_already_scraped, ...all_data};
-				fs.writeFileSync(save_in, JSON.stringify(to_save));
+			try{
+
+				const url_main_page = 'https://www.allrecipes.com/recipe/'+recipeid;
+				await page.goto(url_main_page);
+				const recipe_data = await page.evaluate(extractRecipe);
+				all_data[recipeid] = recipe_data;
+				idx_scraping++;
+				if(idx_scraping % 5 == 0 || idx_scraping == 1){
+					console.log("Wrote to file:", save_in);
+					const to_save = {...json_already_scraped, ...all_data};
+					fs.writeFileSync(save_in, JSON.stringify(to_save));
+				}
+				
+			} catch (e){
+				fs.appendFile(failed_path, recipeid + "\n", function (err) {
+					if (err) throw err;
+					console.log('ERROR, could not collect reivews for recipe, saved recipe\'s id to:', failed_path);
+				});
 			}
 		}
 		else {
