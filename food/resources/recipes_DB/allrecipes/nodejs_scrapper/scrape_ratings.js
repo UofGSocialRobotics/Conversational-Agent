@@ -2,10 +2,16 @@ const fs = require('fs');
 const https = require('https')
 const puppeteer = require('puppeteer');
 const { PerformanceObserver, performance } = require('perf_hooks');
+const lineReader = require('line-reader');
+
 
 const n_trials_max = 5;
 
 const page_size = 9;
+
+const MAX_PAGES = 300;
+
+const tooManyPages_file_path = 'reviews_too_many_pages.txt';
 
 function extractNReviewsFromMainRecipePage(){
 	const elts = document.querySelectorAll('ul.ugc-ratings-list > li');
@@ -70,46 +76,59 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 		const n_pages = Math.ceil(n_reviews / page_size);
 		console.log("Pages to scrap:", n_pages);
 
-		// Extract reviews
-		var page_idx = 0;
-		const rid_number = rid.split("/")[0];
-		const str1_reviewPage = 'https://www.allrecipes.com/recipe/getreviews/?recipeid='+rid_number+'&pagenumber='
-		const str2_reviewPage = '&pagesize='+page_size.toString()+'&recipeType=Recipe&sortBy=MostHelpful';
+		if (n_pages >= MAX_PAGES){
+			fs.appendFile(tooManyPages_file_path, rid + "\n", function (err) {
+				if (err) throw err;
+				console.log('NO SCRAPING because too many reviews... Saved rid to ', tooManyPages_file_path);
+			});
+		}
 
-		var n_reviews_collected = 0;
-		const all_reviews = [];
+		else{
 
-		while (n_reviews_collected<n_reviews && page_idx<=n_pages){
-			const url = str1_reviewPage + page_idx.toString() + str2_reviewPage;
-			await page.goto(url);
-			const json_reviews = await page.evaluate(extractItemsSinglePageEasy);
-			console.log(page_idx, json_reviews.length);
+			// Extract reviews
+			var page_idx = 0;
+			const rid_number = rid.split("/")[0];
+			const str1_reviewPage = 'https://www.allrecipes.com/recipe/getreviews/?recipeid='+rid_number+'&pagenumber='
+			const str2_reviewPage = '&pagesize='+page_size.toString()+'&recipeType=Recipe&sortBy=MostHelpful';
 
-			for (let item of json_reviews){
-				if (!isDictInList(item, all_reviews)) all_reviews.push(item);
+			var n_reviews_collected = 0;
+			const all_reviews = [];
+
+			while (n_reviews_collected<n_reviews && page_idx<=n_pages){
+				const url = str1_reviewPage + page_idx.toString() + str2_reviewPage;
+				await page.goto(url);
+				const json_reviews = await page.evaluate(extractItemsSinglePageEasy);
+				console.log(page_idx, json_reviews.length);
+
+				for (let item of json_reviews){
+					if (!isDictInList(item, all_reviews)) all_reviews.push(item);
+				}
+				page_idx++;
+				n_reviews_collected = all_reviews.length;
+				// setTimeout(function(){
+				// 	console.log("waited");
+				// }, 500);
+
 			}
-			page_idx++;
-			n_reviews_collected = all_reviews.length;
 
+			console.log("Total reviews:", n_reviews_collected);
+			const percentage = n_reviews_collected / n_reviews;
+			console.log("Percentage:", percentage);
+
+			const reviews_data = {
+				"n_reviews_allrecipes": n_reviews,
+				"n_reviews_collected": n_reviews_collected,
+				"percentage": percentage,
+				"reviews": all_reviews
+			}
+
+			var end = performance.now();
+			console.log("Time (sec):", (end-start)/1000);
+
+			return reviews_data;
 		}
-
-		console.log("Total reviews:", n_reviews_collected);
-		const percentage = n_reviews_collected / n_reviews;
-		console.log("Percentage:", percentage);
-
-		const reviews_data = {
-			"n_reviews_allrecipes": n_reviews,
-			"n_reviews_collected": n_reviews_collected,
-			"percentage": percentage,
-			"reviews": all_reviews
-		}
-
-		var end = performance.now();
-		console.log("Time (sec):", (end-start)/1000);
-
-		return reviews_data;
-
-	} catch (e) {
+		
+	}catch (e) {
 		fs.appendFile('reviews_failed.txt', rid + "\n", function (err) {
 			if (err) throw err;
 			console.log('ERROR, could not collect reivews for recipe, saved recipe\'s id to reviews_failed.txt!');
@@ -120,10 +139,10 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 
 
 // ---------------------------------------------------------------------- //
-//								MAIN FUNCTION				    		  //
+//					MAIN FUNCTION COLLECT ALL REVIEWS		    		  //
 // ---------------------------------------------------------------------- //
 
-(async () => {
+async function mainCollectAll(){
 
 	// Set up browser and page.
 	const browser = await puppeteer.launch({
@@ -143,11 +162,6 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 	const contents2 = fs.readFileSync('reviews_all_recipes.json');
 	const json_already_scraped = JSON.parse(contents2);
 	const already_scraped_ids = Object.keys(json_already_scraped);
-
-	// get last index
-	// const index_stopped = Object.keys(json_already_scraped).length - 1;
-	// const key_stopped = Object.keys(json_already_scraped)[index_stopped];
-	// console.log("Last recipe scrapped:", key_stopped, json_contents[index_stopped], index_stopped, "\n");
 
 
 	for (let recipeid of json_contents){
@@ -174,4 +188,67 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 
 	await browser.close();
 
+};
+
+// ---------------------------------------------------------------------- //
+//			MAIN FUNCTION COLLECT REVIEWS WITH > 300 PAGES	    		  //
+// ---------------------------------------------------------------------- //
+
+async function mainCollectTooManyPagesReviews() {
+
+	// Set up browser and page.
+	const browser = await puppeteer.launch({
+	headless: true,
+	args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	});
+	const page = await browser.newPage();
+	page.setViewport({ width: 1280, height: 926 });
+
+
+	// read file of already scraped recipes
+	const contents2 = fs.readFileSync('reviews_all_recipes.json');
+	const json_already_scraped = JSON.parse(contents2);
+	const already_scraped_ids = Object.keys(json_already_scraped);
+
+	const too_many_pages_already_scraped = [];
+
+	var idx_scraping = 0;
+	var reviews_all_recipes = {};
+
+	// read files with rids of recipes with too many pages
+	lineReader.eachLine(tooManyPages_file_path, async function(recipeid) {
+	    console.log(recipeid);
+	    if (already_scraped_ids.indexOf(recipeid) == -1 && too_many_pages_already_scraped.indexOf(recipeid) == -1){
+
+			console.log("\nIndex recipe:", idx_scraping);
+
+			const reviews = await mainExtractRatings(page, recipeid);
+			reviews_all_recipes[recipeid] = reviews;
+			idx_scraping++;
+			if(idx_scraping % 5 == 0 || idx_scraping == 1){
+				console.log("wrote to file reviews_all_recipes.json");
+				const to_save = {...json_already_scraped, ...reviews_all_recipes};
+				fs.writeFileSync('./reviews_all_recipes.json', JSON.stringify(to_save));
+			}
+
+			too_many_pages_already_scraped.push(recipeid);
+		}
+		else {
+			console.log("Passing: ", recipeid, idx_scraping++);
+		}
+	});
+
+	await browser.close();
+
+};
+
+
+
+// ---------------------------------------------------------------------- //
+//									MAIN 					    		  //
+// ---------------------------------------------------------------------- //
+
+(async () => {
+	// await mainCollectTooManyPagesReviews();
+	await mainCollectAll();
 })();

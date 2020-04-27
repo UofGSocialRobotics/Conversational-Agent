@@ -89,15 +89,17 @@ function isDictInList(d, l){
 	// read file of already scraped recipes
 	const contents2 = fs.readFileSync(save_in);
 	const json_already_scraped = JSON.parse(contents2);
+	const already_scraped_ids = Object.keys(json_already_scraped);
+
 	// get last index
-	const index_stopped = Object.keys(json_already_scraped).length - 1;
-	const key_stopped = Object.keys(json_already_scraped)[index_stopped];
-	console.log("Last recipe scrapped:", key_stopped, json_contents[index_stopped], index_stopped, "\n");
+	// const index_stopped = Object.keys(json_already_scraped).length - 1;
+	// const key_stopped = Object.keys(json_already_scraped)[index_stopped];
+	// console.log("Last recipe scrapped:", key_stopped, json_contents[index_stopped], index_stopped, "\n");
 
 
 	for (let recipeid of json_contents){
 
-		if (idx_scraping > index_stopped){
+		if (already_scraped_ids.indexOf(recipeid) == -1){
 
 			console.log("\nIndex recipe:", idx_scraping);
 
@@ -113,7 +115,7 @@ function isDictInList(d, l){
 					const to_save = {...json_already_scraped, ...all_data};
 					fs.writeFileSync(save_in, JSON.stringify(to_save));
 				}
-				
+
 			} catch (e){
 				fs.appendFile(failed_path, recipeid + "\n", function (err) {
 					if (err) throw err;
@@ -122,7 +124,7 @@ function isDictInList(d, l){
 			}
 		}
 		else {
-			idx_scraping++;
+			console.log("Passing: ", recipeid, idx_scraping++);
 		}
 
 	}
