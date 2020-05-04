@@ -2,7 +2,8 @@ const fs = require('fs');
 const https = require('https')
 const puppeteer = require('puppeteer');
 const { PerformanceObserver, performance } = require('perf_hooks');
-const lineReader = require('line-reader');
+// const lineReader = require('line-reader');
+const lineByLine = require('n-readlines');
 
 
 const n_trials_max = 5;
@@ -11,6 +12,7 @@ const page_size = 9;
 
 const MAX_PAGES = 300;
 
+const tooManyPages_file_path_json = 'reviews_too_many_pages.json';
 const tooManyPages_file_path = 'reviews_too_many_pages.txt';
 
 function extractNReviewsFromMainRecipePage(){
@@ -69,6 +71,7 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 	try{
 
 		const main_recipe_page_url = 'https://www.allrecipes.com/recipe/'+rid;
+		console.log(main_recipe_page_url);
 		await page.goto(main_recipe_page_url);		
 		const n_reviews = await page.evaluate(extractNReviewsFromMainRecipePage);	
 		console.log("Number of reviews:", n_reviews);
@@ -76,62 +79,65 @@ async function mainExtractRatings(page, rid='19344/homemade-lasagna'){
 		const n_pages = Math.ceil(n_reviews / page_size);
 		console.log("Pages to scrap:", n_pages);
 
-		if (n_pages >= MAX_PAGES){
-			fs.appendFile(tooManyPages_file_path, rid + "\n", function (err) {
-				if (err) throw err;
-				console.log('NO SCRAPING because too many reviews... Saved rid to ', tooManyPages_file_path);
-			});
+		// if (n_pages >= MAX_PAGES){
+		// 	fs.appendFile(tooManyPages_file_path, rid + "\n", function (err) {
+		// 		if (err) throw err;
+		// 		console.log('NO SCRAPING because too many reviews... Saved rid to ', tooManyPages_file_path);
+		// 	});
+		// }
+
+		// else{
+
+		// Extract reviews
+		var page_idx = 0;
+		const rid_number = rid.split("/")[0];
+		const str1_reviewPage = 'https://www.allrecipes.com/recipe/getreviews/?recipeid='+rid_number+'&pagenumber='
+		const str2_reviewPage = '&pagesize='+page_size.toString()+'&recipeType=Recipe&sortBy=MostHelpful';
+
+		var n_reviews_collected = 0;
+		const all_reviews = [];
+
+		while (n_reviews_collected<n_reviews && page_idx<=n_pages){
+			const url = str1_reviewPage + page_idx.toString() + str2_reviewPage;
+			await page.goto(url);
+			const json_reviews = await page.evaluate(extractItemsSinglePageEasy);
+			console.log(page_idx, json_reviews.length);
+
+			for (let item of json_reviews){
+				if (!isDictInList(item, all_reviews)) all_reviews.push(item);
+			}
+			page_idx++;
+			n_reviews_collected = all_reviews.length;
+			setTimeout(function(){
+				console.log("waited");
+			}, 500);
+
 		}
 
-		else{
+		console.log("Total reviews:", n_reviews_collected);
+		const percentage = n_reviews_collected / n_reviews;
+		console.log("Percentage:", percentage);
 
-			// Extract reviews
-			var page_idx = 0;
-			const rid_number = rid.split("/")[0];
-			const str1_reviewPage = 'https://www.allrecipes.com/recipe/getreviews/?recipeid='+rid_number+'&pagenumber='
-			const str2_reviewPage = '&pagesize='+page_size.toString()+'&recipeType=Recipe&sortBy=MostHelpful';
-
-			var n_reviews_collected = 0;
-			const all_reviews = [];
-
-			while (n_reviews_collected<n_reviews && page_idx<=n_pages){
-				const url = str1_reviewPage + page_idx.toString() + str2_reviewPage;
-				await page.goto(url);
-				const json_reviews = await page.evaluate(extractItemsSinglePageEasy);
-				console.log(page_idx, json_reviews.length);
-
-				for (let item of json_reviews){
-					if (!isDictInList(item, all_reviews)) all_reviews.push(item);
-				}
-				page_idx++;
-				n_reviews_collected = all_reviews.length;
-				// setTimeout(function(){
-				// 	console.log("waited");
-				// }, 500);
-
-			}
-
-			console.log("Total reviews:", n_reviews_collected);
-			const percentage = n_reviews_collected / n_reviews;
-			console.log("Percentage:", percentage);
-
-			const reviews_data = {
-				"n_reviews_allrecipes": n_reviews,
-				"n_reviews_collected": n_reviews_collected,
-				"percentage": percentage,
-				"reviews": all_reviews
-			}
-
-			var end = performance.now();
-			console.log("Time (sec):", (end-start)/1000);
-
-			return reviews_data;
+		const reviews_data = {
+			"n_reviews_allrecipes": n_reviews,
+			"n_reviews_collected": n_reviews_collected,
+			"percentage": percentage,
+			"reviews": all_reviews
 		}
+
+		var end = performance.now();
+		console.log("Time (sec):", (end-start)/1000);
+
+		return reviews_data;
+		// return null;
+		// }
 		
 	}catch (e) {
 		fs.appendFile('reviews_failed.txt', rid + "\n", function (err) {
 			if (err) throw err;
 			console.log('ERROR, could not collect reivews for recipe, saved recipe\'s id to reviews_failed.txt!');
+			console.log(rid);
+			console.log(e);
 		});
 	}
 
@@ -216,7 +222,10 @@ async function mainCollectTooManyPagesReviews() {
 	var reviews_all_recipes = {};
 
 	// read files with rids of recipes with too many pages
-	lineReader.eachLine(tooManyPages_file_path, async function(recipeid) {
+	const too_many_pages_contents = fs.readFileSync(tooManyPages_file_path_json);
+	const json_too_many_pages = JSON.parse(too_many_pages_contents);
+
+	for(let recipeid of json_too_many_pages){
 	    console.log(recipeid);
 	    if (already_scraped_ids.indexOf(recipeid) == -1 && too_many_pages_already_scraped.indexOf(recipeid) == -1){
 
@@ -225,18 +234,18 @@ async function mainCollectTooManyPagesReviews() {
 			const reviews = await mainExtractRatings(page, recipeid);
 			reviews_all_recipes[recipeid] = reviews;
 			idx_scraping++;
-			if(idx_scraping % 5 == 0 || idx_scraping == 1){
-				console.log("wrote to file reviews_all_recipes.json");
-				const to_save = {...json_already_scraped, ...reviews_all_recipes};
-				fs.writeFileSync('./reviews_all_recipes.json', JSON.stringify(to_save));
-			}
+			// if(idx_scraping % 5 == 0 || idx_scraping == 1){
+			console.log("wrote to file reviews_all_recipes.json");
+			const to_save = {...json_already_scraped, ...reviews_all_recipes};
+			fs.writeFileSync('./reviews_all_recipes.json', JSON.stringify(to_save));
+			// }
 
 			too_many_pages_already_scraped.push(recipeid);
 		}
 		else {
 			console.log("Passing: ", recipeid, idx_scraping++);
 		}
-	});
+	}
 
 	await browser.close();
 
@@ -249,6 +258,6 @@ async function mainCollectTooManyPagesReviews() {
 // ---------------------------------------------------------------------- //
 
 (async () => {
-	// await mainCollectTooManyPagesReviews();
-	await mainCollectAll();
+	await mainCollectTooManyPagesReviews();
+	// await mainCollectAll();
 })();

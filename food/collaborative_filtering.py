@@ -9,6 +9,8 @@ import numpy as np
 import random
 import time
 import json
+import operator
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
 from ca_logging import log
 
@@ -27,28 +29,13 @@ import food.RS_utils as rs_utils
 flatten = lambda l: [item for sublist in l for item in sublist]
 
 
-BBCGoodFood_dataset_str = 'BBCGoodFood'
-movieLens_dataset_str = 'MovieLens'
 
-X_recipes = rs_utils.X_recipes
-X_users = rs_utils.X_users
-json_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
-file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.csv'
-
-eval_CF_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/eval_CF_u'+X_users.__str__()+"r"+X_recipes.__str__()+'.csv'
-
-ratings_df = pd.read_csv(file_path)
+ratings_df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
 reader = Reader(rating_scale=(1, 5))
-data_BBCGoodFood = Dataset.load_from_df(ratings_df[['user', 'item', 'rating']], reader)
-
-data_MovieLens = Dataset.load_builtin('ml-100k')
-file_path = 'food/resources/recipes_DB/u.csv'
-ratings_movieLens_df = pd.read_csv(file_path, sep="\t")
-
+data = Dataset.load_from_df(ratings_df[['user', 'item', 'rating']], reader)
 
 datasets_dict = dict()
-datasets_dict[BBCGoodFood_dataset_str] = data_BBCGoodFood
-# datasets_dict[movieLens_dataset_str] = data_MovieLens
+datasets_dict["allrecipes.com"] = data
 
 
 def optimize_memorybased_CF_algo(data):
@@ -74,12 +61,13 @@ def optimize_memorybased_CF_algo(data):
     print(gs.best_score["mae"])
     print(gs.best_params["mae"])
 
+
 def optimize_modelbased_CF_algos(data):
     param_grid = {
-        "n_factors": [9, 10, 11],
-        "n_epochs": [33, 35, 37],
-        "lr_all": [0.003],
-        "reg_all": [0.3, 0.4, 0.5]
+        "n_factors": [3, 4, 5],
+        "n_epochs": [7, 8, 9, 10],
+        "lr_all": [0.004, 0.006, 0.008, 0.01],
+        "reg_all": [0.006, 0.1, 0.2]
     }
     gs = GridSearchCV(SVD, param_grid, measures=["rmse", "mae"], cv=3)
 
@@ -96,8 +84,7 @@ def optimize_modelbased_CF_algos(data):
 def compare_CF_algos():
 
     csv_res = list()
-    csv_res.append(['', '', BBCGoodFood_dataset_str, '', '', '', '', movieLens_dataset_str, '', ''])
-    csv_res.append(['Algo', 'Normalized MAE', 'Normalized RMSE', 'MAP@5', 'nDCG@5', 'Global score', 'Normalized MAE', 'Normalized RMSE', 'MAP@5', 'nDCG@5', 'Global score'])
+    csv_res.append(['Algo', 'Normalized MAE', 'Normalized RMSE', 'MAP@5', 'nDCG@5', 'Global score'])
 
 
 
@@ -109,24 +96,7 @@ def compare_CF_algos():
     algo_dict = dict()
 
     # algo_dict['SVD-1-12-0.02-0.05-bestMAE'] = SVD(n_factors=1, n_epochs=12, lr_all=0.02, reg_all=0.05)
-    algo_dict[rs_utils.svd_best_RMSE_name] = SVD(n_factors=rs_utils.svd_n_factors, n_epochs=rs_utils.svd_n_epochs, lr_all=rs_utils.svd_lr_all, reg_all=rs_utils.svd_reg_all)
-
-    # algo_dict['NMF-21-2-bestMAE'] = NMF(n_factors=21, n_epochs=2)
-    # algo_dict['NMF-15-2-bestRMSE'] = NMF(n_factors=15, n_epochs=2)
-
-    sim_options = {
-        "name": "pearson",
-        "min_support": 5,
-        "user_based": True,  # Compute  similarities between items
-    }
-    # algo_dict['User-b KNNwMeans'] = KNNWithMeans(k=10, sim_options=sim_options)
-
-    # Item based performs poorly
-    # sim_options = {
-    #     "name": "cosine",
-    #     "user_based": False,  # Compute  similarities between items
-    # }
-    # algo_dict['Item-b KNNwMeans'] = KNNWithMeans(sim_options=sim_options)
+    algo_dict[consts.svd_best_RMSE_name] = SVD(n_factors=consts.svd_n_factors, n_epochs=consts.svd_n_epochs, lr_all=consts.svd_lr_all, reg_all=consts.svd_reg_all)
 
     scores_by_algo = dict()
 
@@ -194,9 +164,7 @@ def compare_CF_algos():
                     sum_RMSE += RMSE
 
                 normalized_RMSE = sum_RMSE/5
-                normalized_RMSE = normalized_RMSE / 5 if dataset_name == BBCGoodFood_dataset_str else normalized_RMSE/5
                 normalized_MAE = sum_MAE/5
-                normalized_MAE = normalized_MAE / 5 if dataset_name == BBCGoodFood_dataset_str else normalized_MAE/5
                 MAP = sum_MAP/5
                 nDCG = sum_nDCG/5
 
@@ -221,10 +189,10 @@ def compare_CF_algos():
             print(scores_by_algo[dataset_name])
 
 
-    with open(eval_CF_path, 'w') as f:
-        csvwriter = csv.writer(f)
-        for row in csv_res:
-            csvwriter.writerow(row)
+    # with open(eval_CF_path, 'w') as f:
+    #     csvwriter = csv.writer(f)
+    #     for row in csv_res:
+    #         csvwriter.writerow(row)
 
 
 
@@ -232,7 +200,7 @@ def get_reco(algo_list, user_name, healthy_bias=False, ratings_list=list(), verb
     if verbose:
         print(user_name)
 
-    with open(json_file_path, 'r') as f:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
         content = json.load(f)
 
     start = time.time()
@@ -312,10 +280,14 @@ def get_reco(algo_list, user_name, healthy_bias=False, ratings_list=list(), verb
 
 def get_coverage(algo_list, healthy_bias=False, verbose=False):
 
-    best_recipes_for_all_users = list()
+    best_recipes_for_all_users = dict()
 
     users = list(ratings_df['user'])
     users_unique = set(users)
+
+    recipes = list(ratings_df['item'])
+    recipes_unique = set(recipes)
+    total_recipes = len(recipes_unique)
 
     for i_u, u in enumerate(users_unique):
 
@@ -324,11 +296,17 @@ def get_coverage(algo_list, healthy_bias=False, verbose=False):
             reco = get_reco(algo_list=algo_list, user_name=u, healthy_bias=healthy_bias, verbose=verbose)
 
             for r in reco:
-                if r not in best_recipes_for_all_users:
-                    best_recipes_for_all_users.append(r)
-    print("When recommending 5 recipes to each user of the DB, we recommend a total of %d different recipes" % len(best_recipes_for_all_users))
-    for x in best_recipes_for_all_users:
-        print(x)
+                if r not in best_recipes_for_all_users.keys():
+                    best_recipes_for_all_users[r] = 1
+                else:
+                    best_recipes_for_all_users[r] += 1
+
+    n_recommended = len(best_recipes_for_all_users.keys())
+    print("When recommending 5 recipes to each user of the DB, we recommend a total of %d (%.2f%%) different recipes" % (n_recommended, float(n_recommended)/total_recipes*100))
+    sorted_best_recipes_for_all_users = sorted(best_recipes_for_all_users.items(), key=operator.itemgetter(1), reverse=True)
+    # print(sorted_best_recipes_for_all_users)
+    for x0, x1 in sorted_best_recipes_for_all_users:
+        print(x0, x1, float(x1)/len(users_unique)*100)
 
 
 class CFRS:
@@ -361,8 +339,8 @@ class CFRS:
 
         for i in range(self.n_algos):
             kf = KFold(n_splits=5)
-            algo = SVD(n_factors=rs_utils.svd_n_epochs, n_epochs=rs_utils.svd_n_epochs, lr_all=rs_utils.svd_lr_all, reg_all=rs_utils.svd_reg_all)
-            for trainset, testset in kf.split(data_BBCGoodFood):
+            algo = SVD(n_factors=consts.svd_n_epochs, n_epochs=consts.svd_n_epochs, lr_all=consts.svd_lr_all, reg_all=consts.svd_reg_all)
+            for trainset, testset in kf.split(data):
                 algo.fit(trainset)
 
         self.algo_list.append(algo)
@@ -379,20 +357,17 @@ class CFRS:
 
 
 if __name__ == "__main__":
-    compare_CF_algos()
+    # optimize algo
+    # optimize_modelbased_CF_algos(data)
 
-    # cfrs = CFRS()
-    # # cfrs.get_coverage()
+    # compare_CF_algos()
+
+    cfrs = CFRS()
+    cfrs.start()
+    # cfrs.get_coverage()
     #
-    # ratings_list = [['/recipes/dads-chocolate-drop-cakes', 3],
-    #                 ['/recipes/best-ever-chocolate-brownies-recipe', 2],
-    #                 ['/recipes/ultimate-chocolate-cake', 5],
-    #                 ['/recipes/lemon-drizzle-cake', 4],
-    #                 ['/recipes/chilli-con-carne-recipe', 5],
-    #                 ['sweet-chilli-jam', 2],
-    #                 ['autumn-tomato-chutne', 5],
-    #                 ['spiced-vegetable-biryani', 3],
-    #                 ['sticky-lemon-chicken', 3],
-    #                 ['healthy-egg-chips', 0]]
-    # user_name = 'lucile_uniqueID0101'
-    # print(cfrs.get_reco(user_name, ratings_list))
+    ratings_list = [
+        ['188473/buffalo-chicken-wraps/', 5],
+        ['8584/holiday-chicken-salad/', 5]]
+    user_name = 'lucile_uniqueID0101'
+    print(cfrs.get_reco(user_name, ratings_list))
