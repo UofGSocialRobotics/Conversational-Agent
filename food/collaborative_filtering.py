@@ -339,13 +339,15 @@ class CFRS:
 
         for i in range(self.n_algos):
             kf = KFold(n_splits=5)
-            algo = SVD(n_factors=consts.svd_n_epochs, n_epochs=consts.svd_n_epochs, lr_all=consts.svd_lr_all, reg_all=consts.svd_reg_all)
+            # algo = SVD(n_factors=consts.svd_n_epochs, n_epochs=consts.svd_n_epochs, lr_all=consts.svd_lr_all, reg_all=consts.svd_reg_all)
+            algo = SVD()
             for trainset, testset in kf.split(data):
                 algo.fit(trainset)
 
         self.algo_list.append(algo)
 
         log.info("Ready to start!!")
+
 
     def get_coverage(self):
         return get_coverage(algo_list=self.algo_list, healthy_bias=self.healthy_bias, verbose=False)
@@ -355,6 +357,15 @@ class CFRS:
         return get_reco(self.algo_list, user_name, healthy_bias=self.healthy_bias, ratings_list=ratings_list, verbose=False)
 
 
+def get_recipes(key_word, n=5):
+    rids = ratings_df.item.unique().tolist()
+    res = list()
+    for r in rids:
+        if key_word in r:
+            res.append(r)
+            if len(res) == n:
+                return res
+    return res
 
 if __name__ == "__main__":
     # optimize algo
@@ -362,12 +373,17 @@ if __name__ == "__main__":
 
     # compare_CF_algos()
 
+    ratings_list = [[rid, 5] for rid in get_recipes("chicken", 5)] + [[rid, 1] for rid in get_recipes("cake", 5)]
+    print(ratings_list)
+
     cfrs = CFRS()
     cfrs.start()
     # cfrs.get_coverage()
     #
-    ratings_list = [
-        ['188473/buffalo-chicken-wraps/', 5],
-        ['8584/holiday-chicken-salad/', 5]]
+
+
+
+    # ratings_list = [
+        # ['188473/buffalo-chicken-wraps/', 5]]
     user_name = 'lucile_uniqueID0101'
     print(cfrs.get_reco(user_name, ratings_list))

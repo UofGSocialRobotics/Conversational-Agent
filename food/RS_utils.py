@@ -17,7 +17,7 @@ coef_healthy = 1
 n_reco = 5
 from_n_best = 10
 
-n_alogs = 10
+n_alogs = 1
 n_recipes_before_reco = 10
 
 pref, hybrid, healthy, prefhybrid, prefhealthy, healthyhybrid, others, _all = 'pref', 'hybrid', 'healthy', 'pref+hybrid', 'pref+healthy', 'healthy+hybrid', 'others', 'all'

@@ -1,6 +1,18 @@
 
-X_users = 10
-X_recipes = 10
+sparse_model = "sparse"
+dense_model = "dense"
+
+model = sparse_model
+
+if model == sparse_model:
+    X_users = 10
+    X_recipes = 10
+else:
+    X_users = 30
+    X_recipes = 25
+
+binary_bool = True
+
 json_reviews_file_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/reviews_all_recipes.json'
 json_users_data_10_reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/users_data_10reviews.json'
 json_users_recipes_data_10reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/users_recipes_data_10reviews.json'

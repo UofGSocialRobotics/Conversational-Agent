@@ -159,16 +159,22 @@ def create_user_item_matrix():
         content = json.load(fin)
     recipes_data = content['recipes_data']
     csv_rows = list()
-    csv_rows.append(['item', 'user', 'rating'])
+    if binary_bool:
+        csv_rows.append(['item', 'user', 'rating', 'strength'])
+    else:
+        csv_rows.append(['item', 'user', 'rating'])
     number_of_x = dict()
     for recipe_id, recipe_data in recipes_data.items():
         reviews = recipe_data['reviews']
         for review in reviews:
             user_id = review['id']
-            # strength = int(review['rating'])
-            # rating = 1
-            rating = int(review['rating'])
-            csv_rows.append([recipe_id, user_id, rating])
+            if binary_bool:
+                strength = int(review['rating'])
+                rating = 1
+                csv_rows.append([recipe_id, user_id, rating, strength])
+            else:
+                rating = int(review['rating'])
+                csv_rows.append([recipe_id, user_id, rating])
             if rating not in number_of_x.keys():
                 number_of_x[rating] = 1
             else:
@@ -178,8 +184,8 @@ def create_user_item_matrix():
     for k, v in number_of_x.items():
         print("%d: %d (%.2f%%)" % (k, v, float(v)/total*100))
 
-
-    with open(csv_xUsers_Xrecipes_binary_path, 'w') as fout:
+    path = csv_xUsers_Xrecipes_binary_path if binary_bool else csv_xUsers_Xrecipes_path
+    with open(path, 'w') as fout:
         writer = csv.writer(fout)
         for row in csv_rows:
             writer.writerow(row)
