@@ -131,6 +131,7 @@ def reduce_DB_size():
                 if r in recipes_with_X_or_more_comments:
                     new_commented_recipes_list.append(r)
             user_data['n_comments'] = len(new_commented_recipes_list)
+            user_data['recipes_commented'] = new_commented_recipes_list
             if user_data['n_comments'] >= X_users:
                 new_users_comments_data[user_id] = user_data
 

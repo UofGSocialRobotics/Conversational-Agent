@@ -19,7 +19,7 @@ elif model == dense_model:
     reg = 0.1
     epochs = 17
 
-binary_bool = True
+binary_bool = False
 
 json_reviews_file_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/reviews_all_recipes.json'
 json_users_data_10_reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/users_data_10reviews.json'

@@ -11,11 +11,13 @@ import scipy.sparse as sparse
 import implicit
 import random
 import operator
+import json
 
 from sklearn import metrics
 from sklearn.preprocessing import MinMaxScaler
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+import food.RS_utils as rs_utils
 
 
 
@@ -221,58 +223,74 @@ def get_recipes_rated(user_id, mf_train, users, products_list):
     return recipes
 
 
+def get_recipes_rated_from_json(user_id):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        json_data = json.load(fjson)
+    user_data = json_data['users_data']
+    res = user_data[user_id]['recipes_commented']
+    print(len(set(res)), user_data[user_id]['n_comments'])
+    return res
+
+
+def get_df_from_ratings_list(uid, ratings_list):
+    new_df = pd.DataFrame({"item": [i for (i, _) in ratings_list], "user": [uid] * len(ratings_list), "rating": [r for (_, r) in ratings_list]})
+    return new_df
+
 ############################################################################################
 ##                                            MAIN                                        ##
 ############################################################################################
 
-df = pd.read_csv(consts.csv_xUsers_Xrecipes_binary_path)
+df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
 print(df.head())
 
-# df['title'] = df['title'].astype("category")
-df['user'] = df['user'].astype("category")
-df['item'] = df['item'].astype("category")
-df['uid'] = df['user'].cat.codes
-df['rid'] = df['item'].cat.codes
+def get_reco_new_user(df, uid, ratings_list):
+    df_new_user = get_df_from_ratings_list(uid, ratings_list)
+    df = df.append(df_new_user)
+    print(df.tail())
 
-# Get unique customers / recipes and all quantities
-users = list(df['user'].unique())
-users_arr = np.array(users)
-recipes = list(df['item'].unique())
-recipes_arr = np.array(recipes)
-quantity = list(df['strength'])
+    # Get unique customers / recipes and all quantities
+    users = list(df['user'].unique())
+    users_arr = np.array(users)
+    recipes = list(df['item'].unique())
+    recipes_arr = np.array(recipes)
+    quantity = list(df['rating'])
 
-# Get the associated row / col indices
-rows = df['user'].astype('category', categories=users).cat.codes
-cols = df['item'].astype('category', categories=recipes).cat.codes
-# Build sparse matrix
-ratings_sparse = sparse.csr_matrix((quantity, (rows, cols)), shape=(len(users), len(recipes)))
+    # Get the associated row / col indices
+    rows = df['user'].astype('category', categories=users).cat.codes
+    cols = df['item'].astype('category', categories=recipes).cat.codes
+    # Build sparse matrix
+    ratings_sparse = sparse.csr_matrix((quantity, (rows, cols)), shape=(len(users), len(recipes)))
 
-matrix_size = ratings_sparse.shape[0]*ratings_sparse.shape[1]
-num_ratings = len(ratings_sparse.nonzero()[0])
-sparcity = 100 * (1 - num_ratings/matrix_size)
-print("Sparcity:", sparcity)
+    matrix_size = ratings_sparse.shape[0]*ratings_sparse.shape[1]
+    num_ratings = len(ratings_sparse.nonzero()[0])
+    sparcity = 100 * (1 - num_ratings/matrix_size)
+    print("Sparcity:", sparcity)
 
-# sparse_content_person = sparse.csr_matrix((df['strength'].astype(float), (df['rid'], df['uid'])))
-# sparse_person_content = sparse.csr_matrix((df['strength'].astype(float), (df['uid'], df['rid'])))
+    # sparse_content_person = sparse.csr_matrix((df['strength'].astype(float), (df['rid'], df['uid'])))
+    # sparse_person_content = sparse.csr_matrix((df['strength'].astype(float), (df['uid'], df['rid'])))
 
-train_set, test_set, recipes_users_altered_test = make_train(ratings_sparse, pct_test=0.2)
-train_set2, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=0.15)
+    train_set, test_set, recipes_users_altered_test = make_train(ratings_sparse, pct_test=0.2)
+    train_set2, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=0.15)
 
-# grid_search(train_set2, cv_set, recipes_users_altered_cv)
+    # grid_search(train_set2, cv_set, recipes_users_altered_cv)
+    #
+    user_vecs, item_vecs = implicit.alternating_least_squares((train_set*consts.alpha).astype('double'), factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
+    scores = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], test_set)
+    print(scores)
 
-user_vecs, item_vecs = implicit.alternating_least_squares((train_set*consts.alpha).astype('double'), factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
-scores = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], test_set)
-print(scores)
+    #
+    # uid = '/cook/675061/'
+    recipes_cooked = get_recipes_rated(uid, ratings_sparse, users_arr, recipes_arr)
+    print(uid, "cooked", len(recipes_cooked), "recipes")
+    for rid in recipes_cooked:
+        print(rid)
+    print("\nRecommending:")
+    rec_list = rec_items(uid, train_set, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
+    for rid in rec_list:
+        print(rid)
 
 
-uid = '/cook/5560353/'
-recipes_cooked = get_recipes_rated(uid, train_set, users_arr, recipes_arr)
-print(uid, "cooked", len(recipes_cooked), "recipes")
-for rid in recipes_cooked:
-    print(rid)
-print("\nRecommending:")
-rec_list = rec_items(uid, train_set, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
-for rid in rec_list:
-    print(rid)
-
-
+if __name__ == "__main__":
+    uid = "lucile"
+    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    get_reco_new_user(df, uid, ratings)
