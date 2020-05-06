@@ -357,15 +357,6 @@ class CFRS:
         return get_reco(self.algo_list, user_name, healthy_bias=self.healthy_bias, ratings_list=ratings_list, verbose=False)
 
 
-def get_recipes(key_word, n=5):
-    rids = ratings_df.item.unique().tolist()
-    res = list()
-    for r in rids:
-        if key_word in r:
-            res.append(r)
-            if len(res) == n:
-                return res
-    return res
 
 if __name__ == "__main__":
     # optimize algo
@@ -373,7 +364,7 @@ if __name__ == "__main__":
 
     # compare_CF_algos()
 
-    ratings_list = [[rid, 5] for rid in get_recipes("chicken", 5)] + [[rid, 1] for rid in get_recipes("cake", 5)]
+    ratings_list = [[rid, 5] for rid in rs_utils.get_recipes(ratings_df, "chicken", 5)] + [[rid, 1] for rid in rs_utils.get_recipes(ratings_df, "cake", 5)]
     print(ratings_list)
 
     cfrs = CFRS()

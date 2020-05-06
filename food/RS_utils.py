@@ -219,3 +219,14 @@ def convert_timeInt_to_timeStr(timeInt):
         total_str += ", "
     total_str += m_str
     return total_str
+
+
+def get_recipes(ratings_df, key_word, n=5):
+    rids = ratings_df.item.unique().tolist()
+    res = list()
+    for r in rids:
+        if key_word in r:
+            res.append(r)
+            if len(res) == n:
+                return res
+    return res

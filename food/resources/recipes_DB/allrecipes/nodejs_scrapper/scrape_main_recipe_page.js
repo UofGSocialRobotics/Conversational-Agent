@@ -91,12 +91,6 @@ function isDictInList(d, l){
 	const json_already_scraped = JSON.parse(contents2);
 	const already_scraped_ids = Object.keys(json_already_scraped);
 
-	// get last index
-	// const index_stopped = Object.keys(json_already_scraped).length - 1;
-	// const key_stopped = Object.keys(json_already_scraped)[index_stopped];
-	// console.log("Last recipe scrapped:", key_stopped, json_contents[index_stopped], index_stopped, "\n");
-
-
 	for (let recipeid of json_contents){
 
 		if (already_scraped_ids.indexOf(recipeid) == -1){
@@ -119,7 +113,7 @@ function isDictInList(d, l){
 			} catch (e){
 				fs.appendFile(failed_path, recipeid + "\n", function (err) {
 					if (err) throw err;
-					console.log('ERROR, could not collect reivews for recipe, saved recipe\'s id to:', failed_path);
+					console.log('ERROR, could not collect main page for recipe, saved recipe\'s id to:', failed_path);
 				});
 			}
 		}

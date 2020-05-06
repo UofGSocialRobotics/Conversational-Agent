@@ -1,5 +1,8 @@
+# Paper to cite: http://yifanhu.net/PUB/cf.pdf
 # https://www.ethanrosenthal.com/2016/10/19/implicit-mf-part-1/
 # https://towardsdatascience.com/building-a-collaborative-filtering-recommender-system-with-clickstream-data-dffc86c8c65
+# https://nbviewer.jupyter.org/github/jmsteinw/Notebooks/blob/master/RecEngine_NB.ipynb
+# https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5
 # https://nbviewer.jupyter.org/github/jmsteinw/Notebooks/blob/master/RecEngine_NB.ipynb
 
 import pandas as pd
@@ -7,7 +10,10 @@ import numpy as np
 import scipy.sparse as sparse
 import implicit
 import random
+import operator
+
 from sklearn import metrics
+from sklearn.preprocessing import MinMaxScaler
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
@@ -118,8 +124,102 @@ def calc_mean_auc(training_set, altered_users, predictions, test_set):
         popularity_auc.append(auc_score(pop, actual)) # Calculate AUC using most popular and score
     # End users iteration
 
-    return float('%.3f'%np.mean(store_auc)), float('%.3f'%np.mean(popularity_auc))
+    return float('%.5f'%np.mean(store_auc)), float('%.5f'%np.mean(popularity_auc))
    # Return the mean AUC rounded to three decimal places for both test and popularity benchmark
+
+
+def rec_items(customer_id, mf_train, user_vecs, item_vecs, customer_list, item_list, num_items=10):
+    '''
+    This function will return the top recommended items to our users
+
+    parameters:
+
+    customer_id - Input the customer's id number that you want to get recommendations for
+
+    mf_train - The training matrix you used for matrix factorization fitting
+
+    user_vecs - the user vectors from your fitted matrix factorization
+
+    item_vecs - the item vectors from your fitted matrix factorization
+
+    customer_list - an array of the customer's ID numbers that make up the rows of your ratings matrix
+                    (in order of matrix)
+
+    item_list - an array of the products that make up the columns of your ratings matrix
+                    (in order of matrix)
+
+    num_items - The number of items you want to recommend in order of best recommendations. Default is 10.
+
+    returns:
+
+    - The top n recommendations chosen based on the user/item vectors for items never interacted with/purchased
+    '''
+
+    cust_ind = np.where(customer_list == customer_id)[0][0] # Returns the index row of our customer id
+    pref_vec = mf_train[cust_ind,:].toarray() # Get the ratings from the training set ratings matrix
+    pref_vec = pref_vec.reshape(-1) + 1 # Add 1 to everything, so that items not purchased yet become equal to 1
+    pref_vec[pref_vec > 1] = 0 # Make everything already purchased zero
+    rec_vector = user_vecs[cust_ind,:].dot(item_vecs.T) # Get dot product of user vector and all item vectors
+    # Scale this recommendation vector between 0 and 1
+    min_max = MinMaxScaler()
+    rec_vector_scaled = min_max.fit_transform(rec_vector.reshape(-1,1))[:,0]
+    recommend_vector = pref_vec*rec_vector_scaled
+    # Items already purchased have their recommendation multiplied by zero
+    product_idx = np.argsort(recommend_vector)[::-1][:num_items] # Sort the indices of the items into order
+    # of best recommendations
+    rec_list = [] # start empty list to store items
+    for index in product_idx:
+        code = item_list[index]
+        # rec_list.append([code, item_lookup.Description.loc[item_lookup.StockCode == code].iloc[0]])
+        rec_list.append(code)
+        # Append our descriptions to the list
+    # codes = [item[0] for item in rec_list]
+    # descriptions = [item[1] for item in rec_list]
+    # final_frame = pd.DataFrame({'StockCode': codes, 'Description': descriptions}) # Create a dataframe
+    # return final_frame[['StockCode', 'Description']] # Switch order of columns around
+    return rec_list
+
+def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[3], n_factors_values=[5], reg_values=[0.08, 0.1, 0.2], n_epochs_values=[15, 16, 17, 18, 19, 20]):
+    scores = list()
+    for alpha in alpha_values:
+        for factors in n_factors_values:
+            for reg in reg_values:
+                for epochs in n_epochs_values:
+                    user_vecs, item_vecs = implicit.alternating_least_squares((train_set*alpha).astype('double'), factors=factors, regularization=reg, iterations=epochs)
+                    s = calc_mean_auc(train_set, recipes_users_altered_cv, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], cv_set)
+                    item = (alpha, factors, reg, epochs, s[0], s[1])
+                    print(item)
+                    scores.append(item)
+    scores = sorted(scores, key=operator.itemgetter(4), reverse=True)
+    print("\nBest parameters:")
+    for i, e in enumerate(scores):
+        print(e)
+        if i > 20:
+            break
+
+def get_recipes_rated(user_id, mf_train, users, products_list):
+    '''
+    This just tells me which items have been already purchased by a specific user in the training set. 
+    
+    parameters: 
+    
+    customer_id - Input the customer's id number that you want to see prior purchases of at least once
+    
+    mf_train - The initial ratings training set used (without weights applied)
+    
+    customers_list - The array of customers used in the ratings matrix
+    
+    products_list - The array of products used in the ratings matrix
+    
+    returns:
+    
+    A list of item IDs and item descriptions for a particular customer that were already purchased in the training set
+    '''
+    cust_ind = np.where(users == user_id)[0][0] # Returns the index row of our customer id
+    purchased_ind = mf_train[cust_ind, :].nonzero()[1] # Get column indices of purchased items
+    recipes = products_list[purchased_ind] # Get the stock codes for our purchased items
+    return recipes
+
 
 ############################################################################################
 ##                                            MAIN                                        ##
@@ -134,43 +234,45 @@ df['item'] = df['item'].astype("category")
 df['uid'] = df['user'].cat.codes
 df['rid'] = df['item'].cat.codes
 
-sparse_content_person = sparse.csr_matrix((df['strength'].astype(float), (df['rid'], df['uid'])))
-sparse_person_content = sparse.csr_matrix((df['strength'].astype(float), (df['uid'], df['rid'])))
+# Get unique customers / recipes and all quantities
+users = list(df['user'].unique())
+users_arr = np.array(users)
+recipes = list(df['item'].unique())
+recipes_arr = np.array(recipes)
+quantity = list(df['strength'])
 
-product_train, product_test, product_users_altered = make_train(sparse_content_person, pct_test = 0.2)
+# Get the associated row / col indices
+rows = df['user'].astype('category', categories=users).cat.codes
+cols = df['item'].astype('category', categories=recipes).cat.codes
+# Build sparse matrix
+ratings_sparse = sparse.csr_matrix((quantity, (rows, cols)), shape=(len(users), len(recipes)))
 
-alpha = 15
-user_vecs, item_vecs = implicit.alternating_least_squares((product_train*alpha).astype('double'),
-                                                          factors=20,
-                                                          regularization = 0.1,
-                                                         iterations = 50)
+matrix_size = ratings_sparse.shape[0]*ratings_sparse.shape[1]
+num_ratings = len(ratings_sparse.nonzero()[0])
+sparcity = 100 * (1 - num_ratings/matrix_size)
+print("Sparcity:", sparcity)
 
-scores = calc_mean_auc(product_train, product_users_altered,[sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], product_test)
+# sparse_content_person = sparse.csr_matrix((df['strength'].astype(float), (df['rid'], df['uid'])))
+# sparse_person_content = sparse.csr_matrix((df['strength'].astype(float), (df['uid'], df['rid'])))
+
+train_set, test_set, recipes_users_altered_test = make_train(ratings_sparse, pct_test=0.2)
+train_set2, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=0.15)
+
+# grid_search(train_set2, cv_set, recipes_users_altered_cv)
+
+user_vecs, item_vecs = implicit.alternating_least_squares((train_set*consts.alpha).astype('double'), factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
+scores = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], test_set)
 print(scores)
 
 
-# model = implicit.als.AlternatingLeastSquares(factors=20, regularization=0.1, iterations=50)
-#
-# alpha = 15
-# data = (sparse_content_person * alpha).astype('double')
-# model.fit(data)
-#
-# rid_list = [3, 689, 256, 652, 80, 643]
-#
-# # rid = 450
-# for rid in rid_list:
-#     print("\n----", df.item.loc[df.rid == rid].iloc[0])
-#     n_similar = 10
-#
-#     person_vecs = model.user_factors
-#     content_vecs = model.item_factors
-#
-#     content_norms = np.sqrt((content_vecs * content_vecs).sum(axis=1))
-#
-#     scores = content_vecs.dot(content_vecs[rid]) / content_norms
-#     top_idx = np.argpartition(scores, -n_similar)[-n_similar:]
-#     similar = sorted(zip(top_idx, scores[top_idx] / content_norms[rid]), key=lambda x: -x[1])
-#
-#     for content in similar:
-#         idx, score = content
-#         print(df.item.loc[df.rid == idx].iloc[0])
+uid = '/cook/5560353/'
+recipes_cooked = get_recipes_rated(uid, train_set, users_arr, recipes_arr)
+print(uid, "cooked", len(recipes_cooked), "recipes")
+for rid in recipes_cooked:
+    print(rid)
+print("\nRecommending:")
+rec_list = rec_items(uid, train_set, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
+for rid in rec_list:
+    print(rid)
+
+

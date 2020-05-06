@@ -1,15 +1,23 @@
 
 sparse_model = "sparse"
 dense_model = "dense"
+intermediate_model = "intermediate"
 
-model = sparse_model
+model = dense_model
 
 if model == sparse_model:
     X_users = 10
     X_recipes = 10
-else:
+elif model == intermediate_model:
+    X_users = 20
+    X_recipes = 20
+elif model == dense_model:
     X_users = 30
     X_recipes = 25
+    alpha = 3
+    factors = 5
+    reg = 0.1
+    epochs = 17
 
 binary_bool = True
 
