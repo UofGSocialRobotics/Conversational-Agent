@@ -191,6 +191,11 @@ def create_user_item_matrix():
         for row in csv_rows:
             writer.writerow(row)
 
+def create_new_DB_with_10_ratings_per_users():
+    with open(json_xUsers_Xrecipes_path, 'r') as fjsonin:
+        content = json.load(fjsonin)
+    recipes_data = content['recipes_data']
+    users_data = comente['users_data']
 
 
 

@@ -175,24 +175,29 @@ def rec_items(customer_id, mf_train, user_vecs, item_vecs, customer_list, item_l
         # rec_list.append([code, item_lookup.Description.loc[item_lookup.StockCode == code].iloc[0]])
         rec_list.append(code)
         # Append our descriptions to the list
-    # codes = [item[0] for item in rec_list]
-    # descriptions = [item[1] for item in rec_list]
-    # final_frame = pd.DataFrame({'StockCode': codes, 'Description': descriptions}) # Create a dataframe
-    # return final_frame[['StockCode', 'Description']] # Switch order of columns around
     return rec_list
 
-def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[3], n_factors_values=[5], reg_values=[0.08, 0.1, 0.2], n_epochs_values=[15, 16, 17, 18, 19, 20]):
+def fit_and_get_AUC(model, train_set, test_set, recipes_users_altered_test, alpha, params):
+    model.fit((train_set*alpha).astype('double'))
+    s = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(model.item_factors), sparse.csr_matrix(model.user_factors.T)], test_set)
+    return s[0]
+
+def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[5, 10, 40], n_factors_values=[3, 5, 7, 10], reg_values=[0.001, 0.01, 0.1], n_epochs_values=[15, 25, 35], lr_values=[0.001, 0.01, 0.1]):
     scores = list()
     for alpha in alpha_values:
         for factors in n_factors_values:
             for reg in reg_values:
                 for epochs in n_epochs_values:
-                    user_vecs, item_vecs = implicit.alternating_least_squares((train_set*alpha).astype('double'), factors=factors, regularization=reg, iterations=epochs)
-                    s = calc_mean_auc(train_set, recipes_users_altered_cv, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], cv_set)
-                    item = (alpha, factors, reg, epochs, s[0], s[1])
-                    print(item)
-                    scores.append(item)
-    scores = sorted(scores, key=operator.itemgetter(4), reverse=True)
+                    if consts.algo_str == consts.algo_als:
+                        model = implicit.als.AlternatingLeastSquares(factors=factors, regularization=reg, iterations=epochs)
+                        params = (alpha, factors, reg, epochs)
+                        scores.append([params, fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha, params)])
+                    elif consts.algo_str == consts.algo_bpr:
+                        for lr in lr_values:
+                            model = implicit.bpr.BayesianPersonalizedRanking(factors=factors, learning_rate=lr, regularization=reg, iterations=epochs)
+                            params = (alpha, factors, lr, reg, epochs)
+                            scores.append([params, fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha, params)])
+    scores = sorted(scores, key=operator.itemgetter(-1), reverse=True)
     print("\nBest parameters:")
     for i, e in enumerate(scores):
         print(e)
@@ -243,10 +248,74 @@ def get_df_from_ratings_list(uid, ratings_list):
 df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
 print(df.head())
 
+
+def tune_hyperparam():
+    item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, cv_set, test_set, recipes_users_altered_cv, recipes_users_altered_test = prep(df, cv_bool=True)
+    grid_search(train_set, cv_set, recipes_users_altered_cv)
+
+
+def get_AUC_tuned_param():
+    item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, _, test_set, _, recipes_users_altered_test = prep(df)
+    if consts.algo_str == consts.algo_als:
+        model = implicit.als.AlternatingLeastSquares(factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
+    model.fit((train_set*consts.alpha).astype('double'))
+    s = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(model.item_factors), sparse.csr_matrix(model.user_factors.T)], test_set)
+    print("Alpha, factors, reg, iterations:", consts.alpha, consts.factors, consts.reg, consts.epochs)
+    print("AUC:", s)
+
+
+def prep(df, cv_bool=False, pct_test=0.2, pct_cv=0.15):
+    # Get unique customers / recipes and all quantities
+    users = list(df['user'].unique())
+    users_arr = np.array(users)
+    items = list(df['item'].unique())
+    items_arr = np.array(items)
+    quantity = list(df['rating'])
+
+    # Get the associated row / col indices
+    df_users = df['user'].astype('category', categories=users).cat.codes
+    df_items = df['item'].astype('category', categories=items).cat.codes
+    # Build sparse matrix
+    item_user_sparse = sparse.csr_matrix((quantity, (df_items, df_users)), shape=(len(items), len(users)))
+    user_item_sparse = item_user_sparse.T.tocsr()
+
+    matrix_size = item_user_sparse.shape[0]*item_user_sparse.shape[1]
+    num_ratings = len(item_user_sparse.nonzero()[0])
+    sparcity = 100 * (1 - num_ratings/matrix_size)
+    print("Sparcity:", sparcity)
+
+    train_set, test_set, recipes_users_altered_test = make_train(item_user_sparse, pct_test=pct_test)
+    if cv_bool:
+        train_set, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=pct_cv)
+    else:
+        cv_set, recipes_users_altered_cv = None, None
+
+    return item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, cv_set, test_set, recipes_users_altered_cv, recipes_users_altered_test
+
+
+
 def get_reco_new_user(df, uid, ratings_list):
+    ###############################################################################
+    ##              Should we train on trainset or on entire dataset?
+    ###############################################################################
+
     df_new_user = get_df_from_ratings_list(uid, ratings_list)
     df = df.append(df_new_user)
-    print(df.tail())
+
+    item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, _, test_set, _, recipes_users_altered_test = prep(df)
+
+    if consts.algo_str == consts.algo_als:
+        model = implicit.als.AlternatingLeastSquares(factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
+    model.fit((train_set*consts.alpha).astype('double'))
+
+    cust_ind = np.where(users_arr == uid)[0][0]
+    recommendations = model.recommend(cust_ind, user_item_sparse)
+    #
+    for (ridx, v) in recommendations:
+        print(ridx, items_arr[ridx], v)
+
+
+def get_coverage(n_recipes_profile):
 
     # Get unique customers / recipes and all quantities
     users = list(df['user'].unique())
@@ -266,31 +335,38 @@ def get_reco_new_user(df, uid, ratings_list):
     sparcity = 100 * (1 - num_ratings/matrix_size)
     print("Sparcity:", sparcity)
 
-    # sparse_content_person = sparse.csr_matrix((df['strength'].astype(float), (df['rid'], df['uid'])))
-    # sparse_person_content = sparse.csr_matrix((df['strength'].astype(float), (df['uid'], df['rid'])))
-
     train_set, test_set, recipes_users_altered_test = make_train(ratings_sparse, pct_test=0.2)
-    train_set2, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=0.15)
 
-    # grid_search(train_set2, cv_set, recipes_users_altered_cv)
-    #
     user_vecs, item_vecs = implicit.alternating_least_squares((train_set*consts.alpha).astype('double'), factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
     scores = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], test_set)
     print(scores)
 
-    #
-    # uid = '/cook/675061/'
-    recipes_cooked = get_recipes_rated(uid, ratings_sparse, users_arr, recipes_arr)
-    print(uid, "cooked", len(recipes_cooked), "recipes")
-    for rid in recipes_cooked:
-        print(rid)
-    print("\nRecommending:")
-    rec_list = rec_items(uid, train_set, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
-    for rid in rec_list:
-        print(rid)
+    all_reco_dict = dict()
+
+    for uid in users:
+        # recipes_cooked = get_recipes_rated(uid, ratings_sparse, users_arr, recipes_arr)[:n_recipes_profile]
+        rec_list = rec_items(uid, ratings_sparse, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
+        for rid in rec_list:
+            if rid not in all_reco_dict:
+                all_reco_dict[rid] = 0
+            all_reco_dict[rid] += 1
+
+    all_reco_list = [(key, value) for key, value in all_reco_dict.items()]
+    all_reco_list = sorted(all_reco_list, key=operator.itemgetter(1), reverse=True)
+
+    total_recipes_recommended = len(all_reco_list)
+
+    print("%d recipes recommended to %d users (with user profile of %d recipes)" % (total_recipes_recommended, len(users), n_recipes_profile))
+    print("--> Coverage: %d / %d = %.2f%%" % (total_recipes_recommended, len(recipes), 100 * float(total_recipes_recommended) / len(recipes)))
+
 
 
 if __name__ == "__main__":
-    uid = "lucile"
-    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    get_reco_new_user(df, uid, ratings)
+    # Tune hyperparameters
+    tune_hyperparam()
+    # get_AUC_tuned_param()
+
+    # Test get reco for new user
+    # uid = "lucile"
+    # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    # get_reco_new_user(df, uid, ratings)

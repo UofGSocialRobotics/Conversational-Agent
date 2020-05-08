@@ -1,3 +1,4 @@
+import implicit
 
 sparse_model = "sparse"
 dense_model = "dense"
@@ -5,19 +6,27 @@ intermediate_model = "intermediate"
 
 model = dense_model
 
+algo_als = "als"
+algo_bpr = "brp"
+
 if model == sparse_model:
     X_users = 10
     X_recipes = 10
+    alpha = 52
+    factors = 4
+    reg = 0.003
+    epochs = 20
 elif model == intermediate_model:
     X_users = 20
     X_recipes = 20
 elif model == dense_model:
     X_users = 30
     X_recipes = 25
-    alpha = 3
-    factors = 5
-    reg = 0.1
-    epochs = 17
+    alpha = 2
+    factors = 6
+    reg = 0.07
+    epochs = 27
+    algo_str = algo_bpr
 
 binary_bool = False
 
