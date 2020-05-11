@@ -2,6 +2,30 @@ import json
 import csv
 from food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts import *
 
+def create_json_10reviews():
+    with open(json_fullDB_path, 'r') as fjson:
+        content = json.load(fjson)
+    rdata = content['recipes_data']
+    udata = content['users_data']
+    rdata10 = dict()
+    udata10 = dict()
+    for rid, rdict in rdata.items():
+        # print(rdict)
+        if rdict['reviews']['n_reviews_collected'] >= 10:
+            rdata10[rid] = rdict
+            rdata10[rid]['n_reviews_collected'] = rdict['reviews']['n_reviews_collected']
+            rdata10[rid]['reviews'] = rdict['reviews']['reviews']
+    for uid, udict in udata.items():
+        # print(udict)
+        if udict['n_comments'] >= 10:
+            udata10[uid] = udict
+    with open(json_recipes_data_10reviews, 'w') as f:
+        json.dump(rdata10, f, indent=True)
+    with open(json_users_data_10_reviews, 'w') as f:
+        json.dump(udata10, f, indent=True)
+    print("Wrote files:", json_recipes_data_10reviews, json_users_data_10_reviews)
+
+
 def get_DB_numbers():
     with open(json_reviews_file_path, 'r') as fjson:
         content = json.load(fjson)
@@ -65,34 +89,24 @@ def get_elts_with_X_or_more_ratings(elts_data, X=5, elt_name='users', key='n_com
 
 def reduce_DB_size():
 
-    # with open(json_reviews_file_path, 'r') as f_recipe_user_data:
-    #     recipes_dict = json.load(f_recipe_user_data)
-
     with open(json_users_data_10_reviews, 'r') as f_user_10:
         users_comments_data = json.load(f_user_10)
 
-    with open(json_users_recipes_data_10reviews, 'r') as f_recipe_10:
+    with open(json_recipes_data_10reviews, 'r') as f_recipe_10:
         recipes_dict = json.load(f_recipe_10)
 
-    # users_comments_data = get_users_data()
     users_names = users_comments_data.keys()
 
     #eliminate users with less than 5 comments
     print("USERS")
     users_with_X_or_more_comments = get_elts_with_X_or_more_ratings(users_comments_data, X_users)
     new_users_comments_data = dict()
-    n_users = len(users_comments_data.keys())
     count = 0
     for user_id, user_data in users_comments_data.items():
-        # if count % 10000 == 0:
-        #     print("going through users:", count)
         if user_id in users_with_X_or_more_comments:
             new_users_comments_data[user_id] = user_data
         count += 1
     users_comments_data = new_users_comments_data
-
-    # with open(json_users_data_10_reviews, 'w') as f10reviews:
-    #     json.dump(users_comments_data, f10reviews, indent=True)
 
     n_users, n_recipes = len(users_names), len(recipes_dict.keys())
     difference = -1
@@ -104,10 +118,9 @@ def reduce_DB_size():
         new_recipes_dict = dict()
         count = 0
         for recipe_id, recipe in recipes_dict.items():
-            # if count % 1000 == 0:
-            #     print("going through recipes:", count)
             new_comments_list = list()
             for review in recipe['reviews']:
+                # print(review)
                 if review['id'] in users_with_X_or_more_comments:
                     new_comments_list.append(review)
             recipe['reviews'] = new_comments_list
@@ -116,10 +129,6 @@ def reduce_DB_size():
                 new_recipes_dict[recipe_id] = recipe
             count += 1
         recipes_dict = new_recipes_dict
-
-        # with open(json_users_recipes_data_10reviews, 'w') as f10revipesusersreviews:
-        #     json.dump(recipes_dict, f10revipesusersreviews, indent=True)
-
 
         #eliminate users
         recipes_with_X_or_more_comments = get_elts_with_X_or_more_ratings(recipes_dict, X_recipes, 'recipes', 'n_reviews_collected')
@@ -191,15 +200,9 @@ def create_user_item_matrix():
         for row in csv_rows:
             writer.writerow(row)
 
-def create_new_DB_with_10_ratings_per_users():
-    with open(json_xUsers_Xrecipes_path, 'r') as fjsonin:
-        content = json.load(fjsonin)
-    recipes_data = content['recipes_data']
-    users_data = comente['users_data']
-
-
 
 
 if __name__ == "__main__":
+    # create_json_10reviews()
     reduce_DB_size()
     create_user_item_matrix()

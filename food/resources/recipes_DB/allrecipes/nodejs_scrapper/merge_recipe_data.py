@@ -51,12 +51,12 @@ print("Total recipes:", len(rdata.keys()))
 print("Total users:", len(udata.keys()))
 print("Total ratings:", n_ratings)
 
-# data = dict()
-# data['recipes_data'] = rdata
-# data['users_data'] = rdata
-#
-# with open(full_DB, 'w') as fout:
-#     json.dump(data, fout, indent=True)
+data = dict()
+data['recipes_data'] = rdata
+data['users_data'] = udata
+
+with open(full_DB, 'w') as fout:
+    json.dump(data, fout, indent=True)
 
 
 

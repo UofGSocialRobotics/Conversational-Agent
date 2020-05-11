@@ -4,7 +4,7 @@ sparse_model = "sparse"
 dense_model = "dense"
 intermediate_model = "intermediate"
 
-model = dense_model
+model = sparse_model
 
 algo_als = "als"
 algo_bpr = "brp"
@@ -30,9 +30,10 @@ elif model == dense_model:
 
 binary_bool = False
 
+json_fullDB_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/fullDB.json'
 json_reviews_file_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/reviews_all_recipes.json'
 json_users_data_10_reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/users_data_10reviews.json'
-json_users_recipes_data_10reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/users_recipes_data_10reviews.json'
+json_recipes_data_10reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/recipes_data_10reviews.json'
 json_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.json'
 csv_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.csv'
 csv_xUsers_Xrecipes_binary_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'_binary.csv'
