@@ -182,7 +182,7 @@ def fit_and_get_AUC(model, train_set, test_set, recipes_users_altered_test, alph
     s = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(model.item_factors), sparse.csr_matrix(model.user_factors.T)], test_set)
     return s[0]
 
-def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[5, 10, 40], n_factors_values=[3, 5, 7, 10], reg_values=[0.001, 0.01, 0.1], n_epochs_values=[15, 25, 35], lr_values=[0.001, 0.01, 0.1]):
+def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[5, 10, 20], n_factors_values=[5, 6, 7], reg_values=[0.03, 0.05, 0.07], n_epochs_values=[40, 45, 50], lr_values=[0.005, 0.01, 0.2]):
     scores = list()
     for alpha in alpha_values:
         for factors in n_factors_values:
