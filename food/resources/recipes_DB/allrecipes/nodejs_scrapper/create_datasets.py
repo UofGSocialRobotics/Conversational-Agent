@@ -1,6 +1,8 @@
 import json
 import csv
 from food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts import *
+import copy
+import food.RS_utils as rs_utils
 
 def create_json_10reviews():
     with open(json_fullDB_path, 'r') as fjson:
@@ -10,11 +12,17 @@ def create_json_10reviews():
     rdata10 = dict()
     udata10 = dict()
     for rid, rdict in rdata.items():
-        # print(rdict)
         if rdict['reviews']['n_reviews_collected'] >= 10:
-            rdata10[rid] = rdict
-            rdata10[rid]['n_reviews_collected'] = rdict['reviews']['n_reviews_collected']
+            rdata10[rid] = copy.copy(rdict['recipe_info'])
+            rdata10[rid]['n_reviews'] = rdict['reviews']['n_reviews_collected']
+            # print(rdata10[rid])
+            del rdata10[rid]['n_ratings']
             rdata10[rid]['reviews'] = rdict['reviews']['reviews']
+            sum_reviews = 0
+            for review in rdata10[rid]['reviews']:
+                # print(review)
+                sum_reviews += int(review['rating'])
+            rdata10[rid]['rating'] = float(sum_reviews) / len(rdata10[rid]['reviews'])
     for uid, udict in udata.items():
         # print(udict)
         if udict['n_comments'] >= 10:
@@ -200,9 +208,23 @@ def create_user_item_matrix():
         for row in csv_rows:
             writer.writerow(row)
 
+def save_FSAscore():
+    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    recipes_list = content['recipes_data'].values()
+    for recipe in recipes_list:
+        FSA_score = rs_utils.FSA_heathsclore(recipe)
+        recipe['FSAscore'] = FSA_score
+    # rid = list(content['recipes_data'].keys())[0]
+    # r = content['recipes_data'][rid]
+    # print(r)
+    with open(json_xUsers_Xrecipes_path, 'w') as fjson:
+        json.dump(content, fjson, indent=True)
+    print("Wrote Heath scores in", json_xUsers_Xrecipes_path)
 
 
 if __name__ == "__main__":
     # create_json_10reviews()
-    reduce_DB_size()
-    create_user_item_matrix()
+    # reduce_DB_size()
+    # create_user_item_matrix()
+    save_FSAscore()

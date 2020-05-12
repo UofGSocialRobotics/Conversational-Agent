@@ -96,10 +96,10 @@ situation = "situation"
 food_scores_trait = "food_scores_trait"
 food_scores_state = "food_scores_state"
 
-salt = "salt"
-sugars = 'sugars'
-fat = 'fat'
-saturates = 'saturates'
+salt = "Sodium:"
+sugars = 'Sugars:'
+fat = 'Total Fat:'
+saturates = 'Saturated Fat:'
 FSA_nutrition_elements = [salt, sugars, fat, saturates]
 protein = "protein"
 carbs = 'carbs'

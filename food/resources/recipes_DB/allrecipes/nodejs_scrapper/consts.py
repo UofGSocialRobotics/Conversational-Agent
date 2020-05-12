@@ -4,10 +4,11 @@ sparse_model = "sparse"
 dense_model = "dense"
 intermediate_model = "intermediate"
 
-model = sparse_model
+model = dense_model
 
 algo_als = "als"
 algo_bpr = "brp"
+algo_str = algo_als
 
 if model == sparse_model:
     X_users = 10
@@ -26,7 +27,6 @@ elif model == dense_model:
     factors = 6
     reg = 0.07
     epochs = 27
-    algo_str = algo_bpr
 
 binary_bool = False
 
@@ -37,6 +37,8 @@ json_recipes_data_10reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrap
 json_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.json'
 csv_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.csv'
 csv_xUsers_Xrecipes_binary_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'_binary.csv'
+txt_coverageHealth = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/coverageHealth_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
+txt_coveragePref = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/coveragePref_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
 
 svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 5, 10, 0.006, 0.01
 svd_best_RMSE_name = 'SVD-5-10-0.006-0.1-bestRMSE'

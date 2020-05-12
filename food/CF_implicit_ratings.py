@@ -20,6 +20,8 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import food.RS_utils as rs_utils
 
 
+df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+print(df.head())
 
 
 def make_train(ratings, pct_test = 0.2):
@@ -241,12 +243,10 @@ def get_df_from_ratings_list(uid, ratings_list):
     new_df = pd.DataFrame({"item": [i for (i, _) in ratings_list], "user": [uid] * len(ratings_list), "rating": [r for (_, r) in ratings_list]})
     return new_df
 
+
 ############################################################################################
 ##                                            MAIN                                        ##
 ############################################################################################
-
-df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-print(df.head())
 
 
 def tune_hyperparam():
@@ -264,7 +264,7 @@ def get_AUC_tuned_param():
     print("AUC:", s)
 
 
-def prep(df, cv_bool=False, pct_test=0.2, pct_cv=0.15):
+def prep(df, split_bool=True, cv_bool=False, pct_test=0.2, pct_cv=0.15):
     # Get unique customers / recipes and all quantities
     users = list(df['user'].unique())
     users_arr = np.array(users)
@@ -279,94 +279,115 @@ def prep(df, cv_bool=False, pct_test=0.2, pct_cv=0.15):
     item_user_sparse = sparse.csr_matrix((quantity, (df_items, df_users)), shape=(len(items), len(users)))
     user_item_sparse = item_user_sparse.T.tocsr()
 
-    matrix_size = item_user_sparse.shape[0]*item_user_sparse.shape[1]
-    num_ratings = len(item_user_sparse.nonzero()[0])
-    sparcity = 100 * (1 - num_ratings/matrix_size)
-    print("Sparcity:", sparcity)
+    # matrix_size = item_user_sparse.shape[0]*item_user_sparse.shape[1]
+    # num_ratings = len(item_user_sparse.nonzero()[0])
+    # sparcity = 100 * (1 - num_ratings/matrix_size)
+    # print("Sparcity:", sparcity)
+    if split_bool:
 
-    train_set, test_set, recipes_users_altered_test = make_train(item_user_sparse, pct_test=pct_test)
-    if cv_bool:
-        train_set, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=pct_cv)
+        train_set, test_set, recipes_users_altered_test = make_train(item_user_sparse, pct_test=pct_test)
+        if cv_bool:
+            train_set, cv_set, recipes_users_altered_cv = make_train(train_set, pct_test=pct_cv)
+        else:
+            cv_set, recipes_users_altered_cv = None, None
+
     else:
-        cv_set, recipes_users_altered_cv = None, None
+        train_set, cv_set, test_set, recipes_users_altered_cv, recipes_users_altered_test = None, None, None, None, None
 
     return item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, cv_set, test_set, recipes_users_altered_cv, recipes_users_altered_test
 
-
-
-def get_reco_new_user(df, uid, ratings_list):
+def get_reco(df, uid, verbose=False):
     ###############################################################################
     ##              Should we train on trainset or on entire dataset?
     ###############################################################################
-
-    df_new_user = get_df_from_ratings_list(uid, ratings_list)
-    df = df.append(df_new_user)
-
-    item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, _, test_set, _, recipes_users_altered_test = prep(df)
+    item_user_sparse, user_item_sparse, users_arr, items_arr, _, _, _, _, _ = prep(df, split_bool=False)
 
     if consts.algo_str == consts.algo_als:
         model = implicit.als.AlternatingLeastSquares(factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
-    model.fit((train_set*consts.alpha).astype('double'))
+    else:
+        print(consts.algo_str)
+    model.fit((item_user_sparse*consts.alpha).astype('double'), show_progress=False)
 
     cust_ind = np.where(users_arr == uid)[0][0]
     recommendations = model.recommend(cust_ind, user_item_sparse)
     #
+    reco = list()
+
     for (ridx, v) in recommendations:
-        print(ridx, items_arr[ridx], v)
+        if verbose:
+            print(ridx, items_arr[ridx], v)
+        reco.append([ridx, items_arr[ridx], v])
+
+    return reco
 
 
-def get_coverage(n_recipes_profile):
+def get_reco_new_user(df, uid, ratings_list, verbose=False):
 
-    # Get unique customers / recipes and all quantities
-    users = list(df['user'].unique())
-    users_arr = np.array(users)
-    recipes = list(df['item'].unique())
-    recipes_arr = np.array(recipes)
-    quantity = list(df['rating'])
+    df_new_user = get_df_from_ratings_list(uid, ratings_list)
+    df = df.append(df_new_user)
 
-    # Get the associated row / col indices
-    rows = df['user'].astype('category', categories=users).cat.codes
-    cols = df['item'].astype('category', categories=recipes).cat.codes
-    # Build sparse matrix
-    ratings_sparse = sparse.csr_matrix((quantity, (rows, cols)), shape=(len(users), len(recipes)))
+    return get_reco(df, uid, verbose=verbose)
 
-    matrix_size = ratings_sparse.shape[0]*ratings_sparse.shape[1]
-    num_ratings = len(ratings_sparse.nonzero()[0])
-    sparcity = 100 * (1 - num_ratings/matrix_size)
-    print("Sparcity:", sparcity)
 
-    train_set, test_set, recipes_users_altered_test = make_train(ratings_sparse, pct_test=0.2)
 
-    user_vecs, item_vecs = implicit.alternating_least_squares((train_set*consts.alpha).astype('double'), factors=consts.factors, regularization=consts.reg, iterations=consts.epochs)
-    scores = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(user_vecs), sparse.csr_matrix(item_vecs.T)], test_set)
-    print(scores)
+def get_coverage(n_recipes_profile=10):
 
     all_reco_dict = dict()
 
-    for uid in users:
-        # recipes_cooked = get_recipes_rated(uid, ratings_sparse, users_arr, recipes_arr)[:n_recipes_profile]
-        rec_list = rec_items(uid, ratings_sparse, user_vecs, item_vecs, users_arr, recipes_arr, num_items=10)
-        for rid in rec_list:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    users_data = content['users_data']
+    recipes_data = content['recipes_data']
+
+    ratings_by_users = dict()
+    for rid, rdata in recipes_data.items():
+        for review in rdata['reviews']:
+            uid = review['id']
+            if uid not in ratings_by_users.keys():
+                ratings_by_users[uid] = dict()
+            rating = int(review['rating'])
+            ratings_by_users[uid][rid] = rating
+    print("Built ratings_by_users dictionary")
+
+    for uid, udata in users_data.items():
+        recipes_cooked = [[rid, rating] for rid, rating in ratings_by_users[uid].items()]
+        ratings_new_user = random.sample(recipes_cooked, n_recipes_profile)
+        # print(ratings_new_user)
+        rec_list = get_reco_new_user(df, "new_user", ratings_new_user)
+        for reco in rec_list:
+            rid = reco[1]
             if rid not in all_reco_dict:
                 all_reco_dict[rid] = 0
             all_reco_dict[rid] += 1
+        # break
 
     all_reco_list = [(key, value) for key, value in all_reco_dict.items()]
     all_reco_list = sorted(all_reco_list, key=operator.itemgetter(1), reverse=True)
 
     total_recipes_recommended = len(all_reco_list)
 
-    print("%d recipes recommended to %d users (with user profile of %d recipes)" % (total_recipes_recommended, len(users), n_recipes_profile))
-    print("--> Coverage: %d / %d = %.2f%%" % (total_recipes_recommended, len(recipes), 100 * float(total_recipes_recommended) / len(recipes)))
 
+    print("%d recipes recommended to %d users (with user profile of %d recipes)" % (total_recipes_recommended, len(users_data.keys()), n_recipes_profile))
+    print("--> Coverage: %d / %d = %.2f%%" % (total_recipes_recommended, len(recipes_data.keys()), 100 * float(total_recipes_recommended) / len(recipes_data.keys())))
+
+    for (key, value) in all_reco_list:
+        print(key, value)
 
 
 if __name__ == "__main__":
-    # Tune hyperparameters
-    tune_hyperparam()
+    # --- Tune hyperparameters
+
+    # tune_hyperparam()
     # get_AUC_tuned_param()
+
+    # --- Get recommendations
+    # uid = '/cook/939980/'
+    # get_reco(df, uid, verbose=True)
 
     # Test get reco for new user
     # uid = "lucile"
     # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    # get_reco_new_user(df, uid, ratings)
+    # get_reco_new_user(df, uid, ratings, verbose=True)
+
+    # --- Get coverage
+    get_coverage()

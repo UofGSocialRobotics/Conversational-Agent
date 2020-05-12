@@ -9,6 +9,8 @@ import random
 from food.RS_utils import *
 import matplotlib.pyplot as plt
 
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+
 
 
 def ingredients_healthscores_analysis(print_unparsed_ingredients=False):
@@ -87,7 +89,7 @@ def ingredients_healthscores_analysis(print_unparsed_ingredients=False):
 
 
 def recipe_DB_heathscores_analysis(recipes_subsets_ids_list=False):
-    with open(file_path, 'r') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
         content = json.load(fjson)
 
     recipes_list = list()
@@ -96,82 +98,76 @@ def recipe_DB_heathscores_analysis(recipes_subsets_ids_list=False):
     else:
         for rid in recipes_subsets_ids_list:
             recipes_list.append(content['recipes_data'][rid])
-    recipes_hs_list = list()
 
     count_scores = dict()
 
     n_recipes = len(recipes_list)
+
+    x_green, x_amber, x_red = list(), list(), list()
+    y_green, y_amber, y_red = list(), list(), list()
     
     for recipe in recipes_list:
-        # FSA_heathsclore(recipe)
-        h = is_tagged_healthy(recipe)
-        FSA_HS = FSA_heathsclore(recipe)
-        if FSA_HS < 7 and FSA_HS != -1:
-            recipes_hs_list.append([recipe['id'][9:], FSA_HS])
-            print(recipe['id'], FSA_HS)
+        FSA_HS = recipe['FSAscore']
 
         if FSA_HS not in count_scores.keys():
             count_scores[FSA_HS] = dict()
             count_scores[FSA_HS]['total'] = 0
-            count_scores[FSA_HS]['H_tag'] = 0
         count_scores[FSA_HS]['total'] += 1
-        if h:
-            count_scores[FSA_HS]['H_tag'] += 1
+
+        if FSA_HS < 7:
+            x_green.append(recipe['n_reviews'])
+            y_green.append(recipe['rating'])
+        elif FSA_HS < 9:
+            x_red.append(recipe['n_reviews'])
+            y_red.append(recipe['rating'])
+        else:
+            x_amber.append(recipe['n_reviews'])
+            y_amber.append(recipe['rating'])
 
     print("%d recipes" % n_recipes)
 
     A, B, x, A_colors, B_colors = list(), list(), list(), list(), list()
 
     count_scores_FSA_categories = dict()
-    count_scores_FSA_categories["green"], count_scores_FSA_categories["amber"], count_scores_FSA_categories["red"] = [0, 0], [0, 0], [0, 0]
+    count_scores_FSA_categories["green"], count_scores_FSA_categories["amber"], count_scores_FSA_categories["red"] = 0, 0, 0
 
     for k, v in count_scores.items():
-        v1, v2 = v['total'], v['H_tag']
-        a, b = v1, v1 - v2
-        A.append(a)
-        B.append(b)
+        v = v['total']
+        A.append(v)
         x.append(k)
         if k < 7:
-            A_colors.append(color_FSA_green_h_tag)
-            B_colors.append(color_FSA_green)
-            count_scores_FSA_categories["green"][0] += v1
-            count_scores_FSA_categories["green"][1] += v2
+            A_colors.append(color_FSA_green)
+            count_scores_FSA_categories["green"] += v
         elif k > 9:
-            A_colors.append(color_FSA_red_h_tag)
-            B_colors.append(color_FSA_red)
-            count_scores_FSA_categories["red"][0] += v1
-            count_scores_FSA_categories["red"][1] += v2
+            A_colors.append(color_FSA_red)
+            count_scores_FSA_categories["red"] += v
         else:
-            A_colors.append(color_FSA_amber_h_tag)
-            B_colors.append(color_FSA_amber)
-            count_scores_FSA_categories["amber"][0] += v1
-            count_scores_FSA_categories["amber"][1] += v2
-        print("Health score = %d, n recipes = %d (%.2f%%), n Healthy tag = %d (%.2f%% \\ %.2f%%)" % (k, v1, float(v1)/n_recipes*100, v2, float(v2)/n_recipes*100, float(v2)/v1*100))
+            A_colors.append(color_FSA_amber)
+            count_scores_FSA_categories["amber"] += v
+        print("Health score = %d, n recipes = %d (%.2f%%)" % (k, v, float(v)/n_recipes*100))
 
     print("-----")
 
-    total_h = 0
     for k, v in count_scores_FSA_categories.items():
-        v1, v2 = v[0], v[1]
-        total_h += v2
-        print("FSA category %s, n recipes = %d (%.2f%%), n Healthy tag = %d (%.2f%% \\ %.2f%%)" % (k, v1, float(v1)/n_recipes*100, v2, float(v2)/n_recipes*100, float(v2)/v1*100))
-    print("Total of %d recipes tagged as healthy (%.2f%% of total of recipes)" % (total_h, float(total_h)/n_recipes*100))
+        print("FSA category %s, n recipes = %d (%.2f%%)" % (k, v, float(v)/n_recipes*100))
 
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.suptitle('FSA scores for dataset')
 
-    plt.bar(x, A, color=A_colors, label="Lighter color represents\nrecipes tagged as healthy\non BBGGoodFood")
-    plt.bar(x, B, color=B_colors)
-    plt.xlabel("FSA score")
-    plt.ylabel("Number of recipes")
-    plt.title("Distribution of recipes by FSA healthscore\nfor catalog coverage set of the\nPref-based recommendation algo (CF)")
-    plt.legend(numpoints=1)
+    ax1.bar(x, A, color=A_colors)
+    ax1.set_xlabel("FSA score")
+    ax1.set_ylabel("Number of recipes")
+    # ax1.set_title("Distribution of recipes by FSA healthscore\nfor whole DB")
+    # ax1.legend(numpoints=1)
+
+    ax2.scatter(x_amber, y_amber, color=color_FSA_amber)
+    ax2.scatter(x_red, y_red, color=color_FSA_red)
+    ax2.scatter(x_green, y_green, color=color_FSA_green)
+    ax2.set_xlabel("N ratings")
+    ax2.set_ylabel("Rating")
 
     plt.show()
 
-    # random.shuffle(recipes_hs_list)
-    # recipes_hs_list = list(sorted(recipes_hs_list, key=lambda x: x[1]))
-    # print(len(recipes_hs_list))
-    # for x in recipes_hs_list:
-    #     print(x[0], x[1])
 
 def get_reco():
     healthy_recipes = get_ids_healthy_recipes_coverage_set()
@@ -188,12 +184,26 @@ def compare_coverage_sets_healthy_reco_vs_CF_reco():
     for elt in intersection:
         print(elt)
 
+def save_coverage_healthRS():
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    all_lines = list()
+    for rid, rdata in content['recipes_data'].items():
+        if rdata['FSAscore'] < 7:
+            all_lines.append(rid)
+    outF = open(consts.txt_coverageHealth, "w")
+    for line in all_lines:
+        outF.write(line)
+        outF.write("\n")
+    outF.close()
+
 
 
 if __name__ == "__main__":
-    rids = get_ids_recipes_CF_coverage_set()
-    rids = ["/recipes/" + rid for rid in rids]
-    print(rids)
-    recipe_DB_heathscores_analysis(rids)
+    # rids = get_ids_recipes_CF_coverage_set()
+    # rids = ["/recipes/" + rid for rid in rids]
+    # print(rids)
+    # recipe_DB_heathscores_analysis()
     # compare_coverage_sets_healthy_reco_vs_CF_reco()
     # get_reco()
+    save_coverage_healthRS()

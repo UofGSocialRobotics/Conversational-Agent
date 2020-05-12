@@ -2,14 +2,15 @@ import food.food_config as fc
 import json
 import statistics as stats
 import re
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
-X_users = 7
-X_recipes = 10
-file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
-
-healthy_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Healthy_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
-CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'_pretrained.txt'
-CFhBias_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Hybrid_FSAcategories_u'+X_users.__str__()+'r'+X_recipes.__str__()+'_5outof10.txt'
+# X_users = 7
+# X_recipes = 10
+# file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/recipes'+X_recipes.__str__()+'_users'+X_users.__str__()+'_DB.json'
+#
+# healthy_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Healthy_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.txt'
+# CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'_pretrained.txt'
+# CFhBias_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Hybrid_FSAcategories_u'+X_users.__str__()+'r'+X_recipes.__str__()+'_5outof10.txt'
 
 coef_pref = 1
 coef_healthy = 1
@@ -40,16 +41,16 @@ color_FSA_red = "#FE2C2C"
 color_FSA_red_h_tag = "#FC8F8F"
 
 
-svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = False, False, False, False
-if X_users == 7 and X_recipes == 10:
-    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 15, 30, 0.003, 0.3
-    svd_best_RMSE_name = 'SVD-15-30-0.003-0.3-bestRMSE'
-elif X_users == 8 and X_recipes == 10:
-    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 4, 24, 0.004, 0.06
-elif X_users == 8 and X_recipes == 8:
-    svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 10, 35, 0.003, 0.3
-else:
-    raise ValueError("Don's know any parameters for SVD with n users = %d and n recipes = %d" % (X_users, X_recipes))
+# svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = False, False, False, False
+# if X_users == 7 and X_recipes == 10:
+#     svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 15, 30, 0.003, 0.3
+#     svd_best_RMSE_name = 'SVD-15-30-0.003-0.3-bestRMSE'
+# elif X_users == 8 and X_recipes == 10:
+#     svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 4, 24, 0.004, 0.06
+# elif X_users == 8 and X_recipes == 8:
+#     svd_n_factors, svd_n_epochs, svd_lr_all, svd_reg_all = 10, 35, 0.003, 0.3
+# else:
+#     raise ValueError("Don's know any parameters for SVD with n users = %d and n recipes = %d" % (X_users, X_recipes))
 
 
 def print_list_distribution(l):
@@ -88,45 +89,54 @@ def WHO_heathscore(recipe):
 def FSA_heathsclore(recipe):
     FSA_healthiness_score = 0
     for elt in fc.FSA_nutrition_elements:
-        if "-" in recipe['nutrition'][elt]:
+        # print(recipe['recipe_info']['nutrition']['nutrients'].keys())
+        elt_quantity_str = recipe['nutrition']['nutrients'][elt]
+        if "-" in elt_quantity_str:
             print("No nutrition values for %s" % recipe['id'])
             return -1
         # print(elt, recipe['nutrition'], recipe['nutrition'][elt])
-        elt_quantity = float(recipe['nutrition'][elt].replace('g','') if 'g' in recipe['nutrition'][elt] else recipe['nutrition'][elt])
-        if elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.low_to_medium]:
-            FSA_healthiness_score += 1
-        elif elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.medium_to_high]:
-            FSA_healthiness_score += 2
-        else:
-            FSA_healthiness_score += 3
+        try:
+            if '<' in elt_quantity_str:
+                elt_quantity_str = elt_quantity_str.replace('<','')
+            if 'mg' in elt_quantity_str:
+                elt_quantity = float(elt_quantity_str.replace('mg','')) * 1000
+            elif 'g' in elt_quantity_str:
+                elt_quantity = float(elt_quantity_str.replace('g',''))
+            elt_quantity_str.strip()
+            if elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.low_to_medium]:
+                FSA_healthiness_score += 1
+            elif elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.medium_to_high]:
+                FSA_healthiness_score += 2
+            else:
+                FSA_healthiness_score += 3
+        except ValueError as e:
+            print(elt_quantity_str)
+            raise ValueError(e)
     return FSA_healthiness_score
 
 
-
-def get_ids_healthy_recipes_coverage_set():
-    # print("in get_ids_healthy_recipes_coverage_set")
-    healthy_recipes_list = list()
-    with open(healthy_reco_coverage_file_path, 'r') as healthy_reco_f:
-        for line in healthy_reco_f:
-            rid = line.split()[0]
-            # print(line[:-1], rid)
-            healthy_recipes_list.append(rid)
-    return healthy_recipes_list
-
-
-def get_ids_CFhBias_recipes_coverage_set():
+def get_ids_coverage(file_path):
     recipes_list = list()
-    with open(CFhBias_coverage_file_path, 'r') as f:
+    with open(file_path, 'r') as f:
         for line in f:
-            recipes_list.append(line[9:].replace("\n", ""))
+            if ' ' in line:
+                line = line.split()[0]
+            recipes_list.append(line.strip())
     return recipes_list
 
-def get_ids_recipes_CF_coverage_set():
-    CF_recipes_list = list()
-    with open(CF_reco_coverage_file_path, 'r') as CF_reco_f:
-        for line in CF_reco_f:
-            CF_recipes_list.append(line[9:-1].replace("\n", ""))
-    return CF_recipes_list
+def get_ids_coverageHealth():
+    return get_ids_coverage(consts.txt_coverageHealth)
+
+
+def get_ids_coverageHybrid():
+    recipes_list = list()
+    # with open(CFhBias_coverage_file_path, 'r') as f:
+    #     for line in f:
+    #         recipes_list.append(line[9:].replace("\n", ""))
+    return recipes_list
+
+def get_ids_coveragePref():
+    return get_ids_coverage(consts.txt_coveragePref)
 
 
 
