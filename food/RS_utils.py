@@ -12,8 +12,6 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 # CF_reco_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_CFu'+X_users.__str__()+'r'+X_recipes.__str__()+'_pretrained.txt'
 # CFhBias_coverage_file_path = 'food/resources/recipes_DB/BBCGoodFood/without0ratings/coverage_Hybrid_FSAcategories_u'+X_users.__str__()+'r'+X_recipes.__str__()+'_5outof10.txt'
 
-coef_pref = 1
-coef_healthy = 1
 
 n_reco = 5
 from_n_best = 10
@@ -129,11 +127,7 @@ def get_ids_coverageHealth():
 
 
 def get_ids_coverageHybrid():
-    recipes_list = list()
-    # with open(CFhBias_coverage_file_path, 'r') as f:
-    #     for line in f:
-    #         recipes_list.append(line[9:].replace("\n", ""))
-    return recipes_list
+    return get_ids_coverage(consts.txt_coverageHybrid)
 
 def get_ids_coveragePref():
     return get_ids_coverage(consts.txt_coveragePref)

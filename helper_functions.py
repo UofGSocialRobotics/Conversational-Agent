@@ -170,6 +170,16 @@ def norm_value_between_minus_one_and_one(val, min, max):
     return float(val - min) / (max - min) * 2 -1
 
 
+def norm_value_between_zero_and_one(val, min, max):
+    return float(val - min) / (max - min)
+
+
+def norm_vector(vect):
+    min_v = min(vect)
+    max_v = max(vect)
+    return [norm_value_between_zero_and_one(x, min_v, max_v) for x in vect]
+
+
 def remove_duplicate_consecutive_char_from_string(s):
     new_s = " "
     for c in s:

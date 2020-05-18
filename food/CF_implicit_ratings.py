@@ -12,11 +12,13 @@ import implicit
 import random
 import operator
 import json
+import csv
 
 from sklearn import metrics
 from sklearn.preprocessing import MinMaxScaler
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+import helper_functions as helper
 import food.RS_utils as rs_utils
 
 
@@ -296,7 +298,11 @@ def prep(df, split_bool=True, cv_bool=False, pct_test=0.2, pct_cv=0.15):
 
     return item_user_sparse, user_item_sparse, users_arr, items_arr, train_set, cv_set, test_set, recipes_users_altered_cv, recipes_users_altered_test
 
-def get_reco(df, uid, verbose=False):
+
+def get_reco(df, uid, healthy_bias=False, recipes_data=None, n_recipes_torecommend=10, verbose=False):
+    if healthy_bias and not recipes_data:
+        raise AttributeError("If healthy_bias is True, must send recipes_data!")
+
     ###############################################################################
     ##              Should we train on trainset or on entire dataset?
     ###############################################################################
@@ -308,29 +314,65 @@ def get_reco(df, uid, verbose=False):
         print(consts.algo_str)
     model.fit((item_user_sparse*consts.alpha).astype('double'), show_progress=False)
 
+    if healthy_bias:
+        n_recipes_rated = df[df.user == uid].shape[0]
+        N = len(items_arr) - n_recipes_rated
+    else:
+        N = n_recipes_torecommend
+
     cust_ind = np.where(users_arr == uid)[0][0]
-    recommendations = model.recommend(cust_ind, user_item_sparse)
-    #
+    recommendations = model.recommend(cust_ind, user_item_sparse, N=N)
+
+    # Get rid from rid-numeric
     reco = list()
 
     for (ridx, v) in recommendations:
-        if verbose:
-            print(ridx, items_arr[ridx], v)
         reco.append([ridx, items_arr[ridx], v])
+
+    # If healthy_bias, get final value reco
+    if healthy_bias:
+        to_scale = [score for (_, _, score) in reco]
+        ids = [(nrid, rid) for (nrid, rid, _) in reco]
+        scaled = helper.norm_vector(to_scale)
+
+        FSAscores = [recipes_data[rid]["FSAscore"] for (_, rid) in ids]
+        FSAscores_scaled = helper.norm_vector(FSAscores)
+
+        reco_biased = list()
+        for i, (nrid, rid) in enumerate(ids):
+            pref_score, health_score = scaled[i], FSAscores_scaled[i]
+            score = float(float(consts.coef_pref) * pref_score + float(consts.coef_healthy) * health_score) / float(consts.coef_pref + consts.coef_healthy)
+            reco_biased.append([nrid, rid, score, pref_score, health_score])
+
+        reco_biased = sorted(reco_biased, key=operator.itemgetter(2), reverse=True)
+
+        reco_biased = reco_biased[:n_recipes_torecommend]
+
+        reco = reco_biased
+
+    if verbose:
+        count = 0
+        for X in reco:
+            if count < 10:
+                print(X)
+            else:
+                print("%d more recommendations (%d total)" % (N - 10, N))
+                break
+            count += 1
 
     return reco
 
 
-def get_reco_new_user(df, uid, ratings_list, verbose=False):
+def get_reco_new_user(df, uid, ratings_list, healthy_bias=False, recipes_data=None, n_recipes_torecommend=10, verbose=False):
 
     df_new_user = get_df_from_ratings_list(uid, ratings_list)
     df = df.append(df_new_user)
 
-    return get_reco(df, uid, verbose=verbose)
+    return get_reco(df, uid, healthy_bias=healthy_bias, recipes_data=recipes_data, n_recipes_torecommend=n_recipes_torecommend, verbose=verbose)
 
 
 
-def get_coverage(n_recipes_profile=10):
+def get_coverage(healthy_bias=False, n_recipes_profile=10, n_recipes_torecommend=10):
 
     all_reco_dict = dict()
 
@@ -353,7 +395,7 @@ def get_coverage(n_recipes_profile=10):
         recipes_cooked = [[rid, rating] for rid, rating in ratings_by_users[uid].items()]
         ratings_new_user = random.sample(recipes_cooked, n_recipes_profile)
         # print(ratings_new_user)
-        rec_list = get_reco_new_user(df, "new_user", ratings_new_user)
+        rec_list = get_reco_new_user(df, "new_user", ratings_new_user, healthy_bias=healthy_bias, recipes_data=recipes_data, n_recipes_torecommend=n_recipes_torecommend)
         for reco in rec_list:
             rid = reco[1]
             if rid not in all_reco_dict:
@@ -366,28 +408,39 @@ def get_coverage(n_recipes_profile=10):
 
     total_recipes_recommended = len(all_reco_list)
 
-
     print("%d recipes recommended to %d users (with user profile of %d recipes)" % (total_recipes_recommended, len(users_data.keys()), n_recipes_profile))
     print("--> Coverage: %d / %d = %.2f%%" % (total_recipes_recommended, len(recipes_data.keys()), 100 * float(total_recipes_recommended) / len(recipes_data.keys())))
 
-    for (key, value) in all_reco_list:
+    for key, value in all_reco_list:
         print(key, value)
+
+    with open(consts.csv_coverageHybrid, 'w') as csvf:
+        print("writing to", consts.csv_coverageHybrid)
+        csv_writer = csv.writer(csvf)
+        for row in all_reco_list:
+            csv_writer.writerow(row)
+
+
 
 
 if __name__ == "__main__":
-    # --- Tune hyperparameters
 
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
+        content = json.load(f)
+    recipes_data = content['recipes_data']
+
+    # --- Tune hyperparameters
     # tune_hyperparam()
     # get_AUC_tuned_param()
 
     # --- Get recommendations
     # uid = '/cook/939980/'
-    # get_reco(df, uid, verbose=True)
+    # get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # Test get reco for new user
     # uid = "lucile"
     # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    # get_reco_new_user(df, uid, ratings, verbose=True)
+    # get_reco_new_user(df, uid, ratings, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # --- Get coverage
-    get_coverage()
+    get_coverage(healthy_bias=True)

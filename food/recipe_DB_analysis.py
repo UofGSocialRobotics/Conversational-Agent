@@ -130,8 +130,7 @@ def get_datasets_stats(bool_plot=False):
 
     healthy_recipes_ids = rs_utils.get_ids_coverageHealth()
     CF_recipes_ids = rs_utils.get_ids_coveragePref()
-    # hybrid_recipes_ids = ['/recipes/' + r for r in rs_utils.get_ids_CFhBias_recipes_coverage_set()]
-    hybrid_recipes_ids = []
+    hybrid_recipes_ids = rs_utils.get_ids_coverageHybrid()
 
     data = dict()
     keys = [rs_utils.pref, rs_utils.hybrid, rs_utils.healthy, rs_utils.prefhybrid, rs_utils.prefhealthy, rs_utils.healthyhybrid, rs_utils.others, rs_utils._all]
