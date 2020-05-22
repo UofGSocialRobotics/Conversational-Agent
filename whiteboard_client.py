@@ -49,7 +49,7 @@ class WhiteBoardClient:
 
     def treat_message(self, message, topic):
         # log.error("$s: method treat_message should be overwriten in inherited classes!" % self.name)
-        # print("treat_message WhiteBoardClient %s" % self.name)
+        print("treat_message WhiteBoardClient %s" % self.name)
         self.time_start = time.time()
 
     def publish(self, message, topic=None):

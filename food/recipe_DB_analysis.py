@@ -34,8 +34,6 @@ def plot_number_ratings_number_items():
     plt.show()
 
 
-
-
 def get_ratings_distribution():
     with open(json_xUsers_Xrecipes_path_wo0ratings, 'r') as fin:
         content = json.load(fin)

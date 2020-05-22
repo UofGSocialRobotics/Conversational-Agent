@@ -7,6 +7,8 @@ DOMAIN = DOMAIN_RS_EVAL
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
 ####################################################################################################
+healthy_bias = False
+
 exp_type_food = "food"
 exp_type_opinion = "opinion"
 exp_type_feature = "feature"
@@ -92,6 +94,7 @@ MSG_CONNECTION = "client connected"
 MSG_ACK_AMT_INFO = "ack amt info"
 MSG_ACK_CONNECTION = "ack new connection"
 
+MSG_RS_LEARNING_PHASE = "start_rs_eval"
 MSG_GET_RECO = "get reco"
 
 

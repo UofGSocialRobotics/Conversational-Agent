@@ -42,8 +42,8 @@ if __name__ == '__main__':
         config_modules.modules.set_domain("food")
     elif args.rseval:
         config_modules.modules.set_domain("RS_eval")
-        cfrs = CFRS.getInstance()
-        cfrs.start()
+        # cfrs = CFRS.getInstance()
+        # cfrs.start()
     else:
         argp.print_help()
         exit(0)

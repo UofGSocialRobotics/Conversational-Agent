@@ -4,11 +4,13 @@ import random
 
 import whiteboard_client as wbc
 import helper_functions as helper
-from food.collaborative_filtering import CFRS
+# from food.collaborative_filtering import CFRS
+from food.CF_implicit_ratings import ImplicitCFRS
 import food.RS_utils as rs_utils
 import config
 import food.food_config as fc
 from ca_logging import log
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
 class RS(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -20,11 +22,14 @@ class RS(wbc.WhiteBoardClient):
         self.ratings_pref_gathering_list = list()
         self.ratings_reco_list = list()
 
-        self.rs = CFRS.getInstance()
+        self.rs = ImplicitCFRS()
+        self.rs.set_healthy_bias(config.healthy_bias)
+        self.rs.start()
 
-        with open(rs_utils.file_path, 'r') as f:
+        with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
             content = json.load(f)
         self.recipes_dict = content['recipes_data']
+        print(self.recipes_dict['51372/favorite-barbecue-chicken/'])
 
         self.already_sent = list()
         self.reco_list = None
@@ -99,43 +104,65 @@ class RS(wbc.WhiteBoardClient):
 
     def treat_message(self, msg, topic):
         # print(msg, topic)
-        super(RS, self).treat_message(msg,topic)
+        super(RS, self).treat_message(msg, topic)
 
-        # if msg == config.MSG_GET_RECO:
-        #     reco = self.get_reco(self.user_name, self.ratings_pref_gathering_list)
-        #     data = {fc.reco: reco}
-        #     self.publish(data)
-        n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
 
-        if msg != "start_rs_eval":
-            rid, r = self.parse_client_msg(msg)
-            if rid != "rid":
-                if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
-                    self.ratings_pref_gathering_list.append([rid, r])
-                    log.debug(self.ratings_pref_gathering_list)
-                    log.debug("self.ratings_pref_gathering_list")
+        if msg == config.MSG_RS_LEARNING_PHASE:
+            recipes_ids = self.recipes_dict.keys()
+            thirty_recipes = random.sample(recipes_ids, 5)
+            recipes_to_send = list()
+            for rid in thirty_recipes:
+                rdata = dict()
+                rdata['title'] = self.recipes_dict[rid]['title']
+                # rdata['description'] = self.recipes_dict[rid]['title']
+                rdata['image_url'] = self.recipes_dict[rid]['image_url']
+                rdata['id'] = rid
+                if 'Prep' in self.recipes_dict[rid]['time_info'].keys():
+                    rdata['time_prep'] = self.recipes_dict[rid]['time_info']['Prep']
+                    rdata['time_cook'] = self.recipes_dict[rid]['time_info']['Cook']
+                    rdata['time_total'] = self.recipes_dict[rid]['time_info']['Total']
                 else:
-                    self.ratings_reco_list.append([rid, r])
-                    log.debug(self.ratings_reco_list)
-                    log.debug("self.ratings_reco_list")
+                    rdata['time_prep'] = "--"
+                    rdata['time_cook'] = "--"
+                    rdata['time_total'] = "--"
+                recipes_to_send.append(rdata)
+                self.already_sent.append(rid)
+            msg = {"intent": "learn_pref", "recipes": recipes_to_send}
+            self.publish(msg)
 
-        n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
-
-        # Haven't collected enough preferences before making reco
-        if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
-            self.send_random_recipe()
         else:
-            # Haven't made any reco yet
-            n_ratings_reco = len(self.ratings_reco_list)
-            print(self.reco_list)
-            if n_ratings_reco == 0 and not self.reco_list:
-                self.reco_list = self.rs.get_reco(user_name=self.user_name, ratings_list=self.ratings_pref_gathering_list)
-                log.debug("Got recommendations!")
-                log.debug(self.reco_list)
-                self.publish({"intent": "goto_eval_intro"})
-            # Made enough reco
-            elif n_ratings_reco == 5:
-                self.publish({"intent": "go_to_post_study"})
-
-            else:
-                self.send_reco()
+            log.error("Not implemented yet: don't know what to do on reception of %s" % msg)
+        # n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
+        #
+        # if msg != "start_rs_eval":
+        #     rid, r = self.parse_client_msg(msg)
+        #     if rid != "rid":
+        #         if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
+        #             self.ratings_pref_gathering_list.append([rid, r])
+        #             log.debug(self.ratings_pref_gathering_list)
+        #             log.debug("self.ratings_pref_gathering_list")
+        #         else:
+        #             self.ratings_reco_list.append([rid, r])
+        #             log.debug(self.ratings_reco_list)
+        #             log.debug("self.ratings_reco_list")
+        #
+        # n_ratings_pref_gathering = len(self.ratings_pref_gathering_list)
+        #
+        # # Haven't collected enough preferences before making reco
+        # if n_ratings_pref_gathering < rs_utils.n_recipes_before_reco:
+        #     self.send_random_recipe()
+        # else:
+        #     # Haven't made any reco yet
+        #     n_ratings_reco = len(self.ratings_reco_list)
+        #     print(self.reco_list)
+        #     if n_ratings_reco == 0 and not self.reco_list:
+        #         self.reco_list = self.rs.get_reco(user_name=self.user_name, ratings_list=self.ratings_pref_gathering_list)
+        #         log.debug("Got recommendations!")
+        #         log.debug(self.reco_list)
+        #         self.publish({"intent": "goto_eval_intro"})
+        #     # Made enough reco
+        #     elif n_ratings_reco == 5:
+        #         self.publish({"intent": "go_to_post_study"})
+        #
+        #     else:
+        #         self.send_reco()

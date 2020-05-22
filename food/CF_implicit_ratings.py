@@ -20,10 +20,11 @@ from sklearn.preprocessing import MinMaxScaler
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import helper_functions as helper
 import food.RS_utils as rs_utils
+from ca_logging import log
 
 
-df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-print(df.head())
+# df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+# print(df.head())
 
 
 def make_train(ratings, pct_test = 0.2):
@@ -421,13 +422,61 @@ def get_coverage(healthy_bias=False, n_recipes_profile=10, n_recipes_torecommend
             csv_writer.writerow(row)
 
 
+class ImplicitCFRS:
+    # """Singleton class"""
+    # __instance = None
+    #
+    # @staticmethod
+    # def getInstance():
+    #     """
+    #     :return: the unique ServerUsingFirebase object
+    #     """
+    #     if ImplicitCFRS.__instance == None:
+    #         ImplicitCFRS()
+    #     return ImplicitCFRS.__instance
+
+
+    def __init__(self):
+        # if ImplicitCFRS.__instance != None:
+        #     log.debug("Calling constructor of CFRS")
+        # else:
+        ImplicitCFRS.__instance = self
+        self.healthy_bias = None
+
+        self.n_algos = rs_utils.n_alogs
+        self.algo_list = list()
+
+
+        with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
+            content = json.load(f)
+        self.recipes_data = content['recipes_data']
+
+        self.df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+
+    def set_healthy_bias(self, healthy_bias):
+        self.healthy_bias = healthy_bias
+
+
+    def start(self):
+        if self.healthy_bias == None:
+            log.error("Must set a value for healthy_bias")
+            raise ValueError("Healthy bias not set!")
+        else:
+            log.info("ImplicitCFRS: ready, healthy bias is %s" % self.healthy_bias.__str__())
+
+    def get_coverage(self):
+        return get_coverage(healthy_bias=self.healthy_bias)
+
+    def get_reco(self, user_name, ratings_list):
+        return get_reco_new_user(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, verbose=False)
+
 
 
 if __name__ == "__main__":
 
-    with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
-        content = json.load(f)
-    recipes_data = content['recipes_data']
+    # with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
+    #     content = json.load(f)
+    # recipes_data = content['recipes_data']
 
     # --- Tune hyperparameters
     # tune_hyperparam()
@@ -438,9 +487,15 @@ if __name__ == "__main__":
     # get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # Test get reco for new user
-    # uid = "lucile"
-    # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    uid = "lucile"
+    df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    rs = ImplicitCFRS.getInstance()
+    rs.set_healthy_bias(healthy_bias=True)
+    rs.start()
+    print(rs.get_reco(uid, ratings))
     # get_reco_new_user(df, uid, ratings, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # --- Get coverage
-    get_coverage(healthy_bias=True)
+    # get_coverage(healthy_bias=True)
+
