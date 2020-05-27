@@ -94,7 +94,8 @@ MSG_CONNECTION = "client connected"
 MSG_ACK_AMT_INFO = "ack amt info"
 MSG_ACK_CONNECTION = "ack new connection"
 
-MSG_RS_LEARNING_PHASE = "start_rs_eval"
+MSG_RS_LEARNING_PHASE = "start_pref_gathering"
+MSG_RS_EVAL_PHASE = "start_rs_eval"
 MSG_GET_RECO = "get reco"
 
 
@@ -123,10 +124,8 @@ HealthDiagnostic_subscribes = [MSG_HEALTH_DIAGNOSTIC_IN]
 HealthDiagnostic_publishes = MSG_HEALTH_DIAGNOSTIC_OUT
 
 ## RS
-RS_subrscribes = [MSG_RS_IN]
-if DOMAIN == DOMAIN_RS_EVAL:
-    RS_subrscribes = [MSG_SERVER_IN]
-RS_publishes = MSG_RS_OUT
+RS_subrscribes = [MSG_SERVER_IN]
+RS_publishes = [MSG_RS_OUT, MSG_DATACOL_OUT]
 
 ####################################################################################################
 ##                                        Firebase Keys                                           ##
@@ -149,11 +148,13 @@ FIREBASE_KEY_SOURCE = "source"
 FIREBASE_VALUE_SOURCE_CLIENT = "client"
 FIREBASE_VALUE_SOURCE_AGENT = "agent"
 FIREBASE_KEY_ACK = "ack"
+FIREBASE_LIKED_RECIPES = "liked_recipes"
 # Datacollection keys
 FIREBASE_KEY_AMTID = "amt_id"
 FIREBASE_KEY_DATACOLLECTION = "data_collection"
 FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS = "food_diagnosis_answers"
 FIREBASE_KEY_DATA_RECO = "data_recommendation"
+FIREBASE_KEY_RS_EVAL_DATA = "rs_eval_data"
 FIREBASE_KEY_XP_COND = "xp_condition"
 
 

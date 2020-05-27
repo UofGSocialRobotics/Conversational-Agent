@@ -60,8 +60,11 @@ def stream_handler_dialog_ref(message):
     client_id, data = filter_client_id_data(message)
     if client_id:
         topic = config.MSG_DATACOL_IN + client_id
+        if config.FIREBASE_KEY_TEXT in data.keys():
+            utterance = data[config.FIREBASE_KEY_TEXT]
+        elif config.FIREBASE_LIKED_RECIPES in data.keys():
+            utterance = data[config.FIREBASE_LIKED_RECIPES]
         # publish for data collection
-        utterance = data[config.FIREBASE_KEY_TEXT]
         whiteboard.publish({config_data_collection.DIALOG: data}, topic)
         # distribute to NLU
         topic = config.MSG_SERVER_IN + client_id
@@ -138,6 +141,8 @@ class ServerUsingFirebase:
      # @overrides(ds_manager.DSManager)
     def publish_for_client(self, message, client_id, firebase_key):
         log.debug("In publish_for_client")
+        log.debug("firebase key")
+        log.debug(firebase_key)
         if client_id in self.clients_services:
             # ref = self.firebase_db.child(config.FIREBASE_KEY_SESSIONS).child(client_id)
             if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND or firebase_key == config.FIREBASE_KEY_RECIPE:
@@ -180,7 +185,7 @@ class ServerUsingFirebase:
                     for_data_col[config_data_collection.DIALOG] = message_to_send
                     whiteboard.publish(message=for_data_col, topic=topic)
 
-                elif firebase_key == config.FIREBASE_KEY_XP_COND or (isinstance(message, dict) and config.FIREBASE_KEY_DATA_RECO in message.keys()):
+                elif firebase_key == config.FIREBASE_KEY_XP_COND or (isinstance(message, dict) and (config.FIREBASE_KEY_DATA_RECO in message.keys() or config.FIREBASE_KEY_RS_EVAL_DATA in message.keys())):
                     self.firebase_root_ref.update_at(message, path=get_path_in_sessions(client_id))
 
                 else:
@@ -230,18 +235,15 @@ class ServerUsingFirebase:
             self.subscribe_whiteboard(config.MSG_RS_OUT + client_id)
         else:
             self.subscribe_whiteboard(config.MSG_NLG + client_id)
-            self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
+        self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
         # Listener: for client
         dialog_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DIALOG))
         datacol_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DATACOLLECTION))
-        # print("datacol_ref.path()")
-        # print(datacol_ref.path)
         self.firebase_streams_dialog[client_id] = dialog_ref.stream(stream_handler_dialog_ref, stream_id=client_id+"dialog")
         self.firebase_streams_datacol[client_id] = datacol_ref.stream(stream_handler_datacollection_ref, stream_id=client_id+"dialog")
         # Create services
         self.create_services(client_id)
         self.start_timer(client_id)
-        confirm_connection_message = config.MSG_ACK_CONNECTION
         self.publish_for_client(True, client_id, firebase_key=config.FIREBASE_KEY_ACK)
 
 

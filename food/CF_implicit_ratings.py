@@ -467,8 +467,8 @@ class ImplicitCFRS:
     def get_coverage(self):
         return get_coverage(healthy_bias=self.healthy_bias)
 
-    def get_reco(self, user_name, ratings_list):
-        return get_reco_new_user(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, verbose=False)
+    def get_reco(self, user_name, ratings_list, n_reco=10, verbose=False):
+        return get_reco_new_user(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, n_recipes_torecommend=n_reco, verbose=verbose)
 
 
 
@@ -490,7 +490,7 @@ if __name__ == "__main__":
     uid = "lucile"
     df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
     ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    rs = ImplicitCFRS.getInstance()
+    rs = ImplicitCFRS()
     rs.set_healthy_bias(healthy_bias=True)
     rs.start()
     print(rs.get_reco(uid, ratings))

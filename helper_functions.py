@@ -24,10 +24,12 @@ def print_message(name,action,msg_txt,topic):
             msg_to_print["recipe"] = just_get_recipe_main_info(msg_txt["recipe"])
     if isinstance(msg_txt, list):
         if len(msg_txt) > 0:
-            if "vegetarian" in msg_txt[0].keys():
+            if isinstance(msg_txt[0], dict) and "vegetarian" in msg_txt[0].keys():
                 msg_to_print = list()
                 for recipe in msg_txt:
                     msg_to_print.append(just_get_recipe_main_info(recipe))
+            else:
+                msg_to_print = ", ".join(msg_txt)
         else:
             msg_to_print = ""
 
@@ -187,3 +189,14 @@ def remove_duplicate_consecutive_char_from_string(s):
             new_s += c
     new_s = new_s.strip()
     return new_s
+
+def diff_list(l1, l2):
+    res = list()
+    for elt in l1:
+        if l2 and elt in l2:
+            l2.remove(elt)
+        else:
+            res.append(elt)
+    if l2:
+        raise ValueError("Some elements of list to substract are not included in main list!")
+    return res
