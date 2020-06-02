@@ -40,6 +40,8 @@ json_users_data_10_reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapp
 json_recipes_data_10reviews = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/recipes_data_10reviews.json'
 
 json_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.json'
+json_rids_list_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'_ridsList.json'
+json_descriptions_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/recipes_descriptions_u'+X_users.__str__()+'r'+X_recipes.__str__()+'.json'
 
 csv_xUsers_Xrecipes_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'.csv'
 csv_xUsers_Xrecipes_binary_path = 'food/resources/recipes_DB/allrecipes/nodejs_scrapper/DBu'+X_users.__str__()+'r'+X_recipes.__str__()+'_binary.csv'

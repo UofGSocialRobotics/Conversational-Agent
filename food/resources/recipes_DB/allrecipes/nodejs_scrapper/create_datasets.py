@@ -223,8 +223,36 @@ def save_FSAscore():
     print("Wrote Heath scores in", json_xUsers_Xrecipes_path)
 
 
+def json_list_dataset_rids():
+    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    rids_list = list(content['recipes_data'].keys())
+    with open(json_rids_list_xUsers_Xrecipes_path, 'w') as fout:
+        json.dump(rids_list, fout, indent=True)
+
+
+def merge_descriptions_to_main():
+    with open(json_descriptions_xUsers_Xrecipes_path, 'r') as fdescriptions:
+        descriptions = json.load(fdescriptions)
+    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    recipes_data = content['recipes_data']
+    for rid, rdata in recipes_data.items():
+        if rid not in descriptions.keys():
+            print("No description for %s" % rid)
+        else:
+            rdata['description'] = descriptions[rid]
+    # first_rid = list(recipes_data.keys())[0]
+    # first_rdtata = recipes_data[first_rid]
+    # print(first_rdtata)
+    content['recipes_data'] = recipes_data
+    with open(json_xUsers_Xrecipes_path, 'w') as fjson:
+        json.dump(content, fjson, indent=True)
+
 if __name__ == "__main__":
     # create_json_10reviews()
     # reduce_DB_size()
     # create_user_item_matrix()
-    save_FSAscore()
+    # save_FSAscore()
+    # json_list_dataset_rids()
+    merge_descriptions_to_main()

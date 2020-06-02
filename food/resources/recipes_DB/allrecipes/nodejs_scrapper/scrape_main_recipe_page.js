@@ -7,8 +7,8 @@ const n_trials_max = 5;
 
 const page_size = 9;
 
-const save_in = 'recipes_mainpage.json';
-const allrecipes_ids_to_scrape_file_path = 'recipes_to_scrap_allrecipes_all.json';
+const save_in = 'recipes_descriptions.json';
+const allrecipes_ids_to_scrape_file_path = 'DBu30r25_ridsList.json';
 const failed_path = 'mainrecipepage_failed.txt';
 
 
@@ -55,6 +55,10 @@ function extractRecipe(){
 	return new_recipe;
 }
 
+function extractDescription(){
+	const description = document.querySelectorAll('p.margin-0-auto')[0].innerText;
+	return description
+}
 
 
 function isDictInList(d, l){
@@ -91,41 +95,50 @@ function isDictInList(d, l){
 	const json_already_scraped = JSON.parse(contents2);
 	const already_scraped_ids = Object.keys(json_already_scraped);
 
+	var n_errors = 0;
+
 	for (let recipeid of json_contents){
 
-		if (idx_scraping > 13600){
+		// if (idx_scraping > 13600){
 
-			if (already_scraped_ids.indexOf(recipeid) == -1){
+		if (already_scraped_ids.indexOf(recipeid) == -1){
 
-				console.log("\nIndex recipe:", idx_scraping);
+			console.log("\nIndex recipe:", idx_scraping);
 
-				try{
+			try{
 
-					const url_main_page = 'https://www.allrecipes.com/recipe/'+recipeid;
-					await page.goto(url_main_page);
-					const recipe_data = await page.evaluate(extractRecipe);
-					all_data[recipeid] = recipe_data;
-					idx_scraping++;
-					// if(idx_scraping % 5 == 0 || idx_scraping == 1){
+				const url_main_page = 'https://www.allrecipes.com/recipe/'+recipeid;
+				await page.goto(url_main_page);
+				// const recipe_data = await page.evaluate(extractRecipe);
+				const recipe_data = await page.evaluate(extractDescription);
+				all_data[recipeid] = recipe_data;
+				idx_scraping++;
+				if(idx_scraping % 1 == 0 || idx_scraping == 1){
 					console.log("Wrote to file:", save_in);
 					const to_save = {...json_already_scraped, ...all_data};
 					fs.writeFileSync(save_in, JSON.stringify(to_save));
-					// }
-
-				} catch (e){
-					fs.appendFile(failed_path, recipeid + "\n", function (err) {
-						if (err) throw err;
-						console.log('ERROR, could not collect main page for recipe, saved recipe\'s id to:', failed_path);
-					});
 				}
-			}
-			else {
-				console.log("Passing: ", recipeid, idx_scraping++);
+
+			} catch (e){
+				fs.appendFile(failed_path, recipeid + "\n", function (err) {
+					if (err) throw err;
+					console.log('ERROR, could not collect main page for recipe, saved recipe\'s id to:', failed_path);
+					if (n_errors > 2){
+						n_errors = 0;
+						idx_scraping++;
+					} else {
+						n_errors++;
+					}
+				});
 			}
 		}
 		else {
-			idx_scraping++;
+			console.log("Passing: ", recipeid, idx_scraping++);
 		}
+		// }
+		// else {
+		// 	idx_scraping++;
+		// }
 
 	}
 	
