@@ -232,8 +232,10 @@ class ServerUsingFirebase:
         log.debug("%s: new client, id = %s" % (self.name, client_id))
         # Listeners: for modules
         if config.DOMAIN == config.DOMAIN_RS_EVAL:
+            print("server, her in if")
             self.subscribe_whiteboard(config.MSG_RS_OUT + client_id)
         else:
+            print("server, her in else")
             self.subscribe_whiteboard(config.MSG_NLG + client_id)
         self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
         # Listener: for client

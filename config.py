@@ -2,7 +2,7 @@ import cryptography.fernet as fernet
 import json
 
 DOMAIN_RS_EVAL = "RS_eval"
-DOMAIN = DOMAIN_RS_EVAL
+DOMAIN = "food"
 
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
@@ -23,8 +23,8 @@ possible_CS = exp_no_ack
 
 DELAY_ANSWER_N_CHAR_PER_MINUTE = 1400#350 #200
 
-CUT_MESSAGES = True
-DELAY_MESSAGES = True
+CUT_MESSAGES = False
+DELAY_MESSAGES = False
 
 ####################################################################################################
 ##                                        Firebase config                                         ##
