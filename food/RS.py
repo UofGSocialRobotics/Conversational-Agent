@@ -13,7 +13,7 @@ from ca_logging import log
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
 N_RECIPES_TO_DISPLAY = 30
-N_RECIPES_TO_RECOMMEND = 5
+N_RECIPES_TO_RECOMMEND = 15
 
 
 class RS(wbc.WhiteBoardClient):
@@ -43,61 +43,6 @@ class RS(wbc.WhiteBoardClient):
         self.reco_list = None
 
 
-    # def send_reco(self):
-    #     log.info("Will send recommended recipe")
-    #     rid = self.reco_list.pop(0)
-    #     log.debug(rid)
-    #     self.send_recipe(rid)
-    #
-    # def send_random_recipe(self):
-    #     log.info("Will send random recipe")
-    #     left_to_chose_from = [rid for rid in list(self.recipes_dict.keys()) if not rid in self.leanr_pref_recipes_sent]
-    #     rid = random.choice(left_to_chose_from)
-    #     # r = self.recipes_dict['/recipes/parmesan-spring-chicken']
-    #     self.send_recipe(rid)
-    #
-    # def send_recipe(self, rid):
-    #     r = self.recipes_dict[rid]
-    #     r['comments'] = None
-    #     del r['comments']
-    #     ingredients_list = r['ingredients']
-    #     # print(type(n_ingredients))
-    #     n_ingredients = len(ingredients_list)
-    #     n_ingredients_by_col, remainder = n_ingredients // 3, n_ingredients % 3
-    #     log.debug(rid)
-    #     log.debug(n_ingredients)
-    #     log.debug("%d, %d" % (n_ingredients_by_col, remainder))
-    #     extra_in_col_1 = 0 if remainder == 0 else 1
-    #     extra_in_col_2 = 1 if remainder == 2 else 0
-    #     limit_col1 = n_ingredients_by_col+extra_in_col_1
-    #     limit_col2 = n_ingredients_by_col*2+extra_in_col_1+extra_in_col_2
-    #     log.debug("%d, %d" % (limit_col1, limit_col2))
-    #     log.debug(ingredients_list)
-    #     if limit_col1 == 1:
-    #         col1 = [ingredients_list[0]]
-    #     else:
-    #         col1 = ingredients_list[:limit_col1]
-    #     if (limit_col2 - limit_col1) == 1:
-    #         col2 = [ingredients_list[limit_col1]]
-    #     elif (limit_col2 - limit_col1) == 0:
-    #         col2 = []
-    #     else:
-    #         col2 = ingredients_list[limit_col1:limit_col2]
-    #     if n_ingredients - limit_col2 == 1:
-    #         col3 = [ingredients_list[limit_col2]]
-    #     elif n_ingredients - limit_col2 == 0:
-    #         col3 = []
-    #     else:
-    #         col3 = ingredients_list[limit_col2:]
-    #     # print(n_ingredients, n_ingredients_by_col, remainder, extra_in_col_1, extra_in_col_2)
-    #     # print(limit_col1, limit_col2)
-    #     r['ingredients'] = dict()
-    #     r['ingredients']["col1"], r['ingredients']["col2"], r['ingredients']["col3"] = col1, col2, col3
-    #     msg = {"intent": "get_rating", "recipe": r}
-    #     self.leanr_pref_recipes_sent.append(rid)
-    #     self.publish(msg, topic=self.publishes[0])
-
-
     def get_reco(self):
         if len(self.ratings_pref_gathering_list) < 10:
             raise ValueError("Not enough ratings to give reco!")
@@ -112,7 +57,10 @@ class RS(wbc.WhiteBoardClient):
     def get_info_to_send_recipe(self, rid):
         rdata = dict()
         rdata['title'] = self.recipes_dict[rid]['title']
-        # rdata['description'] = self.recipes_dict[rid]['title']
+        if 'description' in self.recipes_dict[rid].keys():
+            rdata['description'] = self.recipes_dict[rid]['description']
+        else:
+            rdata['description'] = "--"
         rdata['image_url'] = self.recipes_dict[rid]['image_url']
         rdata['rating'] = self.recipes_dict[rid]['rating']
         rdata['n_ratings'] = self.recipes_dict[rid]['n_reviews_collected']

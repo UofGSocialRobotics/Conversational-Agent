@@ -1,11 +1,11 @@
 import json
 import csv
-from food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts import *
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import copy
 import food.RS_utils as rs_utils
 
 def create_json_10reviews():
-    with open(json_fullDB_path, 'r') as fjson:
+    with open(consts.json_fullDB_path, 'r') as fjson:
         content = json.load(fjson)
     rdata = content['recipes_data']
     udata = content['users_data']
@@ -27,15 +27,15 @@ def create_json_10reviews():
         # print(udict)
         if udict['n_comments'] >= 10:
             udata10[uid] = udict
-    with open(json_recipes_data_10reviews, 'w') as f:
+    with open(consts.json_recipes_data_10reviews, 'w') as f:
         json.dump(rdata10, f, indent=True)
-    with open(json_users_data_10_reviews, 'w') as f:
+    with open(consts.json_users_data_10_reviews, 'w') as f:
         json.dump(udata10, f, indent=True)
-    print("Wrote files:", json_recipes_data_10reviews, json_users_data_10_reviews)
+    print("Wrote files:", consts.json_recipes_data_10reviews, consts.json_users_data_10_reviews)
 
 
 def get_DB_numbers():
-    with open(json_reviews_file_path, 'r') as fjson:
+    with open(consts.json_reviews_file_path, 'r') as fjson:
         content = json.load(fjson)
 
     total_reviews = 0
@@ -68,7 +68,7 @@ def get_matrix_data(users_comments_data, recipes_dict):
 
 
 def get_users_data():
-    with open(json_reviews_file_path, 'r') as fjson:
+    with open(consts.json_reviews_file_path, 'r') as fjson:
         content = json.load(fjson)
 
     users = dict()
@@ -97,17 +97,17 @@ def get_elts_with_X_or_more_ratings(elts_data, X=5, elt_name='users', key='n_com
 
 def reduce_DB_size():
 
-    with open(json_users_data_10_reviews, 'r') as f_user_10:
+    with open(consts.json_users_data_10_reviews, 'r') as f_user_10:
         users_comments_data = json.load(f_user_10)
 
-    with open(json_recipes_data_10reviews, 'r') as f_recipe_10:
+    with open(consts.json_recipes_data_10reviews, 'r') as f_recipe_10:
         recipes_dict = json.load(f_recipe_10)
 
     users_names = users_comments_data.keys()
 
     #eliminate users with less than 5 comments
     print("USERS")
-    users_with_X_or_more_comments = get_elts_with_X_or_more_ratings(users_comments_data, X_users)
+    users_with_X_or_more_comments = get_elts_with_X_or_more_ratings(users_comments_data, consts.X_users)
     new_users_comments_data = dict()
     count = 0
     for user_id, user_data in users_comments_data.items():
@@ -133,13 +133,13 @@ def reduce_DB_size():
                     new_comments_list.append(review)
             recipe['reviews'] = new_comments_list
             recipe['n_reviews_collected'] = len(new_comments_list)
-            if recipe['n_reviews_collected'] >= X_recipes:
+            if recipe['n_reviews_collected'] >= consts.X_recipes:
                 new_recipes_dict[recipe_id] = recipe
             count += 1
         recipes_dict = new_recipes_dict
 
         #eliminate users
-        recipes_with_X_or_more_comments = get_elts_with_X_or_more_ratings(recipes_dict, X_recipes, 'recipes', 'n_reviews_collected')
+        recipes_with_X_or_more_comments = get_elts_with_X_or_more_ratings(recipes_dict, consts.X_recipes, 'recipes', 'n_reviews_collected')
         new_users_comments_data = dict()
         for user_id, user_data in users_comments_data.items():
             new_commented_recipes_list = list()
@@ -149,13 +149,13 @@ def reduce_DB_size():
                     new_commented_recipes_list.append(r)
             user_data['n_comments'] = len(new_commented_recipes_list)
             user_data['recipes_commented'] = new_commented_recipes_list
-            if user_data['n_comments'] >= X_users:
+            if user_data['n_comments'] >= consts.X_users:
                 new_users_comments_data[user_id] = user_data
 
         users_comments_data = new_users_comments_data
 
         print("USERS")
-        users_with_X_or_more_comments = get_elts_with_X_or_more_ratings(users_comments_data, X_users)
+        users_with_X_or_more_comments = get_elts_with_X_or_more_ratings(users_comments_data, consts.X_users)
 
         new_n_users, new_n_recipes = len(users_comments_data.keys()), len(recipes_dict.keys())
         difference = (n_users - new_n_users) + (n_recipes - new_n_recipes)
@@ -168,31 +168,23 @@ def reduce_DB_size():
     json_data = dict()
     json_data['recipes_data'] = recipes_dict
     json_data['users_data'] = users_comments_data
-    with open(json_xUsers_Xrecipes_path, 'w') as fout:
+    with open(consts.json_xUsers_Xrecipes_path, 'w') as fout:
         json.dump(json_data, fout, indent=True)
 
 
 def create_user_item_matrix():
-    with open(json_xUsers_Xrecipes_path, 'r') as fin:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fin:
         content = json.load(fin)
     recipes_data = content['recipes_data']
     csv_rows = list()
-    if binary_bool:
-        csv_rows.append(['item', 'user', 'rating', 'strength'])
-    else:
-        csv_rows.append(['item', 'user', 'rating'])
+    csv_rows.append(['item', 'user', 'rating'])
     number_of_x = dict()
     for recipe_id, recipe_data in recipes_data.items():
-        reviews = recipe_data['reviews']
+        reviews = recipe_data[consts.reviews]
         for review in reviews:
-            user_id = review['id']
-            if binary_bool:
-                strength = int(review['rating'])
-                rating = 1
-                csv_rows.append([recipe_id, user_id, rating, strength])
-            else:
-                rating = int(review['rating'])
-                csv_rows.append([recipe_id, user_id, rating])
+            user_id = review[consts.uid]
+            rating = int(review[consts.rating])
+            csv_rows.append([recipe_id, user_id, rating])
             if rating not in number_of_x.keys():
                 number_of_x[rating] = 1
             else:
@@ -202,14 +194,14 @@ def create_user_item_matrix():
     for k, v in number_of_x.items():
         print("%d: %d (%.2f%%)" % (k, v, float(v)/total*100))
 
-    path = csv_xUsers_Xrecipes_binary_path if binary_bool else csv_xUsers_Xrecipes_path
+    path = consts.csv_xUsers_Xrecipes_path
     with open(path, 'w') as fout:
         writer = csv.writer(fout)
         for row in csv_rows:
             writer.writerow(row)
 
 def save_FSAscore():
-    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
         content = json.load(fjson)
     recipes_list = content['recipes_data'].values()
     for recipe in recipes_list:
@@ -218,23 +210,23 @@ def save_FSAscore():
     # rid = list(content['recipes_data'].keys())[0]
     # r = content['recipes_data'][rid]
     # print(r)
-    with open(json_xUsers_Xrecipes_path, 'w') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'w') as fjson:
         json.dump(content, fjson, indent=True)
-    print("Wrote Heath scores in", json_xUsers_Xrecipes_path)
+    print("Wrote Heath scores in", consts.json_xUsers_Xrecipes_path)
 
 
 def json_list_dataset_rids():
-    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
         content = json.load(fjson)
     rids_list = list(content['recipes_data'].keys())
-    with open(json_rids_list_xUsers_Xrecipes_path, 'w') as fout:
+    with open(consts.json_rids_list_xUsers_Xrecipes_path, 'w') as fout:
         json.dump(rids_list, fout, indent=True)
 
 
 def merge_descriptions_to_main():
-    with open(json_descriptions_xUsers_Xrecipes_path, 'r') as fdescriptions:
+    with open(consts.json_descriptions_xUsers_Xrecipes_path, 'r') as fdescriptions:
         descriptions = json.load(fdescriptions)
-    with open(json_xUsers_Xrecipes_path, 'r') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
         content = json.load(fjson)
     recipes_data = content['recipes_data']
     for rid, rdata in recipes_data.items():
@@ -246,13 +238,13 @@ def merge_descriptions_to_main():
     # first_rdtata = recipes_data[first_rid]
     # print(first_rdtata)
     content['recipes_data'] = recipes_data
-    with open(json_xUsers_Xrecipes_path, 'w') as fjson:
+    with open(consts.json_xUsers_Xrecipes_path, 'w') as fjson:
         json.dump(content, fjson, indent=True)
 
 if __name__ == "__main__":
     # create_json_10reviews()
     # reduce_DB_size()
-    # create_user_item_matrix()
+    create_user_item_matrix()
     # save_FSAscore()
     # json_list_dataset_rids()
-    merge_descriptions_to_main()
+    # merge_descriptions_to_main()

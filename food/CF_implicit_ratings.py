@@ -23,9 +23,6 @@ import food.RS_utils as rs_utils
 from ca_logging import log
 
 
-# df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-# print(df.head())
-
 
 def make_train(ratings, pct_test = 0.2):
     '''
@@ -187,7 +184,7 @@ def fit_and_get_AUC(model, train_set, test_set, recipes_users_altered_test, alph
     s = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(model.item_factors), sparse.csr_matrix(model.user_factors.T)], test_set)
     return s[0]
 
-def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[5, 10, 20], n_factors_values=[5, 6, 7], reg_values=[0.03, 0.05, 0.07], n_epochs_values=[40, 45, 50], lr_values=[0.005, 0.01, 0.2]):
+def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[6, 7, 8, 9, 10, 15, 20], n_factors_values=[3], reg_values=[0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.02, 0.04, 0.06, 0.08], n_epochs_values=[40, 45, 50, 55, 60, 65, 70], lr_values=[0.005, 0.05, 0.5]):
     scores = list()
     for alpha in alpha_values:
         for factors in n_factors_values:
@@ -473,27 +470,29 @@ class ImplicitCFRS:
 
 
 if __name__ == "__main__":
+    df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+    print(df.head())
 
-    # with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
-    #     content = json.load(f)
-    # recipes_data = content['recipes_data']
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
+        content = json.load(f)
+    recipes_data = content['recipes_data']
 
     # --- Tune hyperparameters
     # tune_hyperparam()
-    # get_AUC_tuned_param()
+    get_AUC_tuned_param()
 
     # --- Get recommendations
     # uid = '/cook/939980/'
     # get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # Test get reco for new user
-    uid = "lucile"
-    df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    rs = ImplicitCFRS()
-    rs.set_healthy_bias(healthy_bias=True)
-    rs.start()
-    print(rs.get_reco(uid, ratings))
+    # uid = "lucile"
+    # df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+    # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    # rs = ImplicitCFRS()
+    # rs.set_healthy_bias(healthy_bias=True)
+    # rs.start()
+    # print(rs.get_reco(uid, ratings))
     # get_reco_new_user(df, uid, ratings, healthy_bias=True, recipes_data=recipes_data, verbose=True)
 
     # --- Get coverage
