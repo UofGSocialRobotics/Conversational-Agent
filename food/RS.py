@@ -129,8 +129,10 @@ class RS(wbc.WhiteBoardClient):
             eval_data = dict()
             eval_data["reco"] = self.reco
             tp = len(self.recommended_recipes_liked_by_user)
-            eval_data["P"] = N_RECIPES_TO_RECOMMEND
-            eval_data["N"] = N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND
+            eval_data["P_predict"] = N_RECIPES_TO_RECOMMEND
+            eval_data["N_predict"] = N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND
+            eval_data["P"] = len(msg)
+            eval_data["N"] = N_RECIPES_TO_DISPLAY - len(msg)
             eval_data["TP"] = tp
             eval_data["FP"] = N_RECIPES_TO_RECOMMEND - tp
             fn = len(msg) - tp
