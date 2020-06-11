@@ -44,7 +44,8 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike, threshold=10
                 lemma_w1, lemma_w2 = document[j].lemma_, document[j+1].lemma_
                 lemma_bg = lemma_w1 + " " + lemma_w2
                 if lemma_bg in food_list:
-                    ingredients_list.append(bg_text)
+                    # ingredients_list.append(bg_text)
+                    ingredients_list.append(lemma_bg)
             j += 1
 
     for token in document:

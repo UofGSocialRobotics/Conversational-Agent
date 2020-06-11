@@ -1,6 +1,7 @@
 import csv
 import json
 import pandas
+import copy
 # from ca_logging import log
 import food.food_config as fc
 
@@ -160,11 +161,13 @@ class Extensive_food_DBs:
             if elt in list_to_remove_from:
                 list_to_remove_from.remove(elt)
 
-    def add_foods_to_list(self, to_add_to_list, list_to_add_to):
+    def add_foods_to_list(self, to_add_to_list, list_to_add_to, category):
         for elt in to_add_to_list:
             list_to_add_to.append(elt)
+            self.food_to_category[elt] = category
 
     def post_processing(self):
+        self.add_powder_to_spices_words()
         for category, foods in self.category_to_foods.items():
             if category == "vegetables":
                 to_remove = ['rape', 'cress', 'stalks', "leaves", "var.", "shoots", "tree", "flower"]
@@ -184,13 +187,25 @@ class Extensive_food_DBs:
             elif category == "dairy":
                 to_remove = ["human", "mammals", "other mammals", 'vitamin a + d added', '0% fat', '1% fat', '2% fat', 'vitamin d added', '3.25% fat']
                 self.remove_foods_from_list(to_remove, foods)
+                self.add_foods_to_list(["ham"], foods, category)
             elif category == "meat":
                 to_remove = ["breast"]
                 self.remove_foods_from_list(to_remove, foods)
             elif category == "baking goods":
                 to_remove = ["filling", "shell"]
                 self.remove_foods_from_list(to_remove, foods)
-        self.category_to_foods['seasoning'] = list()
+            elif category == "eggs":
+                self.add_foods_to_list(["egg"], foods, category)
+        self.food_to_category['seasoning'] = "spices"
+
+
+    def add_powder_to_spices_words(self):
+        new_list = copy.copy(self.category_to_foods["spices"])
+        for elt in self.category_to_foods["spices"]:
+            new_elt = elt+" powder"
+            new_list.append(new_elt)
+            self.food_to_category[new_elt] = "spices"
+        self.category_to_foods["spices"] = new_list
 
 
     def get_category(self, food):

@@ -1,8 +1,14 @@
 import json
 import csv
-import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import copy
+import spacy
+
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import food.RS_utils as rs_utils
+import food.food_dataparser as food_dataparser
+import food.NLU as foodNLU
+import nlu_helper_functions as nlu_helper
+import dataparser
 
 def create_json_10reviews():
     with open(consts.json_fullDB_path, 'r') as fjson:
@@ -241,10 +247,76 @@ def merge_descriptions_to_main():
     with open(consts.json_xUsers_Xrecipes_path, 'w') as fjson:
         json.dump(content, fjson, indent=True)
 
+
+def tag_recipes_with_diet(verbose=True):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+    recipes_data = content["recipes_data"]
+
+    spacy_nlp = spacy.load("en_core_web_sm")
+    voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
+    food_list = food_dataparser.extensive_food_DBs.all_foods_list
+    food_dict_category_to_food = food_dataparser.extensive_food_DBs.category_to_foods
+    food_dict_food_to_category = food_dataparser.extensive_food_DBs.food_to_category
+    print(food_dict_category_to_food.keys())
+    print(food_dict_category_to_food['eggs'])
+
+    ## overwrite categories
+    food_dict_food_to_category["chicken"] = "meat"
+    food_dict_food_to_category["butter"] = "dairy"
+    food_dict_food_to_category["sauce"] = "unknown"
+    food_dict_food_to_category["cream"] = "dairy"
+
+
+    ## Errors
+    # 4 tablespoons chopped pecans ['butter'] ['cocoa']
+
+
+    count = 0
+
+    for rid, rdata in recipes_data.items():
+        if count == 50:
+            break
+        if count < 30:
+            count += 1
+        else:
+            all_categories = list()
+            for ingredient in rdata["ingredients"]:
+                # print(ingredient)
+                utterance = ingredient.lower().strip()
+                utterance = nlu_helper.preprocess(utterance)
+                utterance = foodNLU.preprocess_foodNLU(utterance)
+                document = spacy_nlp(utterance)
+                res = foodNLU.inform_food(document, utterance, food_list, voc_no=voc["no"]["all_no_words"], voc_dislike=voc["dislike"])
+                ingredients_parsed = None
+                categories = list()
+                if res:
+                    ingredients_parsed = res[2]
+                    for i in ingredients_parsed:
+                        categories.append(food_dict_food_to_category[i])
+                    for elt in categories:
+                        if elt not in all_categories:
+                            all_categories.append(elt)
+
+                if verbose:
+                    err = ""
+                    if not ingredients_parsed:
+                        err = "ERROR -----------------> "
+                    if err:
+                        print(err, ingredient, ingredients_parsed, categories)
+
+            print(all_categories)
+            print("\n-------------\n")
+
+            count += 1
+
+
+
 if __name__ == "__main__":
     # create_json_10reviews()
     # reduce_DB_size()
-    create_user_item_matrix()
+    # create_user_item_matrix()
     # save_FSAscore()
     # json_list_dataset_rids()
     # merge_descriptions_to_main()
+    tag_recipes_with_diet()
