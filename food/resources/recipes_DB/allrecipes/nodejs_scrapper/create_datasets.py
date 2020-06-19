@@ -2,12 +2,14 @@ import json
 import csv
 import copy
 import spacy
+from termcolor import colored
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import food.RS_utils as rs_utils
 import food.food_dataparser as food_dataparser
 import food.NLU as foodNLU
 import nlu_helper_functions as nlu_helper
+import helper_functions as helper
 import dataparser
 
 def create_json_10reviews():
@@ -253,6 +255,14 @@ def tag_recipes_with_diet(verbose=True):
         content = json.load(fjson)
     recipes_data = content["recipes_data"]
 
+    with open(consts.json_failedTagging_xUsers_Xrecipes_path, 'r') as f_err:
+        json_errors = json.load(f_err)
+    rid_errors = list(json_errors.keys())
+
+    with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f_parsed:
+        json_parsed = json.load(f_parsed)
+    rid_parsed = list(json_parsed["recipes_data"].keys())
+
     spacy_nlp = spacy.load("en_core_web_sm")
     voc = dataparser.parse_voc(f_domain_voc="food/resources/nlu/food_voc.json")
     food_list = food_dataparser.extensive_food_DBs.all_foods_list
@@ -266,21 +276,34 @@ def tag_recipes_with_diet(verbose=True):
     food_dict_food_to_category["butter"] = "dairy"
     food_dict_food_to_category["sauce"] = "unknown"
     food_dict_food_to_category["cream"] = "dairy"
+    food_dict_food_to_category["potato"] = "vegetables"
+    food_dict_food_to_category["meat"] = "meat"
+    food_dict_food_to_category["cocoa"] = "cocoa"
 
+    errors_dict = dict()
 
     ## Errors
     # 4 tablespoons chopped pecans ['butter'] ['cocoa']
 
 
-    count = 0
+    count, n_err = 0, 0
+    new_recipes_data = dict()
 
     for rid, rdata in recipes_data.items():
-        if count == 50:
-            break
-        if count < 30:
+        # print(rid)
+        if rid in rid_errors:
+            n_err += 1
             count += 1
+        elif rid in rid_parsed:
+            count += 1
+        # if count < 56:
+        #     count += 1
         else:
-            all_categories = list()
+            print(count, "|", rdata['title'])
+
+            error_bool, potential_error_bool = False, False
+            all_categories, all_ingredients = list(), list()
+
             for ingredient in rdata["ingredients"]:
                 # print(ingredient)
                 utterance = ingredient.lower().strip()
@@ -292,23 +315,125 @@ def tag_recipes_with_diet(verbose=True):
                 categories = list()
                 if res:
                     ingredients_parsed = res[2]
+                    # print(ingredients_parsed)
                     for i in ingredients_parsed:
                         categories.append(food_dict_food_to_category[i])
+                        if i not in all_ingredients:
+                            all_ingredients.append(i)
                     for elt in categories:
                         if elt not in all_categories:
                             all_categories.append(elt)
 
-                if verbose:
-                    err = ""
-                    if not ingredients_parsed:
-                        err = "ERROR -----------------> "
-                    if err:
-                        print(err, ingredient, ingredients_parsed, categories)
+                # error_bool = False
+                if not ingredients_parsed:
+                    print_unparsed_ingredients(errors_dict, rid, ingredient, ingredients_parsed, categories)
+                    potential_error_bool = True
+                    # break
 
+
+            # if not error_bool:
             print(all_categories)
-            print("\n-------------\n")
 
+            vegan, vegetarian, pescetarian, gluten_free, dairy_free, keto, low_carbs = True, True, True, True, True, True, True
+            if "meat" in all_categories:
+                vegan, vegetarian, pescetarian = False, False, False
+            if "fish" in all_categories:
+                vegan, vegetarian = False, False
+            if "eggs" in all_categories:
+                vegan = False
+            if "dairy" in all_categories:
+                vegan, dairy_free = False, False
+            if "honey" in all_ingredients:
+                vegan = False
+            gluten_free_ingredients_to_avoid = [
+                "wheat", "flour", "farina",
+                "bread", "bagels", "biscuit", "cornbread", "flatbread", "naan", "pita", "rolls", "breadcrumbs", "croutons",
+                "couscous", "bulgur", "barley", "rye", "gravy", "oat", "oats", "oatmeal",
+                "soy sauce", "teriyaki sauce", "hoisin sauce", "beer",
+                "crepes", "french toast", "pancakes", "waffles"
+            ]
+            if helper.any_elt_of_L1_in_L2(gluten_free_ingredients_to_avoid, all_ingredients):
+                gluten_free = False
+            if "pasta" in all_categories or "snack foods" in all_categories:
+                gluten_free = False
+
+
+            if ("unknown" in categories or "dishes" in categories or potential_error_bool):
+
+                if ("unknown" in categories or "dishes" in categories):
+                    print(colored("Warning  ----------------->  unknown or dishes in categories...", "red"))
+
+                if (vegan == True or vegetarian == True or pescetarian == True or gluten_free == True or dairy_free == True):
+                    n_err += 1
+                    print(colored("# errors = %d (%.2f%%)" % (n_err, float(n_err)/count*100), "red"))
+
+                    if n_err % 5 == 0:
+                        with open(consts.json_failedTagging_xUsers_Xrecipes_path, 'w') as fjson_errors:
+                            json.dump(errors_dict, fjson_errors, indent=True)
+                            print(colored("Wrote to " + consts.json_failedTagging_xUsers_Xrecipes_path, "yellow"))
+
+                    error_bool = True
+
+                else:
+                    print(colored("Turns out we're good, all diets are already set to False!", "green"))
+
+            if not error_bool:
+
+                # print(rdata['nutrition'].keys())
+                carbs_g_str = rdata["nutrition"]['nutrients']["Total Carbohydrates:"]
+                if "g" in carbs_g_str:
+                    carbs_g_str = carbs_g_str.replace("g", "")
+                carbs_g = float(carbs_g_str)
+                if carbs_g > 120:
+                    low_carbs = False
+                elif carbs_g > 40:
+                    keto = False
+
+                rdata["diets"] = dict()
+                rdata["diets"]["vegan"] = vegan
+                rdata["diets"]["vegetarian"] = vegetarian
+                rdata["diets"]["pescetarian"] = pescetarian
+                rdata["diets"]["gluten_free"] = gluten_free
+                rdata["diets"]["dairy_free"] = dairy_free
+                rdata["diets"]["keto"] = keto
+                rdata["diets"]["low_carbs"] = low_carbs
+
+                new_recipes_data[rid] = rdata
+
+                # Standard ketogenic diet (SKD): This is a very low-carb, moderate-protein and high-fat diet. It typically contains 75% fat, 20% protein and only 5% carb
+                # Ketogenic: less than 20 grams of net carbs per day
+                # he exact number of grams (g) of carbohydrates will be different for everyone, but is generally around 20 to 50 g per day.
+                # While 20 grams of total carbs is the amount that can get pretty much everyone into ketosis provided you eat within your daily macros, 20 grams of net carbs is the starting point for most people trying to achieve weight loss or general health benefits
+                # Get 5-10% of your calories from carbs (typically under 50g net carbs per day)
+                # here’s no strict definition of a low-carb, high-fat diet. Basically, low-carb is keto, but with slightly higher carb intake – maybe 75-150g of carbs a day.
+                # The ketogenic diet typically reduces total carbohydrate intake to less than 50 grams a day—less than the amount found in a medium plain bagel—and can be as low as 20 grams a day.
+                # Generally, popular ketogenic resources suggest an average of 70-80% fat from total daily calories, 5-10% carbohydrate, and 10-20% protein.
+                # For a 2000-calorie diet, this translates to about 165 grams fat, 40 grams carbohydrate, and 75 grams protein
+
+                if vegan == True:
+                    print(colored("Vegan!", "blue"))
+                print("vegan", vegan, " | vegetarian", vegetarian, " | pescetarian", pescetarian, " | glutenFree", gluten_free, " | dairyFree", dairy_free, " | keto", keto, " | lowCarbs", low_carbs)
+
+
+            if count % 10 == 0:
+                with open(consts.json_xUsers_Xrecipes_withDiets_path, 'w') as fjsonout:
+                    content["recipes_data"] = new_recipes_data
+                    json.dump(content, fjsonout, indent=True)
+                    print(colored("Wrote to " + consts.json_xUsers_Xrecipes_withDiets_path, "yellow"))
+
+            print("\n-------------\n")
             count += 1
+
+
+def print_unparsed_ingredients(errors_dict, rid, ingredient, ingredients_parsed, categories):
+    err = "Warning -----------------> "
+    errors_dict[rid] = dict()
+    errors_dict[rid]["ingredient"] = ingredient
+    errors_dict[rid]["ingredients_parsed"] = ingredients_parsed
+    errors_dict[rid]["categories"] = categories
+    ingredients_categories_str = ", ".join(ingredients_parsed) + " --> " + ", ".join(categories) if ingredients_parsed else "? --> ?"
+    err_str = err + ingredient + " --> " + ingredients_categories_str
+    print(colored(err_str, "red"))
 
 
 

@@ -200,3 +200,7 @@ def diff_list(l1, l2):
     if l2:
         raise ValueError("Some elements of list to substract are not included in main list!")
     return res
+
+def any_elt_of_L1_in_L2(L1, L2):
+    res = [i for i in L1 if i in L2]
+    return (len(res) > 0)

@@ -126,6 +126,7 @@ class RS(wbc.WhiteBoardClient):
             for rid in msg:
                 if rid in self.reco:
                     self.recommended_recipes_liked_by_user.append(rid)
+
             eval_data = dict()
             eval_data["reco"] = self.reco
             tp = len(self.recommended_recipes_liked_by_user)
@@ -141,6 +142,7 @@ class RS(wbc.WhiteBoardClient):
             eval_data["total_recommended_recipes"] = N_RECIPES_TO_RECOMMEND
             eval_data["precision"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FP"])
             eval_data["recall"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FN"])
+            eval_data["cond"] = config.health_recsys_study_cond
             if eval_data["precision"] == 0 or eval_data["recall"] == 0:
                 eval_data["f1"] = 0
             else:

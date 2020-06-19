@@ -2,7 +2,7 @@ import cryptography.fernet as fernet
 import json
 
 DOMAIN_RS_EVAL = "RS_eval"
-DOMAIN = "food"
+DOMAIN = DOMAIN_RS_EVAL
 
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
@@ -20,6 +20,8 @@ exp_cs_control = "NONE"
 exp_no_ack = "no_ack"
 aamas_study_CS = True
 possible_CS = exp_no_ack
+
+health_recsys_study_cond = "pref-based RS"
 
 DELAY_ANSWER_N_CHAR_PER_MINUTE = 1400#350 #200
 
