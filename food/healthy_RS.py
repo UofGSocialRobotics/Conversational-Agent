@@ -8,6 +8,7 @@ import food.NLU as NLU
 import random
 from food.RS_utils import *
 import matplotlib.pyplot as plt
+from ca_logging import log
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
@@ -170,7 +171,7 @@ def recipe_DB_heathscores_analysis(recipes_subsets_ids_list=False):
 
 
 def get_reco():
-    healthy_recipes = get_ids_healthy_recipes_coverage_set()
+    healthy_recipes = get_ids_coverageHealth()
     random.shuffle(healthy_recipes)
     reco = healthy_recipes[:6]
     for r in reco:
@@ -179,7 +180,7 @@ def get_reco():
 
 
 def compare_coverage_sets_healthy_reco_vs_CF_reco():
-    healthy_recipes_list, CF_recipes_list = get_ids_healthy_recipes_coverage_set(), get_ids_recipes_CF_coverage_set()
+    healthy_recipes_list, CF_recipes_list = get_ids_coverageHealth(), get_ids_recipes_CF_coverage_set()
     intersection = list(set(healthy_recipes_list) & set(CF_recipes_list))
     for elt in intersection:
         print(elt)
@@ -190,12 +191,42 @@ def save_coverage_healthRS():
     all_lines = list()
     for rid, rdata in content['recipes_data'].items():
         if rdata['FSAscore'] < 7:
+            print(rid, rdata['FSAscore'])
             all_lines.append(rid)
     outF = open(consts.txt_coverageHealth, "w")
     for line in all_lines:
         outF.write(line)
         outF.write("\n")
     outF.close()
+
+class HealthyRS:
+    """Singleton class"""
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """
+        :return: the unique ServerUsingFirebase object
+        """
+        if HealthyRS.__instance == None:
+            HealthyRS()
+        return HealthyRS.__instance
+
+
+    def __init__(self):
+        if HealthyRS.__instance != None:
+            log.debug("Calling constructor of CFRS")
+        else:
+            HealthyRS.__instance = self
+            self.healthy_recipes = get_ids_coverageHealth()
+
+    def get_reco(self, user_name, ratings_list, n_reco=10, verbose=False):
+        reco = random.sample(self.healthy_recipes, n_reco)
+        if verbose:
+            for r in reco:
+                log.info(r)
+        return [["x", rid] for rid in reco] # format so that it matches implicitRS
+
 
 
 

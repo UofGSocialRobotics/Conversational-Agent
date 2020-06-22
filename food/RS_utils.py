@@ -125,7 +125,6 @@ def get_ids_coverage(file_path):
 def get_ids_coverageHealth():
     return get_ids_coverage(consts.txt_coverageHealth)
 
-
 def get_ids_coverageHybrid():
     return get_ids_coverage(consts.txt_coverageHybrid)
 

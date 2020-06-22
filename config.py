@@ -2,12 +2,16 @@ import cryptography.fernet as fernet
 import json
 
 DOMAIN_RS_EVAL = "RS_eval"
+DOMAIN_CORA = "cora"
 DOMAIN = DOMAIN_RS_EVAL
 
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
 ####################################################################################################
-healthy_bias = False
+cond_pref = "cond_pref"
+cond_health = "cond_health"
+cond_hybrid = "cond_hybrid"
+rs_eval_cond = cond_hybrid
 
 exp_type_food = "food"
 exp_type_opinion = "opinion"

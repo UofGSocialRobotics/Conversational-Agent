@@ -420,23 +420,9 @@ def get_coverage(healthy_bias=False, n_recipes_profile=10, n_recipes_torecommend
 
 
 class ImplicitCFRS:
-    # """Singleton class"""
-    # __instance = None
-    #
-    # @staticmethod
-    # def getInstance():
-    #     """
-    #     :return: the unique ServerUsingFirebase object
-    #     """
-    #     if ImplicitCFRS.__instance == None:
-    #         ImplicitCFRS()
-    #     return ImplicitCFRS.__instance
 
 
     def __init__(self):
-        # if ImplicitCFRS.__instance != None:
-        #     log.debug("Calling constructor of CFRS")
-        # else:
         ImplicitCFRS.__instance = self
         self.healthy_bias = None
 

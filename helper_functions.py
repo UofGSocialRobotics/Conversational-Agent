@@ -191,6 +191,8 @@ def remove_duplicate_consecutive_char_from_string(s):
     return new_s
 
 def diff_list(l1, l2):
+    print(l1[:5], "\n")
+    print(l2[:5])
     res = list()
     for elt in l1:
         if l2 and elt in l2:
@@ -198,6 +200,7 @@ def diff_list(l1, l2):
         else:
             res.append(elt)
     if l2:
+        log.error(l2)
         raise ValueError("Some elements of list to substract are not included in main list!")
     return res
 

@@ -1,6 +1,7 @@
 import re
 import json
 import random
+from termcolor import colored
 
 import whiteboard_client as wbc
 import helper_functions as helper
@@ -11,9 +12,10 @@ import config
 import food.food_config as fc
 from ca_logging import log
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+from food.healthy_RS import HealthyRS
 
 N_RECIPES_TO_DISPLAY = 30
-N_RECIPES_TO_RECOMMEND = 15
+N_RECIPES_TO_RECOMMEND = 5
 
 
 class RS(wbc.WhiteBoardClient):
@@ -30,9 +32,15 @@ class RS(wbc.WhiteBoardClient):
         self.recommended_recipes_liked_by_user = list()
         self.eval_reco_liked_recipes = None
 
-        self.rs = ImplicitCFRS()
-        self.rs.set_healthy_bias(config.healthy_bias)
-        self.rs.start()
+        if config.rs_eval_cond == config.cond_health:
+            self.rs = HealthyRS.getInstance()
+        else:
+            self.rs = ImplicitCFRS()
+            if config.rs_eval_cond == config.cond_pref:
+                self.rs.set_healthy_bias(healthy_bias=False)
+            else:
+                self.rs.set_healthy_bias(healthy_bias=True)
+            self.rs.start()
 
         with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
             content = json.load(f)
@@ -41,12 +49,6 @@ class RS(wbc.WhiteBoardClient):
         self.leanr_pref_recipes_sent = list()
         self.eval_reco_recipes_sent = list()
         self.reco_list = None
-
-
-    def get_reco(self):
-        if len(self.ratings_pref_gathering_list) < 10:
-            raise ValueError("Not enough ratings to give reco!")
-        return self.rs.get_reco(self.user_name, self.ratings_pref_gathering_list)
 
 
     def parse_client_msg(self, msg):
@@ -98,7 +100,9 @@ class RS(wbc.WhiteBoardClient):
         # Send a mix or recommended and random recipes to evaluate system
         elif msg == config.MSG_RS_EVAL_PHASE:
             recipes_ids = self.recipes_dict.keys()
-            to_chose_from = helper.diff_list(recipes_ids, self.leanr_pref_recipes_sent + self.reco)
+            log.debug(self.leanr_pref_recipes_sent)
+            log.debug(self.reco)
+            to_chose_from = helper.diff_list(list(recipes_ids), self.leanr_pref_recipes_sent + self.reco)
             random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND)
             recipes_to_send_ids_list = random_recipes + self.reco
             random.shuffle(recipes_to_send_ids_list)
@@ -112,6 +116,7 @@ class RS(wbc.WhiteBoardClient):
 
         # Save user's preferences and generate recommendation
         elif isinstance(msg, list) and not self.reco:
+            # print(colored(msg, 'blue'))
             for rid in msg:
                 if rid in self.recipes_dict.keys():
                     self.pref_gathering_liked_recipes.append(rid)
@@ -142,7 +147,7 @@ class RS(wbc.WhiteBoardClient):
             eval_data["total_recommended_recipes"] = N_RECIPES_TO_RECOMMEND
             eval_data["precision"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FP"])
             eval_data["recall"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FN"])
-            eval_data["cond"] = config.health_recsys_study_cond
+            eval_data["cond"] = config.rs_eval_cond
             if eval_data["precision"] == 0 or eval_data["recall"] == 0:
                 eval_data["f1"] = 0
             else:
