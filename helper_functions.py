@@ -4,6 +4,7 @@ import random
 import re
 import copy
 import inflect
+from termcolor import colored
 
 def write_json(file_name,dictionary):
     with open(file_name, 'w') as fp:
@@ -19,9 +20,9 @@ def print_message(name,action,msg_txt,topic):
         if "user_model" in msg_txt.keys():
             msg_to_print['user_model']['liked_recipe'] = get_new_recipe_list_with_main_info_only(msg_txt['user_model']['liked_recipe'])
             msg_to_print['user_model']['disliked_recipe'] = get_new_recipe_list_with_main_info_only(msg_txt['user_model']['disliked_recipe'])
-        if "recipe" in msg_txt.keys() and msg_to_print["recipe"]:
+        if "recipes" in msg_txt.keys() and msg_to_print["recipes"]:
             # print(msg_txt["recipe"])
-            msg_to_print["recipe"] = just_get_recipe_main_info(msg_txt["recipe"])
+            msg_to_print = "Sending recipes [hidden]"
     if isinstance(msg_txt, list):
         if len(msg_txt) > 0:
             if isinstance(msg_txt[0], dict) and "vegetarian" in msg_txt[0].keys():

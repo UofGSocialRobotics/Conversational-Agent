@@ -11,7 +11,7 @@ DOMAIN = DOMAIN_RS_EVAL
 cond_pref = "cond_pref"
 cond_health = "cond_health"
 cond_hybrid = "cond_hybrid"
-rs_eval_cond = cond_hybrid
+rs_eval_cond = cond_pref
 
 exp_type_food = "food"
 exp_type_opinion = "opinion"
