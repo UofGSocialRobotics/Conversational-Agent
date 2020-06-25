@@ -543,6 +543,17 @@ def is_recipe_parsed_for_diets(title):
     print("Did not find recipe")
 
 
+def find_recipe(rid):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f_parsed:
+        content = json.load(f_parsed)
+    recipes_ids = list(content["recipes_data"].keys())
+    if rid in recipes_ids:
+        print("Found!")
+    else:
+        print("recipe not in DB")
+
+
+
 if __name__ == "__main__":
     # create_json_10reviews()
     # reduce_DB_size()
@@ -553,4 +564,5 @@ if __name__ == "__main__":
     # tag_recipes_with_diet()
     # check_vegan_recipes()
     # is_recipe_parsed_for_diets("Califo rnia Chicken")
-    manually_annotate_recipes()
+    # manually_annotate_recipes()
+    find_recipe('8606/ranch-crispy-chicken/')

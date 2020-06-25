@@ -205,6 +205,7 @@ class HealthyRS:
 
     @staticmethod
     def getInstance():
+        log.info("Using HEALTHY-RS")
         """
         :return: the unique ServerUsingFirebase object
         """

@@ -3,8 +3,8 @@ import json
 
 # json_path = "food/resources/data_collection/healthRecSys/pilot_pref.json"
 # csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
-json_path = "pilot_health.json"
-csv_path = "pilot_health.csv"
+json_path = "pilot_hybrid.json"
+csv_path = "pilot_hybrid.csv"
 
 with open(json_path, 'r') as fjson:
     content = json.load(fjson)

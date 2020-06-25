@@ -79,6 +79,14 @@ class RS(wbc.WhiteBoardClient):
             rdata['time_total'] = self.recipes_dict[rid]['time_info']['Total']
         else:
             rdata['time_total'] = "--"
+        FSA = self.recipes_dict[rid]['FSAscore']
+        if FSA < 7:
+            rdata['FSAcolour'] = "green"
+        elif FSA > 9:
+            rdata['FSAcolour'] = "red"
+        else:
+            rdata['FSAcolour'] = "orange"
+        # log.debug("%s %d %s" % (rid, FSA, rdata["FSAcolour"]))
         return rdata
 
     def treat_message(self, msg, topic):
@@ -105,6 +113,7 @@ class RS(wbc.WhiteBoardClient):
             to_chose_from = helper.diff_list(list(recipes_ids), self.leanr_pref_recipes_sent + self.reco)
             random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND)
             recipes_to_send_ids_list = random_recipes + self.reco
+            log.debug(recipes_to_send_ids_list)
             random.shuffle(recipes_to_send_ids_list)
             recipes_to_send = list()
             for rid in recipes_to_send_ids_list:
