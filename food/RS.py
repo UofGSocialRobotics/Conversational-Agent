@@ -89,6 +89,18 @@ class RS(wbc.WhiteBoardClient):
         # log.debug("%s %d %s" % (rid, FSA, rdata["FSAcolour"]))
         return rdata
 
+    def get_reco(self, ratings_list):
+        reco_20 = [item[1] for item in self.rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND+10, verbose=False)]
+        self.reco = list()
+        for rid in reco_20:
+            if rid not in self.leanr_pref_recipes_sent:
+                self.reco.append(rid)
+            else:
+                log.debug("%s already presented to user in learn-pref phase; eliminating it from reco list." % rid)
+            if len(self.reco) == N_RECIPES_TO_RECOMMEND:
+                break
+
+
     def treat_message(self, msg, topic):
         # print(msg, topic)
         super(RS, self).treat_message(msg, topic)
@@ -132,7 +144,7 @@ class RS(wbc.WhiteBoardClient):
                 else:
                     log.error("rid %s unknown!" % rid)
             ratings_list = [[rid, 5] for rid in self.pref_gathering_liked_recipes]
-            self.reco = [item[1] for item in self.rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND, verbose=True)]
+            self.get_reco(ratings_list)
             
         # Save user's evaluation of reco 
         elif isinstance(msg, list) and self.reco:
