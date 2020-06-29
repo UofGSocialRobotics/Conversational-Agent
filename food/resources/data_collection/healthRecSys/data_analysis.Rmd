@@ -22,3 +22,49 @@ Create groups for Tags-Mode and Reco-Mode conditions
 data$tags_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_health" | data$cond=="cond_hybrid"), 'no-tags', 'tags')
 data$reco_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_pref_with_tags"), 'pref', ifelse((data$cond=="cond_health" | data$cond=="cond_health_with_tags"), 'heath', 'hybrid'))
 ```
+
+# Plots
+
+Plot F1, HealthScore (eval) and Satisfaction for Tags-Mode (tags VS no-tags)
+```{r}
+library(ggplot2)
+library(ggpubr)
+ggboxplot(data, x = "tags_mode", y = "f1", ylab = "F1")
+ggboxplot(data, x = "tags_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+ggboxplot(data, x = "tags_mode", y = "satisfaction", ylab = "Satisfaction")
+```
+
+Plot F1, HealthScore (eval) and Satisfaction for Reco-Mode (pref vs health vs hybrid)
+```{r ggplot2}
+ggboxplot(data, x = "reco_mode", y = "f1", ylab = "F1")
+ggboxplot(data, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+ggboxplot(data, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
+```
+
+# Analysis
+
+## F1 scores
+
+MANOVA for F1 scores
+```{r}
+library(car)
+model = lm(f1 ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+print(Anova(model, type = 'II'))
+```
+
+
+## Health Scores (eval)
+
+MANOVA for health scores (eval)
+```{r}
+model = lm(health.score.eval ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+print(Anova(model, type = 'II'))
+```
+
+## Satisfaction
+
+MANOVA for health scores (eval)
+```{r}
+model = lm(satisfaction ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+print(Anova(model, type = 'II'))
+```
