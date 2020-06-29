@@ -1,0 +1,24 @@
+---
+title: "healthRecSys data analysis"
+output: html_document
+---
+
+# Set up
+
+Set working directory and load the data. Filter out data from Prolific.
+```{r ggpubr}
+setwd("/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/data_collection/healthRecSys")
+##library(ggpubr)
+data <- read.csv("all.csv")
+```
+
+Check the data
+```{r}
+View(data)
+```
+
+Create groups for Tags-Mode and Reco-Mode conditions
+```{r}
+data$tags_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_health" | data$cond=="cond_hybrid"), 'no-tags', 'tags')
+data$reco_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_pref_with_tags"), 'pref', ifelse((data$cond=="cond_health" | data$cond=="cond_health_with_tags"), 'heath', 'hybrid'))
+```
