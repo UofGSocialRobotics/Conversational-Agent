@@ -21,6 +21,7 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import helper_functions as helper
 import food.RS_utils as rs_utils
 from ca_logging import log
+from food.resources.data_collection.healthRecSys.json_to_csv import get_avg_healthScore
 
 
 
@@ -339,7 +340,7 @@ def get_reco(df, uid, healthy_bias=False, recipes_data=None, n_recipes_torecomme
         reco_biased = list()
         for i, (nrid, rid) in enumerate(ids):
             pref_score, health_score = scaled[i], FSAscores_scaled[i]
-            score = float(float(consts.coef_pref) * pref_score + float(consts.coef_healthy) * health_score) / float(consts.coef_pref + consts.coef_healthy)
+            score = float(float(consts.coef_pref) * pref_score + float(consts.coef_healthy) * (1 - health_score)) / float(consts.coef_pref + consts.coef_healthy)
             reco_biased.append([nrid, rid, score, pref_score, health_score])
 
         reco_biased = sorted(reco_biased, key=operator.itemgetter(2), reverse=True)
@@ -468,8 +469,18 @@ if __name__ == "__main__":
     get_AUC_tuned_param()
 
     # --- Get recommendations
-    # uid = '/cook/939980/'
-    # get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
+    uid = '/cook/939980/'
+    reco = get_reco(df, uid, healthy_bias=False, recipes_data=recipes_data, verbose=False)
+    reco = [x[1] for x in reco]
+    print(reco)
+    print(get_avg_healthScore(reco))
+
+    print("\n-----------------\n")
+
+    reco = get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=False)
+    reco = [x[1] for x in reco]
+    print(reco)
+    print(get_avg_healthScore(reco))
 
     # Test get reco for new user
     # uid = "lucile"

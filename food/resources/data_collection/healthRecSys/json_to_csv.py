@@ -8,7 +8,7 @@ csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
 # json_path = "pilot_hybrid_wtags.json"
 # csv_path = "pilot_hybrid_wtags.csv"
 
-files_list = ['pilot_pref', 'pilot_health', 'pilot_hybrid', 'pilot_health_wtags', 'pilot_hybrid_wtags']
+files_list = ['pilot_pref', 'pilot_health', 'pilot_hybrid', 'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags']
 dir = "food/resources/data_collection/healthRecSys/"
 
 
@@ -29,7 +29,7 @@ def get_avg_healthScore(rids_list):
 csv_all_rows = list()
 
 first_row = ["amtid", 'cond',
-             'AUC', "FN", 'FP', 'N', 'N_predict', 'P', "P_predict", 'TN', 'TP', 'accuracy', 'cond', 'f1', 'precision', 'recall', 'reco', 'total_recommended_recipes',
+             'AUC', "FN", 'FP', 'N', 'N_predict', 'P', "P_predict", 'TN', 'TP', 'accuracy', 'cond', 'f1', 'precision', 'recall', 'reco', 'health score reco', 'total_recommended_recipes',
              'recipes learn pref', 'health score learn pref', "normed health score learn pref", '# rightClicks learn pref', 'right-clicked recipes learn pref',
              'recipes eval', 'health score eval', "normed health score eval", '# rightClicks eval', 'right-clicked recipes eval',
              'satisfaction', 'easiness', 'influence_most', 'rs_satisfaction_comments', 'whats_important', 'free_comment',
@@ -41,7 +41,9 @@ csv_all_rows.append(first_row)
 
 for file_name in files_list:
 
-    with open(dir+file_name+'.json', 'r') as fjson:
+    path = dir+file_name+'.json'
+    with open(path, 'r') as fjson:
+        print(path)
 
         with_tag = ""
 
@@ -65,8 +67,10 @@ for file_name in files_list:
 
                     csv_row.append(rs_eval_data['cond']+with_tag)
 
-                    for val in rs_eval_data.values():
+                    for key, val in rs_eval_data.items():
                         csv_row.append(val)
+                        if key == 'reco':
+                            csv_row.append(get_avg_healthScore(val))
 
                     for dialog_unit in data["dialog"].values():
                         # print(dialog_unit)
