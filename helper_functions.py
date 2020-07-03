@@ -200,9 +200,9 @@ def diff_list(l1, l2):
             l2.remove(elt)
         else:
             res.append(elt)
-    if l2:
-        log.error(l2)
-        raise ValueError("Some elements of list to substract are not included in main list!")
+    # if l2:
+    #     log.error(l2)
+    #     raise ValueError("Some elements of list to substract are not included in main list!")
     return res
 
 def any_elt_of_L1_in_L2(L1, L2):

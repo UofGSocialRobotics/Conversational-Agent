@@ -152,6 +152,9 @@ def recipe_DB_heathscores_analysis(recipes_subsets_ids_list=False):
     for k, v in count_scores_FSA_categories.items():
         print("FSA category %s, n recipes = %d (%.2f%%)" % (k, v, float(v)/n_recipes*100))
 
+    for k, v in count_scores.items():
+        print("FSA score %d, n recipes = %d (%.2f%%)" % (k, v, float(v)/n_recipes*100))
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('FSA scores for dataset')
 
@@ -235,7 +238,7 @@ if __name__ == "__main__":
     # rids = get_ids_recipes_CF_coverage_set()
     # rids = ["/recipes/" + rid for rid in rids]
     # print(rids)
-    # recipe_DB_heathscores_analysis()
+    recipe_DB_heathscores_analysis()
     # compare_coverage_sets_healthy_reco_vs_CF_reco()
     # get_reco()
-    save_coverage_healthRS()
+    # save_coverage_healthRS()

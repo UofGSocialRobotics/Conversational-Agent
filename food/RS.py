@@ -14,8 +14,11 @@ from ca_logging import log
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 from food.healthy_RS import HealthyRS
 
-N_RECIPES_TO_DISPLAY = 30
+N_RECIPES_TO_DISPLAY_PREFGATHERING = 30
+N_RECIPES_TO_DISPLAY_EVAL = 30
 N_RECIPES_TO_RECOMMEND = 5
+
+RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) * 3
 
 
 class RS(wbc.WhiteBoardClient):
@@ -100,6 +103,17 @@ class RS(wbc.WhiteBoardClient):
             if len(self.reco) == N_RECIPES_TO_RECOMMEND:
                 break
 
+    def get_bad_reco(self, ratings_list):
+        reco_20 = [item[1] for item in self.rs.get_reco(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)]
+        self.bad_reco = list()
+        for rid in reco_20:
+            if rid not in self.leanr_pref_recipes_sent:
+                self.bad_reco.append(rid)
+            else:
+                log.debug("%s already presented to user in learn-pref phase; eliminating it from reco list." % rid)
+            if len(self.bad_reco) == RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED:
+                break
+
 
     def treat_message(self, msg, topic):
         # print(msg, topic)
@@ -108,7 +122,7 @@ class RS(wbc.WhiteBoardClient):
         # Send recipes to learn user's pref
         if msg == config.MSG_RS_LEARNING_PHASE:
             recipes_ids = self.recipes_dict.keys()
-            random_recipes = random.sample(recipes_ids, N_RECIPES_TO_DISPLAY)
+            random_recipes = random.sample(recipes_ids, N_RECIPES_TO_DISPLAY_PREFGATHERING)
             recipes_to_send = list()
             for rid in random_recipes:
                 rdata = self.get_info_to_send_recipe(rid)
@@ -122,8 +136,11 @@ class RS(wbc.WhiteBoardClient):
             recipes_ids = self.recipes_dict.keys()
             log.debug(self.leanr_pref_recipes_sent)
             log.debug(self.reco)
-            to_chose_from = helper.diff_list(list(recipes_ids), self.leanr_pref_recipes_sent + self.reco)
-            random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND)
+            to_chose_from = helper.diff_list(self.bad_reco, self.leanr_pref_recipes_sent + self.reco)
+            log.debug(len(self.bad_reco))
+            log.debug("to choose_from")
+            log.debug(to_chose_from)
+            random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND)
             recipes_to_send_ids_list = random_recipes + self.reco
             log.debug(recipes_to_send_ids_list)
             random.shuffle(recipes_to_send_ids_list)
@@ -145,6 +162,8 @@ class RS(wbc.WhiteBoardClient):
                     log.error("rid %s unknown!" % rid)
             ratings_list = [[rid, 5] for rid in self.pref_gathering_liked_recipes]
             self.get_reco(ratings_list)
+            self.get_bad_reco(ratings_list)
+
             
         # Save user's evaluation of reco 
         elif isinstance(msg, list) and self.reco:
@@ -157,14 +176,14 @@ class RS(wbc.WhiteBoardClient):
             eval_data["reco"] = self.reco
             tp = len(self.recommended_recipes_liked_by_user)
             eval_data["P_predict"] = N_RECIPES_TO_RECOMMEND
-            eval_data["N_predict"] = N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND
+            eval_data["N_predict"] = N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND
             eval_data["P"] = len(msg)
-            eval_data["N"] = N_RECIPES_TO_DISPLAY - len(msg)
+            eval_data["N"] = N_RECIPES_TO_DISPLAY_EVAL - len(msg)
             eval_data["TP"] = tp
             eval_data["FP"] = N_RECIPES_TO_RECOMMEND - tp
             fn = len(msg) - tp
             eval_data["FN"] = fn
-            eval_data["TN"] = (N_RECIPES_TO_DISPLAY - N_RECIPES_TO_RECOMMEND) - fn
+            eval_data["TN"] = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) - fn
             eval_data["total_recommended_recipes"] = N_RECIPES_TO_RECOMMEND
             eval_data["precision"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FP"])
             eval_data["recall"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FN"])
@@ -173,7 +192,7 @@ class RS(wbc.WhiteBoardClient):
                 eval_data["f1"] = 0
             else:
                 eval_data["f1"] = 2 * eval_data["precision"] * eval_data["recall"] / (eval_data["precision"] + eval_data["recall"])
-            eval_data["accuracy"] = float(eval_data["TP"] + eval_data["TN"]) / N_RECIPES_TO_DISPLAY
+            eval_data["accuracy"] = float(eval_data["TP"] + eval_data["TN"]) / N_RECIPES_TO_DISPLAY_EVAL
             # AUC -- pred and acutal are vectors of vales btn 0 and 1
             pred, actual = list(), list()
             for rid in self.eval_reco_recipes_sent:

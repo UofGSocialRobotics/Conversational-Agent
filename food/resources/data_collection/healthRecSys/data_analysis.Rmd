@@ -41,6 +41,29 @@ ggboxplot(data, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (e
 ggboxplot(data, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
 ```
 
+Plot F1, HealthScore (eval) and Satisfaction for all conditions we tried in pilot
+```{r ggplot2}
+ggboxplot(data, x = "file", y = "f1", ylab = "F1")
+ggboxplot(data, x = "file", y = "health.score.eval", ylab = "HealthScore (eval)")
+ggboxplot(data, x = "file", y = "satisfaction", ylab = "Satisfaction")
+
+ggplot(data=data, aes(x=file, y=health.score.eval)) + geom_boxplot() +
+  stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3,show.legend = FALSE) 
+
+ggplot(data=data, aes(x=file, y=AUC)) + geom_boxplot() +
+  stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3,show.legend = FALSE) 
+
+ggplot(data=data, aes(x=file, y=health.score.reco)) + geom_boxplot() +
+  stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3,show.legend = FALSE) 
+
+ggplot(data=data, aes(x=file, y=normed.healthiness.habit)) + geom_boxplot() +
+  stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3,show.legend = FALSE) 
+```
+
 # Analysis
 
 ## F1 scores

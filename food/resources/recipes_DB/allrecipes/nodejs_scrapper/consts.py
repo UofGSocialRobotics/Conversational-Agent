@@ -11,9 +11,10 @@ model = dense_model
 
 algo_als = "als"
 algo_bpr = "brp"
+algo_lmf = "lmf"
 algo_str = algo_als
 
-coef_pref = 1
+coef_pref = 3
 coef_healthy = 1
 
 if WEBSITE == Allrecipes:
@@ -35,10 +36,23 @@ if WEBSITE == Allrecipes:
     elif model == dense_model:
         X_users = 30
         X_recipes = 25
-        alpha = 2
-        factors = 6
-        reg = 0.07
-        epochs = 27
+        if algo_str == algo_als:
+            alpha = 2
+            factors = 6
+            reg = 0.07
+            epochs = 27
+        elif algo_str == algo_bpr:
+            alpha = 13
+            factors = 14
+            lr = 0.04
+            reg = 0.08
+            epochs = 80
+        elif algo_str == algo_lmf:
+            alpha = 2
+            factors = 2
+            lr = 0.9
+            reg = 0.6
+            epochs = 60
 
     binary_bool = False
 
