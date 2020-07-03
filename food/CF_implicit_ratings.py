@@ -383,7 +383,7 @@ def get_reco(df, uid, healthy_bias=False, recipes_data=None, n_recipes_torecomme
         for i, (nrid, rid) in enumerate(ids):
             pref_score, health_score = scaled[i], FSAscores_scaled[i]
             score = float(float(consts.coef_pref) * pref_score + float(consts.coef_healthy) * (1 - health_score)) / float(consts.coef_pref + consts.coef_healthy)
-            reco_biased.append([nrid, rid, score, pref_score, health_score])
+            reco_biased.append([nrid, rid, score, pref_score, 1-health_score])
 
         if not least_preferred: #normal reco
             reco_biased = sorted(reco_biased, key=operator.itemgetter(2), reverse=True)
@@ -409,16 +409,13 @@ def get_reco(df, uid, healthy_bias=False, recipes_data=None, n_recipes_torecomme
 
     return reco
 
-def get_reco_least_recommended_recipes(df, uid, healthy_bias=False, recipes_data=None, n_recipes_torecommend=10, verbose=False):
-    return get_reco(df=df, uid=uid, healthy_bias=healthy_bias, recipes_data=recipes_data, n_recipes_torecommend=n_recipes_torecommend, least_preferred=True, verbose=verbose)
 
-
-def get_reco_new_user(df, uid, ratings_list, healthy_bias=False, recipes_data=None, n_recipes_torecommend=10, verbose=False):
+def get_reco_new_user(df, uid, ratings_list, healthy_bias=False, recipes_data=None, n_recipes_torecommend=10, least_preferred=False, verbose=False):
 
     df_new_user = get_df_from_ratings_list(uid, ratings_list)
     df = df.append(df_new_user)
 
-    return get_reco(df, uid, healthy_bias=healthy_bias, recipes_data=recipes_data, n_recipes_torecommend=n_recipes_torecommend, verbose=verbose)
+    return get_reco(df, uid, healthy_bias=healthy_bias, recipes_data=recipes_data, n_recipes_torecommend=n_recipes_torecommend, least_preferred=least_preferred, verbose=verbose)
 
 
 
@@ -506,7 +503,7 @@ class ImplicitCFRS:
         return get_reco_new_user(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, n_recipes_torecommend=n_reco, verbose=verbose)
 
     def get_reco_least_preferred(self, user_name, ratings_list, n_reco=10, verbose=False):
-        return get_reco_least_recommended_recipes(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, n_recipes_torecommend=n_reco, verbose=verbose)
+        return get_reco_new_user(self.df, user_name, ratings_list, healthy_bias=self.healthy_bias, recipes_data=self.recipes_data, n_recipes_torecommend=n_reco, least_preferred=True, verbose=verbose)
 
 
 
@@ -521,27 +518,27 @@ if __name__ == "__main__":
     # --- Tune hyperparameters
     # tune_hyperparam()
     # Get best AUC (with tuned params) over 100 iterations
-    AUC_list = list()
-    most_pop_AUC = None
-    for i in range(100):
-        print(i)
-        scores = get_AUC_tuned_param()
-        AUC_list.append(scores[0])
-        most_pop_AUC = scores[1]
-    print(statistics.mean(AUC_list))
+    # AUC_list = list()
+    # most_pop_AUC = None
+    # for i in range(100):
+    #     print(i)
+    #     scores = get_AUC_tuned_param()
+    #     AUC_list.append(scores[0])
+    #     most_pop_AUC = scores[1]
+    # print(statistics.mean(AUC_list))
 
 
     # --- Get recommendations
     # uid = '/cook/939980/'
-    # uid = random.choice(list(content['users_data'].keys()))
-    # reco = get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
-    # reco = [x[1] for x in reco]
-    # print(get_avg_healthScore(reco))
-    # print("\n-----------------\n")
-    # reco = get_reco_least_recommended_recipes(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
-    # reco = [x[1] for x in reco]
-    # print(reco)
-    # print(get_avg_healthScore(reco))
+    uid = random.choice(list(content['users_data'].keys()))
+    reco = get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
+    reco = [x[1] for x in reco]
+    print(get_avg_healthScore(reco))
+    print("\n-----------------\n")
+    reco = get_reco_least_recommended_recipes(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
+    reco = [x[1] for x in reco]
+    print(reco)
+    print(get_avg_healthScore(reco))
     #
     # print("\n-----------------\n")
     #

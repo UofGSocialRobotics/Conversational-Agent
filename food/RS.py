@@ -1,6 +1,7 @@
 import re
 import json
 import random
+import statistics as stats
 from termcolor import colored
 
 import whiteboard_client as wbc
@@ -18,7 +19,7 @@ N_RECIPES_TO_DISPLAY_PREFGATHERING = 30
 N_RECIPES_TO_DISPLAY_EVAL = 30
 N_RECIPES_TO_RECOMMEND = 5
 
-RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) * 3
+RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED = 292 #(N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) * 3
 
 
 class RS(wbc.WhiteBoardClient):
@@ -40,8 +41,10 @@ class RS(wbc.WhiteBoardClient):
         else:
             self.rs = ImplicitCFRS()
             if config.rs_eval_cond == config.cond_pref:
+                self.healthy_bias = False
                 self.rs.set_healthy_bias(healthy_bias=False)
             else:
+                self.healthy_bias = True
                 self.rs.set_healthy_bias(healthy_bias=True)
             self.rs.start()
 
@@ -52,6 +55,9 @@ class RS(wbc.WhiteBoardClient):
         self.leanr_pref_recipes_sent = list()
         self.eval_reco_recipes_sent = list()
         self.reco_list = None
+        self.eval_data = dict()
+        self.rid_to_pref_score = dict()
+        self.rid_to_final_score = dict()
 
 
     def parse_client_msg(self, msg):
@@ -93,7 +99,13 @@ class RS(wbc.WhiteBoardClient):
         return rdata
 
     def get_reco(self, ratings_list):
-        reco_20 = [item[1] for item in self.rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND+10, verbose=False)]
+        reco = self.rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND+10, verbose=False)
+        for x in reco:
+            print(colored(x,"green"))
+        self.save_final_score(reco)
+        if self.healthy_bias:
+            self.save_pref_score(reco)
+        reco_20 = [item[1] for item in reco]
         self.reco = list()
         for rid in reco_20:
             if rid not in self.leanr_pref_recipes_sent:
@@ -104,7 +116,13 @@ class RS(wbc.WhiteBoardClient):
                 break
 
     def get_bad_reco(self, ratings_list):
-        reco_20 = [item[1] for item in self.rs.get_reco(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)]
+        bad_reco = self.rs.get_reco_least_preferred(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)
+        self.save_final_score(bad_reco)
+        if self.healthy_bias:
+            self.save_pref_score(bad_reco)
+        for x in bad_reco:
+            print(colored(x,"blue"))
+        reco_20 = [item[1] for item in bad_reco]
         self.bad_reco = list()
         for rid in reco_20:
             if rid not in self.leanr_pref_recipes_sent:
@@ -114,6 +132,26 @@ class RS(wbc.WhiteBoardClient):
             if len(self.bad_reco) == RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED:
                 break
 
+
+    def save_pref_score(self, reco_list):
+        for x in reco_list:
+            self.rid_to_pref_score[x[1]] = x[2]
+
+    def save_final_score(self, reco_list):
+        for x in reco_list:
+            self.rid_to_final_score[x[1]] = x[3]
+
+    def get_pref_score(self, rid_list):
+        pref_scores = list()
+        for rid in rid_list:
+            pref_scores.append(self.rid_to_pref_score[rid])
+        return stats.mean(pref_scores)
+
+    def get_final_score(self, rid_list):
+        pref_scores = list()
+        for rid in rid_list:
+            pref_scores.append(self.rid_to_final_score[rid])
+        return stats.mean(pref_scores)
 
     def treat_message(self, msg, topic):
         # print(msg, topic)
@@ -133,14 +171,22 @@ class RS(wbc.WhiteBoardClient):
 
         # Send a mix or recommended and random recipes to evaluate system
         elif msg == config.MSG_RS_EVAL_PHASE:
-            recipes_ids = self.recipes_dict.keys()
-            log.debug(self.leanr_pref_recipes_sent)
-            log.debug(self.reco)
+            # log.debug(self.leanr_pref_recipes_sent)
+            # log.debug(self.reco)
             to_chose_from = helper.diff_list(self.bad_reco, self.leanr_pref_recipes_sent + self.reco)
-            log.debug(len(self.bad_reco))
-            log.debug("to choose_from")
-            log.debug(to_chose_from)
+            # log.debug(len(self.bad_reco))
+            # log.debug("to choose_from")
+            # log.debug(to_chose_from)
             random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND)
+
+            self.eval_data['final_score_reco'] = self.get_final_score(self.reco)
+            self.eval_data['final_score_others'] = self.get_final_score(random_recipes)
+            if self.healthy_bias:
+                self.eval_data['pref_score_reco'] = self.get_pref_score(self.reco)
+                self.eval_data['pref_score_others'] = self.get_pref_score(random_recipes)
+            else:
+                self.eval_data['pref_score_reco'] = None
+                self.eval_data['pref_score_others'] = None
             recipes_to_send_ids_list = random_recipes + self.reco
             log.debug(recipes_to_send_ids_list)
             random.shuffle(recipes_to_send_ids_list)
@@ -172,27 +218,26 @@ class RS(wbc.WhiteBoardClient):
                 if rid in self.reco:
                     self.recommended_recipes_liked_by_user.append(rid)
 
-            eval_data = dict()
-            eval_data["reco"] = self.reco
+            self.eval_data["reco"] = self.reco
             tp = len(self.recommended_recipes_liked_by_user)
-            eval_data["P_predict"] = N_RECIPES_TO_RECOMMEND
-            eval_data["N_predict"] = N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND
-            eval_data["P"] = len(msg)
-            eval_data["N"] = N_RECIPES_TO_DISPLAY_EVAL - len(msg)
-            eval_data["TP"] = tp
-            eval_data["FP"] = N_RECIPES_TO_RECOMMEND - tp
+            self.eval_data["P_predict"] = N_RECIPES_TO_RECOMMEND
+            self.eval_data["N_predict"] = N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND
+            self.eval_data["P"] = len(msg)
+            self.eval_data["N"] = N_RECIPES_TO_DISPLAY_EVAL - len(msg)
+            self.eval_data["TP"] = tp
+            self.eval_data["FP"] = N_RECIPES_TO_RECOMMEND - tp
             fn = len(msg) - tp
-            eval_data["FN"] = fn
-            eval_data["TN"] = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) - fn
-            eval_data["total_recommended_recipes"] = N_RECIPES_TO_RECOMMEND
-            eval_data["precision"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FP"])
-            eval_data["recall"] = eval_data["TP"] / float(eval_data["TP"] + eval_data["FN"])
-            eval_data["cond"] = config.rs_eval_cond
-            if eval_data["precision"] == 0 or eval_data["recall"] == 0:
-                eval_data["f1"] = 0
+            self.eval_data["FN"] = fn
+            self.eval_data["TN"] = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) - fn
+            self.eval_data["total_recommended_recipes"] = N_RECIPES_TO_RECOMMEND
+            self.eval_data["precision"] = self.eval_data["TP"] / float(self.eval_data["TP"] + self.eval_data["FP"])
+            self.eval_data["recall"] = self.eval_data["TP"] / float(self.eval_data["TP"] + self.eval_data["FN"])
+            self.eval_data["cond"] = config.rs_eval_cond
+            if self.eval_data["precision"] == 0 or self.eval_data["recall"] == 0:
+                self.eval_data["f1"] = 0
             else:
-                eval_data["f1"] = 2 * eval_data["precision"] * eval_data["recall"] / (eval_data["precision"] + eval_data["recall"])
-            eval_data["accuracy"] = float(eval_data["TP"] + eval_data["TN"]) / N_RECIPES_TO_DISPLAY_EVAL
+                self.eval_data["f1"] = 2 * self.eval_data["precision"] * self.eval_data["recall"] / (self.eval_data["precision"] + self.eval_data["recall"])
+            self.eval_data["accuracy"] = float(self.eval_data["TP"] + self.eval_data["TN"]) / N_RECIPES_TO_DISPLAY_EVAL
             # AUC -- pred and acutal are vectors of vales btn 0 and 1
             pred, actual = list(), list()
             for rid in self.eval_reco_recipes_sent:
@@ -205,9 +250,9 @@ class RS(wbc.WhiteBoardClient):
                 else:
                     actual.append(0)
             auc = auc_score(pred, actual)
-            eval_data["AUC"] = auc
-            print(eval_data)
-            self.publish({"rs_eval_data": eval_data}, topic=self.publishes[1])
+            self.eval_data["AUC"] = auc
+            print(self.eval_data)
+            self.publish({"rs_eval_data": self.eval_data}, topic=self.publishes[1])
 
 
 
