@@ -13,8 +13,10 @@ For the pilot, we collected:
 * `pilot_hybrid.json`: biasing pref-based recommendation towards healthier recipes. Coefficients for pref score and health scores are both 1.
 * `pilot_hybrid_coef21.json`: same, but pref-score if coef 2 and health score is coef 1.
 * `pilot_hybrid_coef31.json`: same, but pref-score if coef 3 and health score is coef 1.
+* `pilot_hybrid_coef31_notrandom_292.json`: same, but controlled the not-recommended recipes: randomly chose 25 from the 292 (quater of DB) that are ranked the lowest by the hybrid reco.
+* `pilot_hybrid_cpef31_notrandom_error.json`: wanted to control recipes that were not recommended but ended up selecting more "good" recipes for the user.
+* `pilot_hybrid_coef31_notrandom_75_error.json`: same.
 * `pilot_hybrid_error.json`: error in bias formula: biasing towards UNhealthier options.
 * `pilot_hybrid.json`: same as `pilot_hybrid.json` but with _healthiness_ tags on the eval page.
-* `pilot_hybrid_wtags31.json`: same as `pilot_hybrid_coef31.json` but pref-score if coef 3 and health score is coef 1.
-* `pilot_hybrid_wtags31_notrandom.json`: same, but the not-recommended recipes (eval page) are not selected at random. We first select the 292 (one fourth of the DB) least recommended recipes, and then we select randomly from that sample.
+* `pilot_hybrid_coef31.json`: same as `pilot_hybrid_coef31.json` but pref-score if coef 3 and health score is coef 1.
 * `pilot_hybrid_wtags_error.json`: as `pilot_hybrid_error.json` but with _healthiness_ tags on the eval page.

@@ -18,8 +18,9 @@ from food.healthy_RS import HealthyRS
 N_RECIPES_TO_DISPLAY_PREFGATHERING = 30
 N_RECIPES_TO_DISPLAY_EVAL = 30
 N_RECIPES_TO_RECOMMEND = 5
+N_RECIPES_PROFILE = 5
 
-RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED = 292 #(N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) * 3
+RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED = (N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND) * 3
 
 
 class RS(wbc.WhiteBoardClient):
@@ -51,6 +52,8 @@ class RS(wbc.WhiteBoardClient):
         with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
             content = json.load(f)
         self.recipes_dict = content['recipes_data']
+
+        self.total_recipes = len(list(self.recipes_dict.keys()))
 
         self.leanr_pref_recipes_sent = list()
         self.eval_reco_recipes_sent = list()
@@ -99,9 +102,9 @@ class RS(wbc.WhiteBoardClient):
         return rdata
 
     def get_reco(self, ratings_list):
-        reco = self.rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND+10, verbose=False)
-        for x in reco:
-            print(colored(x,"green"))
+        reco = self.rs.get_reco(self.user_name, ratings_list, n_reco=self.total_recipes-N_RECIPES_PROFILE, verbose=False)
+        # for x in reco:
+        #     print(colored(x,"green"))
         self.save_final_score(reco)
         if self.healthy_bias:
             self.save_pref_score(reco)
@@ -115,22 +118,23 @@ class RS(wbc.WhiteBoardClient):
             if len(self.reco) == N_RECIPES_TO_RECOMMEND:
                 break
 
-    def get_bad_reco(self, ratings_list):
-        bad_reco = self.rs.get_reco_least_preferred(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)
-        self.save_final_score(bad_reco)
-        if self.healthy_bias:
-            self.save_pref_score(bad_reco)
-        for x in bad_reco:
-            print(colored(x,"blue"))
-        reco_20 = [item[1] for item in bad_reco]
-        self.bad_reco = list()
-        for rid in reco_20:
-            if rid not in self.leanr_pref_recipes_sent:
-                self.bad_reco.append(rid)
-            else:
-                log.debug("%s already presented to user in learn-pref phase; eliminating it from reco list." % rid)
-            if len(self.bad_reco) == RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED:
-                break
+    # def get_bad_reco(self, ratings_list):
+    #     bad_reco = self.rs.get_reco_least_preferred(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)
+    #     self.save_final_score(bad_reco)
+    #     if self.healthy_bias:
+    #         self.save_pref_score(bad_reco)
+    #         self.save_pref_score(bad_reco)
+    #     for x in bad_reco:
+    #         print(colored(x,"blue"))
+    #     reco_20 = [item[1] for item in bad_reco]
+    #     self.bad_reco = list()
+    #     for rid in reco_20:
+    #         if rid not in self.leanr_pref_recipes_sent:
+    #             self.bad_reco.append(rid)
+    #         else:
+    #             log.debug("%s already presented to user in learn-pref phase; eliminating it from reco list." % rid)
+    #         if len(self.bad_reco) == RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED:
+    #             break
 
 
     def save_pref_score(self, reco_list):
@@ -173,11 +177,13 @@ class RS(wbc.WhiteBoardClient):
         elif msg == config.MSG_RS_EVAL_PHASE:
             # log.debug(self.leanr_pref_recipes_sent)
             # log.debug(self.reco)
-            to_chose_from = helper.diff_list(self.bad_reco, self.leanr_pref_recipes_sent + self.reco)
+            recipes_ids = self.recipes_dict.keys()
+            to_chose_from = helper.diff_list(list(recipes_ids), self.leanr_pref_recipes_sent + self.reco)
+
+            random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND)
             # log.debug(len(self.bad_reco))
             # log.debug("to choose_from")
             # log.debug(to_chose_from)
-            random_recipes = random.sample(to_chose_from, N_RECIPES_TO_DISPLAY_EVAL - N_RECIPES_TO_RECOMMEND)
 
             self.eval_data['final_score_reco'] = self.get_final_score(self.reco)
             self.eval_data['final_score_others'] = self.get_final_score(random_recipes)
@@ -208,7 +214,7 @@ class RS(wbc.WhiteBoardClient):
                     log.error("rid %s unknown!" % rid)
             ratings_list = [[rid, 5] for rid in self.pref_gathering_liked_recipes]
             self.get_reco(ratings_list)
-            self.get_bad_reco(ratings_list)
+            # self.get_bad_reco(ratings_list)
 
             
         # Save user's evaluation of reco 

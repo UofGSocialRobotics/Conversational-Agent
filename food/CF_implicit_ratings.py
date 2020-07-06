@@ -181,13 +181,15 @@ def rec_items(customer_id, mf_train, user_vecs, item_vecs, customer_list, item_l
         # Append our descriptions to the list
     return rec_list
 
-def fit_and_get_AUC(model, train_set, test_set, recipes_users_altered_test, alpha, params):
+def fit_and_get_AUC(model, train_set, test_set, recipes_users_altered_test, alpha):
     model.fit((train_set*alpha).astype('double'))
     s = calc_mean_auc(train_set, recipes_users_altered_test, [sparse.csr_matrix(model.item_factors), sparse.csr_matrix(model.user_factors.T)], test_set)
     return s[0]
 
-def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[2], n_factors_values=[2], reg_values=[0.5, 0.6, 0.7], n_epochs_values=[35, 40, 50, 60], lr_values=[0.7, 0.8, 0.9, 1], iterations=5):
+def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[5, 15, 40], k_values=[3, 5, 10, 20], n_factors_values=[2], reg_values=[0.5, 0.6, 0.7], n_epochs_values=[35, 40, 50, 60], lr_values=[0.7, 0.8, 0.9, 1], iterations=2):
     scores = list()
+
+
     for alpha in alpha_values:
         for factors in n_factors_values:
             for reg in reg_values:
@@ -198,7 +200,7 @@ def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[2], n
                             model = implicit.als.AlternatingLeastSquares(factors=factors, regularization=reg, iterations=epochs)
                             params = (alpha, factors, reg, epochs)
 
-                            AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha, params)
+                            AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha)
                             AUCs_list.append(AUC)
                         avg_AUC = statistics.mean(AUCs_list)
                         scores.append([params, avg_AUC])
@@ -208,7 +210,7 @@ def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[2], n
                             for i in range(iterations):
                                 model = implicit.bpr.BayesianPersonalizedRanking(factors=factors, learning_rate=lr, regularization=reg, iterations=epochs)
                                 params = (alpha, factors, lr, reg, epochs)
-                                AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha, params)
+                                AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha)
                                 AUCs_list.append(AUC)
                             avg_AUC = statistics.mean(AUCs_list)
                             scores.append([params, avg_AUC])
@@ -218,10 +220,11 @@ def grid_search(train_set, cv_set, recipes_users_altered_cv, alpha_values=[2], n
                             for i in range(iterations):
                                 model = implicit.lmf.LogisticMatrixFactorization(factors=factors, learning_rate=lr, regularization=reg, iterations=epochs)
                                 params = (alpha, factors, lr, reg, epochs)
-                                AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha, params)
+                                AUC = fit_and_get_AUC(model, train_set, cv_set, recipes_users_altered_cv, alpha)
                                 AUCs_list.append(AUC)
                             avg_AUC = statistics.mean(AUCs_list)
                             scores.append([params, avg_AUC])
+
 
     scores = sorted(scores, key=operator.itemgetter(-1), reverse=True)
     print("\nBest parameters:")
@@ -518,27 +521,27 @@ if __name__ == "__main__":
     # --- Tune hyperparameters
     # tune_hyperparam()
     # Get best AUC (with tuned params) over 100 iterations
-    # AUC_list = list()
-    # most_pop_AUC = None
-    # for i in range(100):
-    #     print(i)
-    #     scores = get_AUC_tuned_param()
-    #     AUC_list.append(scores[0])
-    #     most_pop_AUC = scores[1]
-    # print(statistics.mean(AUC_list))
+    AUC_list = list()
+    most_pop_AUC = None
+    for i in range(100):
+        print(i)
+        scores = get_AUC_tuned_param()
+        AUC_list.append(scores[0])
+        most_pop_AUC = scores[1]
+    print(statistics.mean(AUC_list))
 
 
     # --- Get recommendations
     # uid = '/cook/939980/'
-    uid = random.choice(list(content['users_data'].keys()))
-    reco = get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
-    reco = [x[1] for x in reco]
-    print(get_avg_healthScore(reco))
-    print("\n-----------------\n")
-    reco = get_reco_least_recommended_recipes(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
-    reco = [x[1] for x in reco]
-    print(reco)
-    print(get_avg_healthScore(reco))
+    # uid = random.choice(list(content['users_data'].keys()))
+    # reco = get_reco(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
+    # reco = [x[1] for x in reco]
+    # print(get_avg_healthScore(reco))
+    # print("\n-----------------\n")
+    # reco = get_reco_least_recommended_recipes(df, uid, healthy_bias=True, recipes_data=recipes_data, verbose=True)
+    # reco = [x[1] for x in reco]
+    # print(reco)
+    # print(get_avg_healthScore(reco))
     #
     # print("\n-----------------\n")
     #

@@ -2,6 +2,7 @@ import csv
 import json
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import helper_functions as helper
+import operator
 
 json_path = "food/resources/data_collection/healthRecSys/pilot_pref.json"
 csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
@@ -10,7 +11,7 @@ csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
 
 # files_list = ['pilot_pref', 'pilot_health', 'pilot_hybrid2',  'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags2', 'test']
 files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'pilot_hybrid_coef31',  'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags31']
-files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'pilot_hybrid', 'pilot_hybrid_coef21', 'pilot_hybrid_coef31', 'pilot_hybrid_coef31_notrandom', 'pilot_hybrid_coef31_notrandom_75', 'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags', 'pilot_hybrid_wtags31']
+files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'pilot_hybrid', 'pilot_hybrid_coef21', 'pilot_hybrid_coef31', 'pilot_hybrid_coef31_notrandom_292', 'pilot_hybrid_coef31_notrandom_75', 'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags', 'pilot_hybrid_wtags31']
 # files_list = ['pilot_pref2']
 
 dir = "food/resources/data_collection/healthRecSys/"
@@ -30,11 +31,14 @@ def get_avg_healthScore(rids_list):
     return float(sum/len(rids_list))
 
 
+
 def json_to_csv():
     csv_all_rows = list()
 
-    first_row = ["amtid", 'cond', 'file',
-                 'AUC', "FN", 'FP', 'N', 'N_predict', 'P', "P_predict", 'TN', 'TP', 'accuracy', 'cond', 'f1', 'precision', 'recall', 'reco', 'health score reco', 'total_recommended_recipes',
+    rs_eval_header = ['AUC', "FN", 'FP', 'N', 'N_predict', 'P', "P_predict", 'TN', 'TP', 'accuracy', 'cond', 'f1', 'final_score_others', 'final_score_reco', 'precision', 'pref_score_others', 'pref_scores_reco', 'recall', 'reco', 'reco health score', 'total_recommended_recipes']
+    rs_eval_header.sort()
+
+    first_row = ["amtid", 'cond', 'file'] + rs_eval_header + [
                  'recipes learn pref', 'health score learn pref', "normed health score learn pref", '# rightClicks learn pref', 'right-clicked recipes learn pref',
                  'recipes eval', 'health score eval', "normed health score eval", '# rightClicks eval', 'right-clicked recipes eval',
                  'satisfaction', 'easiness', 'influence_most', 'rs_satisfaction_comments',
@@ -42,6 +46,8 @@ def json_to_csv():
                  # 'healthiness habits', 'normed healthiness habits', 'fillingness habits', 'normed fillingness habits',
                  # 'age', 'gender', 'from', 'where', 'education', 'employment', 'freq_cook', 'healthy_food',
                  ]
+
+    keys_to_check_for = ['final_score_others', 'final_score_reco', 'pref_score_others', 'pref_score_reco']
 
     csv_all_rows.append(first_row)
 
@@ -58,7 +64,7 @@ def json_to_csv():
 
             content = json.load(fjson)
 
-            for key, data in content["Sessions"].items():
+            for key_user, data in content["Sessions"].items():
                 if isinstance(data, dict) and 'rs_eval_data' in data.keys() and isinstance(data["data_collection"]['rs_satisfaction'], dict): # and isinstance(data["data_collection"]['demographics'], dict):
                     # try:
                     csv_row = list()
@@ -75,10 +81,21 @@ def json_to_csv():
 
                         csv_row.append(file_name[6:])
 
+                        for k_to_check in keys_to_check_for:
+                            if k_to_check not in rs_eval_data.keys():
+                                rs_eval_data[k_to_check] = -1
+
+                        tmp_list = list()
                         for key, val in rs_eval_data.items():
+                            tmp_list.append([key, val])
+                        tmp_list = sorted(tmp_list, key=operator.itemgetter(0))
+                        # print(tmp_list)
+
+                        for key, val in tmp_list:
                             csv_row.append(val)
                             if key == 'reco':
                                 csv_row.append(get_avg_healthScore(val))
+
 
                         for dialog_unit in data["dialog"].values():
                             # print(dialog_unit)
@@ -167,7 +184,7 @@ def json_to_csv():
                         if len(csv_row) == len(first_row):
                             csv_all_rows.append(csv_row)
                         else:
-                            print("Discarding AMT %s (firebase sessions' key: %s)" % (amtid, key))
+                            print("Discarding AMT %s (firebase sessions' key: %s \\\\ %d %d)" % (amtid, key_user, len(csv_row), len(first_row)))
 
                     # except:
                     #     pass

@@ -55,13 +55,14 @@ ggplot(data=data, aes(x=file, y=AUC)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
-ggplot(data=data, aes(x=file, y=health.score.reco)) + geom_boxplot() +
+ggplot(data=data, aes(x=file, y=f1)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
-ggplot(data=data, aes(x=file, y=normed.healthiness.habit)) + geom_boxplot() +
+ggplot(data=data, aes(x=file, y=reco.health.score)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
+
 ```
 
 # Analysis

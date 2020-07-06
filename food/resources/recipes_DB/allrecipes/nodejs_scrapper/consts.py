@@ -12,6 +12,7 @@ model = dense_model
 algo_als = "als"
 algo_bpr = "brp"
 algo_lmf = "lmf"
+algo_itemItem = "itemItem"
 algo_str = algo_als
 
 coef_pref = 3
