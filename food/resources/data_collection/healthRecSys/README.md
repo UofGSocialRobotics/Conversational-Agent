@@ -20,3 +20,16 @@ For the pilot, we collected:
 * `pilot_hybrid.json`: same as `pilot_hybrid.json` but with _healthiness_ tags on the eval page.
 * `pilot_hybrid_coef31.json`: same as `pilot_hybrid_coef31.json` but pref-score if coef 3 and health score is coef 1.
 * `pilot_hybrid_wtags_error.json`: as `pilot_hybrid_error.json` but with _healthiness_ tags on the eval page.
+
+For the data collection, we setled on a 2x3 design with `Tag-Mode` and `Recommender-Mode` as the two dependent variables:
+* `Tag-Mode` values are _tags_ and _no-tags_.
+* `Recommender-Mode` values are _preference-based_, _health-based_ and _hybrid_. In the hybrid system, the weights are 3 for preference-score and 1 for health-score.
+
+Pilot data corresponding to those conditions are integrated to the overall data collection.
+
+The files with the remaining of the data are:
+* `hybrid_coef31.json`: hybrid system with coef 3 1, not-recommended recipes randomly selected.
+* `health.json`: healthy recommender system, not-recommended recipes randomly selected.
+* `health_wtags.json`: healthy recommender system, not-recommended recipes randomly selected, with tags on eval page.
+
+**For all the pilot files + `hybrid_coef31.json` the _final scores_ and _pref scores_ are switched.**

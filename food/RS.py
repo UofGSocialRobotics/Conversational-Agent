@@ -16,7 +16,7 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 from food.healthy_RS import HealthyRS
 
 N_RECIPES_TO_DISPLAY_PREFGATHERING = 30
-N_RECIPES_TO_DISPLAY_EVAL = 30
+N_RECIPES_TO_DISPLAY_EVAL = 5
 N_RECIPES_TO_RECOMMEND = 5
 N_RECIPES_PROFILE = 5
 
@@ -37,17 +37,17 @@ class RS(wbc.WhiteBoardClient):
         self.recommended_recipes_liked_by_user = list()
         self.eval_reco_liked_recipes = None
 
+        self.implicit_rs = ImplicitCFRS()
         if config.rs_eval_cond == config.cond_health:
-            self.rs = HealthyRS.getInstance()
+            self.healthy_rs = HealthyRS.getInstance()
+        # else:
+        if config.rs_eval_cond == config.cond_hybrid:
+            self.healthy_bias = True
+            self.implicit_rs.set_healthy_bias(healthy_bias=True)
         else:
-            self.rs = ImplicitCFRS()
-            if config.rs_eval_cond == config.cond_pref:
-                self.healthy_bias = False
-                self.rs.set_healthy_bias(healthy_bias=False)
-            else:
-                self.healthy_bias = True
-                self.rs.set_healthy_bias(healthy_bias=True)
-            self.rs.start()
+            self.healthy_bias = False
+            self.implicit_rs.set_healthy_bias(healthy_bias=False)
+        self.implicit_rs.start()
 
         with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
             content = json.load(f)
@@ -91,6 +91,10 @@ class RS(wbc.WhiteBoardClient):
             rdata['time_total'] = self.recipes_dict[rid]['time_info']['Total']
         else:
             rdata['time_total'] = "--"
+        if 'Servings' in self.recipes_dict[rid]['time_info'].keys():
+            rdata['servings'] = self.recipes_dict[rid]['time_info']['Servings']
+        else:
+            rdata['servings'] = "--"
         FSA = self.recipes_dict[rid]['FSAscore']
         if FSA < 7:
             rdata['FSAcolour'] = "green"
@@ -99,15 +103,38 @@ class RS(wbc.WhiteBoardClient):
         else:
             rdata['FSAcolour'] = "orange"
         # log.debug("%s %d %s" % (rid, FSA, rdata["FSAcolour"]))
+
+
+        ingredients_list = self.recipes_dict[rid]['ingredients']
+        n_ingredients = len(ingredients_list)
+        # print(type(n_ingredients))
+        n_ingredients_by_col, remainder = n_ingredients // 3, n_ingredients % 3
+        # print(n_ingredients_by_col, remainder)
+        extra_in_col_1 = 0 if remainder == 0 else 1
+        extra_in_col_2 = 1 if remainder == 2 else 0
+        limit_col1 = n_ingredients_by_col+extra_in_col_1
+        limit_col2 = n_ingredients_by_col*2+extra_in_col_1+extra_in_col_2
+        col1 = ingredients_list[:limit_col1]
+        col2 = ingredients_list[limit_col1:limit_col2]
+        col3 = ingredients_list[limit_col2:]
+        # print(n_ingredients, n_ingredients_by_col, remainder, extra_in_col_1, extra_in_col_2)
+        # print(limit_col1, limit_col2)
+        rdata['ingredients'] = dict()
+        rdata['ingredients']["col1"], rdata['ingredients']["col2"], rdata['ingredients']["col3"] = col1, col2, col3
+
+        rdata['instructions'] = self.recipes_dict[rid]['instructions']
+
         return rdata
 
     def get_reco(self, ratings_list):
-        reco = self.rs.get_reco(self.user_name, ratings_list, n_reco=self.total_recipes-N_RECIPES_PROFILE, verbose=False)
-        # for x in reco:
-        #     print(colored(x,"green"))
+        # get hybrid / pref reco
+        reco = self.implicit_rs.get_reco(self.user_name, ratings_list, n_reco=self.total_recipes-N_RECIPES_PROFILE, verbose=False)
+        # print(reco)
         self.save_final_score(reco)
         if self.healthy_bias:
             self.save_pref_score(reco)
+        if config.rs_eval_cond == config.cond_health:
+            reco = self.healthy_rs.get_reco(self.user_name, ratings_list, n_reco=N_RECIPES_TO_RECOMMEND + 10, verbose=False)
         reco_20 = [item[1] for item in reco]
         self.reco = list()
         for rid in reco_20:
@@ -118,32 +145,14 @@ class RS(wbc.WhiteBoardClient):
             if len(self.reco) == N_RECIPES_TO_RECOMMEND:
                 break
 
-    # def get_bad_reco(self, ratings_list):
-    #     bad_reco = self.rs.get_reco_least_preferred(self.user_name, ratings_list, n_reco=RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED, verbose=False)
-    #     self.save_final_score(bad_reco)
-    #     if self.healthy_bias:
-    #         self.save_pref_score(bad_reco)
-    #         self.save_pref_score(bad_reco)
-    #     for x in bad_reco:
-    #         print(colored(x,"blue"))
-    #     reco_20 = [item[1] for item in bad_reco]
-    #     self.bad_reco = list()
-    #     for rid in reco_20:
-    #         if rid not in self.leanr_pref_recipes_sent:
-    #             self.bad_reco.append(rid)
-    #         else:
-    #             log.debug("%s already presented to user in learn-pref phase; eliminating it from reco list." % rid)
-    #         if len(self.bad_reco) == RANDOM_SAMPLE_FROM_N_LEAST_RECOMMENDED:
-    #             break
-
 
     def save_pref_score(self, reco_list):
         for x in reco_list:
-            self.rid_to_pref_score[x[1]] = x[2]
+            self.rid_to_pref_score[x[1]] = x[3]
 
     def save_final_score(self, reco_list):
         for x in reco_list:
-            self.rid_to_final_score[x[1]] = x[3]
+            self.rid_to_final_score[x[1]] = x[2]
 
     def get_pref_score(self, rid_list):
         pref_scores = list()
@@ -154,7 +163,8 @@ class RS(wbc.WhiteBoardClient):
     def get_final_score(self, rid_list):
         pref_scores = list()
         for rid in rid_list:
-            pref_scores.append(self.rid_to_final_score[rid])
+            pref_scores.append(float(self.rid_to_final_score[rid]))
+        log.debug(pref_scores)
         return stats.mean(pref_scores)
 
     def treat_message(self, msg, topic):
@@ -186,13 +196,13 @@ class RS(wbc.WhiteBoardClient):
             # log.debug(to_chose_from)
 
             self.eval_data['final_score_reco'] = self.get_final_score(self.reco)
-            self.eval_data['final_score_others'] = self.get_final_score(random_recipes)
+            # self.eval_data['final_score_others'] = self.get_final_score(random_recipes)
             if self.healthy_bias:
                 self.eval_data['pref_score_reco'] = self.get_pref_score(self.reco)
-                self.eval_data['pref_score_others'] = self.get_pref_score(random_recipes)
+                # self.eval_data['pref_score_others'] = self.get_pref_score(random_recipes)
             else:
                 self.eval_data['pref_score_reco'] = None
-                self.eval_data['pref_score_others'] = None
+                # self.eval_data['pref_score_others'] = None
             recipes_to_send_ids_list = random_recipes + self.reco
             log.debug(recipes_to_send_ids_list)
             random.shuffle(recipes_to_send_ids_list)
