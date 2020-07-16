@@ -25,10 +25,26 @@ class KBRSModule(wbc.WhiteBoardClient):
 
 class KBRS():
     def __init__(self):
-        with open(consts.json_xUsers_Xrecipes_path, 'r') as recipes_file:
+        with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as recipes_file:
             content = json.load(recipes_file)
         self.recipe_DB_all = content['recipes_data']
         self.recipe_DB = copy.copy(self.recipe_DB_all)
+        self.user_profile = {
+            "liked_ingredients": list(),
+            "disliked_ingredients": list(),
+            "diets": list(),
+            "time": None,
+            "hungry": None,
+            "healthy": None
+        }
+
+    def get_recipe_for_user(self):
+        '''
+        Filter recipes according to user profile. We MUST return something, so always check the current user recipeDB is not empty.
+        :return:
+        '''
+        if diets:
+
 
     def reset_current_DB(self):
         self.recipe_DB = copy.copy(self.recipe_DB_all)
@@ -53,12 +69,28 @@ class KBRS():
                         recipes_w_ingredient.append(rid)
         self.set_current_DB(recipes_w_ingredient)
 
-    def get_recipes_with_additional_characteristic(self, characteristic):
+    def remove_recipes_with_ingredient(self, ingredient):
+        ingredient = ingredient.lower().strip()
+        res = list()
+        for rid, rdata in self.recipe_DB.items():
+            if ingredient not in rdata[fc.title].lower():
+                res.append(rid)
+            else:
+                ingredient_in_recipe_bool = False
+                for r_ingredient in rdata[fc.ingredients]:
+                    if ingredient in r_ingredient.lower():
+                        ingredient_in_recipe_bool = True
+                if not ingredient_in_recipe_bool:
+                    res.append(rid)
+        self.set_current_DB(res)
+
+    def get_recipes_with_diet(self, diet):
         recipes_to_return = list()
-        for recipe in self.recipe_DB:
-            if characteristic in recipe['additional_info']:
-                recipes_to_return.append(recipe)
-        return recipes_to_return
+        for rid, rdata in self.recipe_DB.items():
+            # print(rdata)
+            if rdata['diets'][diet]:
+                recipes_to_return.append(rid)
+        self.set_current_DB(recipes_to_return)
 
     def get_recipes_with_N_calories(self, n_calories, operator):
         self.get_recipes_with_attribute_val_in_range("calories", n_calories, operator)
@@ -94,21 +126,6 @@ class KBRS():
         self.get_recipes_with_N_calories(N_CALORIES_LIGHT_DINNER, "more")
         self.get_recipes_with_N_calories(N_CALORIES_HEAVY_DINNER, "less")
 
-    def get_vegetarian_recipes(self):
-        return self.get_recipes_with_additional_characteristic('Vegetarian')
-
-    def get_vegan_recipes(self):
-        return self.get_recipes_with_additional_characteristic('Vegan')
-
-    def get_glutenfree_recipes(self):
-        return self.get_recipes_with_additional_characteristic("Gluten-free")
-
-    def get_dairyfree_recipes(self):
-        return self.get_recipes_with_additional_characteristic('Dairy-free')
-
-    def get_healthy_recipes(self):
-        return self.get_recipes_with_additional_characteristic('Healthy')
-
     def get_recipes_ready_in_time(self, minutes_max):
         recipes_to_return = list()
         for rid, rdata in self.recipe_DB.items():
@@ -120,15 +137,16 @@ class KBRS():
                 recipes_to_return.append(rid)
         self.set_current_DB(recipes_to_return)
 
-    def get_recipes(self, ingredient, total_time):
-        self.get_recipes_with_ingredient(ingredient)
-        self.get_recipes_ready_in_time(total_time)
 
 
 
 if __name__ == "__main__":
     kbrs = KBRS()
-    kbrs.get_recipes("chicken", 60)
+    kbrs.get_recipes_with_ingredient("chicken")
+    kbrs.remove_recipes_with_ingredient("broccoli")
+    kbrs.get_recipes_ready_in_time(30)
     kbrs.get_heavy_recipes()
     kbrs.get_FSAred_recipes()
+    kbrs.get_recipes_with_diet("keto")
+    kbrs.get_recipes_with_diet("dairy_free")
     kbrs.print_current_DB_ids()

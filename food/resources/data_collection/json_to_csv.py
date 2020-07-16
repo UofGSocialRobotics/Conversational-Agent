@@ -80,6 +80,11 @@ def parse_datetime(value):
         else:
             return False
 
+def to_seconds(timestr):
+    timestr = str(timestr)
+    ftr = [3600,60,1]
+    return sum([a*b for a,b in zip(ftr, map(int,timestr.split(':')))])
+
 def json_to_csv(path_read_from, path_write_to):
     with open(path_read_from, 'r') as f:
         with open(path_write_to+"data.csv", 'w') as fcsv:

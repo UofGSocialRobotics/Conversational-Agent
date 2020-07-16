@@ -50,6 +50,19 @@ aggregate(cbind(count = cond) ~ cond,
 
 # Demographics
 
+Duration
+```{r}
+data_age <- data["duration_sec"]
+data_long <- gather(data_age, factor_key=TRUE)
+data_long%>% group_by(key)%>%
+  summarise(mean= mean(value), 
+            sd= sd(value), 
+            max = max(value),
+            min = min(value), 
+            upperQ = quantile(value,0.75),
+            lowerQ = quantile(value,0.25))
+```
+
 Age
 ```{r}
 data_age <- data["age"]

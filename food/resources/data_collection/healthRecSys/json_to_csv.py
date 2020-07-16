@@ -1,9 +1,12 @@
 import csv
 import json
-import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
-import helper_functions as helper
 import operator
 import statistics
+from termcolor import colored
+
+import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+import helper_functions as helper
+from food.resources.data_collection.json_to_csv import parse_datetime, to_seconds
 
 json_path = "food/resources/data_collection/healthRecSys/pilot_pref.json"
 csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
@@ -11,8 +14,10 @@ csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
 # csv_path = "pilot_hybrid_wtags.csv"
 
 DEMOGRAPHICS = True
-STARS_EVAL = True
+STARS_EVAL = False
 ANONYMIZED = False
+
+BLOCKED_WORKERS = ['A16KAOOWIMYBF6', 'A3R6Z6HDL5JGM6']
 
 # files_list = ['pilot_pref', 'pilot_health', 'pilot_hybrid2',  'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags2', 'test']
 files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'health', 'pilot_hybrid_coef31', 'hybrid_coef31',  'pilot_pref_wtags', 'pref_wtags', 'pilot_health_wtags', 'health_wtags', 'pilot_hybrid_wtags31', 'hybrid31_wtags']
@@ -76,12 +81,22 @@ def json_to_csv():
         first_row += [
                  'whats_important', 'free_comment',
                  'healthiness habits', 'normed healthiness habits', 'fillingness habits', 'normed fillingness habits',
-                 'age', 'gender', 'gender_num', 'from', 'where', 'education', 'education_num', 'employment', 'employment_num', 'freq_cook', 'freq_cook_num', 'healthy_food', "healthy_food_num"
+                 'age', 'gender', 'gender_num', 'from', 'where', 'education', 'education_num', 'employment', 'employment_num', 'freq_cook', 'freq_cook_num', 'healthy_food', "healthy_food_num",
+                 'duration', "duration_sec", 'duration_AMT_sec'
                  ]
 
     keys_to_check_for = ['final_score_others', 'final_score_reco', 'pref_score_others', 'pref_score_reco']
 
     csv_all_rows.append(first_row)
+
+    amtid_to_duration = dict()
+    amtid_to_creation_time = dict()
+    with open(dir+"HealthRecSys_batch_all.csv") as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for row in csv_reader:
+            amtid_to_duration[row[15]] = row[23]
+            amtid_to_creation_time[row[15]] = row[6]
+
 
     for file_name in files_list:
 
@@ -115,8 +130,10 @@ def json_to_csv():
                         csv_row = list()
                         data_collection = data["data_collection"]
                         amtid = data_collection['amt_id']['value']
-                        print(amtid)
-                        if "lucile" in amtid:
+                        start_time = parse_datetime(data_collection['amt_id']['datetime'])
+
+                        # print(amtid)
+                        if "lucile" in amtid or amtid in BLOCKED_WORKERS:
                             pass
                         else:
                             if not ANONYMIZED:
@@ -226,6 +243,7 @@ def json_to_csv():
                                 csv_row.append(helper.norm_value_between_zero_and_one(f, -1, 1))
 
                                 demographics = data_collection['demographics']
+                                stop_time = parse_datetime(demographics['datetime'])
                                 age = demographics['age']
                                 gender = demographics['gender']
                                 isfrom = demographics['from']
@@ -234,6 +252,7 @@ def json_to_csv():
                                 freq_cook = demographics['freq_cook']
                                 healthy_food = demographics['healthy_food']
                                 employment = demographics['employment']
+
                                 csv_row.append(age)
                                 csv_row.append(gender)
                                 csv_row.append(gender_num[gender])
@@ -249,12 +268,22 @@ def json_to_csv():
 
                                 csv_row.append(healthy_food_num_dict[healthy_food])
 
+                                total_time = stop_time-start_time
+                                csv_row.append(total_time)
+                                csv_row.append(to_seconds(total_time))
+                                try:
+                                    csv_row.append(amtid_to_duration[amtid])
+                                    print(amtid_to_creation_time[amtid])
+                                except KeyError:
+                                    print(colored("Did not find %s in batch" % amtid,"blue"))
+                                    csv_row.append("")
 
 
-                            # if len(csv_row) == len(first_row):
-                            csv_all_rows.append(csv_row)
-                            # else:
-                            #     print("Discarding AMT %s (firebase sessions' key: %s \\\\ %d %d)" % (amtid, key_user, len(csv_row), len(first_row)))
+
+                            if len(csv_row) == len(first_row):
+                                csv_all_rows.append(csv_row)
+                            else:
+                                print("Discarding AMT %s (firebase sessions' key: %s \\\\ %d %d)" % (amtid, key_user, len(csv_row), len(first_row)))
 
                     # except:
                     #     pass
