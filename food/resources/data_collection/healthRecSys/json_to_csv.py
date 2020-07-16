@@ -3,6 +3,7 @@ import json
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import helper_functions as helper
 import operator
+import statistics
 
 json_path = "food/resources/data_collection/healthRecSys/pilot_pref.json"
 csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
@@ -10,18 +11,21 @@ csv_path = "food/resources/data_collection/healthRecSys/pilot_pref.csv"
 # csv_path = "pilot_hybrid_wtags.csv"
 
 DEMOGRAPHICS = True
+STARS_EVAL = True
+ANONYMIZED = False
 
 # files_list = ['pilot_pref', 'pilot_health', 'pilot_hybrid2',  'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags2', 'test']
 files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'health', 'pilot_hybrid_coef31', 'hybrid_coef31',  'pilot_pref_wtags', 'pref_wtags', 'pilot_health_wtags', 'health_wtags', 'pilot_hybrid_wtags31', 'hybrid31_wtags']
 if not DEMOGRAPHICS:
     files_list = ['pilot_pref', 'pilot_pref2', 'pilot_health', 'pilot_hybrid', 'pilot_hybrid_coef21', 'pilot_hybrid_coef31', 'pilot_hybrid_coef31_notrandom_292', 'pilot_hybrid_coef31_notrandom_75', 'pilot_pref_wtags', 'pilot_health_wtags', 'pilot_hybrid_wtags', 'pilot_hybrid_wtags31']
-
+if STARS_EVAL:
+    files_list = ['s_pilot_pref', 's_pilot_health', 's_pilot_hybrid', 's_pilot_hybrid_wtags', 's_pilot_health_wtags', 's_pilot_pref_wtags']
 
 dir = "food/resources/data_collection/healthRecSys/"
 
 healthy_food_num_dict = {"no": 0, "occasionnaly":1, "most_times":2, "always":3}
 employment_num_dict = {"unemployed":0, "student":1, "part-time":2, "full-time":3}
-gender_num = {"male":0, "female":1}
+gender_num = {"male":0, "female":1, 'other':2}
 education_num_dict = {"secondary": 0, "college": 1, "udergrad":2, "graduate":3, "PhD":4}
 freq_cook_num_dict = {"never": 0, "occasionnaly":1, "once_w":2, "several_t_w":3, "once_day": 4}
 
@@ -47,10 +51,26 @@ def json_to_csv():
     rs_eval_header = ['AUC', "FN", 'FP', 'N', 'N_predict', 'P', "P_predict", 'TN', 'TP', 'accuracy', 'cond', 'f1', 'final_score_others', 'final_score_reco', 'precision', 'pref_score_others', 'pref_scores_reco', 'recall', 'reco', 'reco health score', 'total_recommended_recipes']
     rs_eval_header.sort()
 
-    first_row = ["amtid", 'cond', 'file'] + rs_eval_header + [
-                 'recipes learn pref', 'health score learn pref', "normed health score learn pref", '# rightClicks learn pref', 'right-clicked recipes learn pref',
+    if ANONYMIZED:
+        first_row = []
+    else:
+        first_row = ["amtid"]
+
+    if not STARS_EVAL:
+        first_row += ['cond', 'file']
+        first_row += rs_eval_header
+    else:
+        first_row += ['file']
+
+    first_row += [
+         'recipes learn pref', 'health score learn pref', "normed health score learn pref", '# rightClicks learn pref', 'right-clicked recipes learn pref']
+
+    if not STARS_EVAL:
+        first_row += [
                  'recipes eval', 'health score eval', "normed health score eval", '# rightClicks eval', 'right-clicked recipes eval',
                  'satisfaction', 'easiness', 'influence_most', 'rs_satisfaction_comments']
+    else:
+        first_row += ['ratings', "ratings avg", 'ratings std']
 
     if DEMOGRAPHICS:
         first_row += [
@@ -77,7 +97,13 @@ def json_to_csv():
             content = json.load(fjson)
 
             for key_user, data in content["Sessions"].items():
-                if isinstance(data, dict) and 'rs_eval_data' in data.keys() and isinstance(data["data_collection"]['rs_satisfaction'], dict):
+
+                if not STARS_EVAL:
+                    cond = isinstance(data, dict) and 'rs_eval_data' in data.keys() and isinstance(data["data_collection"]['rs_satisfaction'], dict)
+                else:
+                    cond = isinstance(data, dict) and "data_collection" in data.keys() and ('recipe_ratings' in data["data_collection"].keys())
+
+                if cond:
 
                     last_cond = isinstance(data["data_collection"]['demographics'], dict)
                     if not DEMOGRAPHICS:
@@ -89,31 +115,36 @@ def json_to_csv():
                         csv_row = list()
                         data_collection = data["data_collection"]
                         amtid = data_collection['amt_id']['value']
+                        print(amtid)
                         if "lucile" in amtid:
                             pass
                         else:
-                            csv_row.append(amtid)
+                            if not ANONYMIZED:
+                                csv_row.append(amtid)
 
-                            rs_eval_data = data['rs_eval_data']
+                            if not STARS_EVAL:
 
-                            csv_row.append(rs_eval_data['cond']+with_tag)
+                                rs_eval_data = data['rs_eval_data']
+
+                                csv_row.append(rs_eval_data['cond']+with_tag)
 
                             csv_row.append(file_name.replace("pilot_", "p_"))
 
-                            for k_to_check in keys_to_check_for:
-                                if k_to_check not in rs_eval_data.keys():
-                                    rs_eval_data[k_to_check] = -1
+                            if not STARS_EVAL:
+                                for k_to_check in keys_to_check_for:
+                                    if k_to_check not in rs_eval_data.keys():
+                                        rs_eval_data[k_to_check] = -1
 
-                            tmp_list = list()
-                            for key, val in rs_eval_data.items():
-                                tmp_list.append([key, val])
-                            tmp_list = sorted(tmp_list, key=operator.itemgetter(0))
-                            # print(tmp_list)
+                                tmp_list = list()
+                                for key, val in rs_eval_data.items():
+                                    tmp_list.append([key, val])
+                                tmp_list = sorted(tmp_list, key=operator.itemgetter(0))
+                                # print(tmp_list)
 
-                            for key, val in tmp_list:
-                                csv_row.append(val)
-                                if key == 'reco':
-                                    csv_row.append(get_avg_healthScore(val))
+                                for key, val in tmp_list:
+                                    csv_row.append(val)
+                                    if key == 'reco':
+                                        csv_row.append(get_avg_healthScore(val))
 
 
                             for dialog_unit in data["dialog"].values():
@@ -134,19 +165,31 @@ def json_to_csv():
                                     csv_row.append(n_right_clicks)
                                     csv_row.append(right_clicked_recipes)
 
+                            if STARS_EVAL:
+                                recipe_ratings = data_collection['recipe_ratings']
+                                csv_row.append(recipe_ratings)
+                                ratings = [y for [x, y] in recipe_ratings]
+                                avg_ratings = statistics.mean(ratings)
+                                std_ratings = statistics.stdev(ratings)
+                                csv_row.append(avg_ratings)
+                                csv_row.append(std_ratings)
+
+
                             if DEMOGRAPHICS:
                                 rs_post_study_anwers = data_collection['rs_post_study_answers']
                                 whats_important = rs_post_study_anwers['whats_important']
                                 free_comment = rs_post_study_anwers['free_comment']
-                            rs_satisfaction = data_collection['rs_satisfaction']
-                            satisfaction = rs_satisfaction['satisfaction']
-                            easiness = rs_satisfaction['easiness']
-                            influence = rs_satisfaction['influence']
-                            rs_satisfaction_comments = rs_satisfaction['comments']
-                            csv_row.append(satisfaction)
-                            csv_row.append(easiness)
-                            csv_row.append(influence)
-                            csv_row.append(rs_satisfaction_comments)
+
+                            if not STARS_EVAL:
+                                rs_satisfaction = data_collection['rs_satisfaction']
+                                satisfaction = rs_satisfaction['satisfaction']
+                                easiness = rs_satisfaction['easiness']
+                                influence = rs_satisfaction['influence']
+                                rs_satisfaction_comments = rs_satisfaction['comments']
+                                csv_row.append(satisfaction)
+                                csv_row.append(easiness)
+                                csv_row.append(influence)
+                                csv_row.append(rs_satisfaction_comments)
 
                             if DEMOGRAPHICS:
                                 csv_row.append(whats_important)
@@ -208,16 +251,25 @@ def json_to_csv():
 
 
 
-                            if len(csv_row) == len(first_row):
-                                csv_all_rows.append(csv_row)
-                            else:
-                                print("Discarding AMT %s (firebase sessions' key: %s \\\\ %d %d)" % (amtid, key_user, len(csv_row), len(first_row)))
+                            # if len(csv_row) == len(first_row):
+                            csv_all_rows.append(csv_row)
+                            # else:
+                            #     print("Discarding AMT %s (firebase sessions' key: %s \\\\ %d %d)" % (amtid, key_user, len(csv_row), len(first_row)))
 
                     # except:
                     #     pass
 
 
-    with open(dir+"all.csv", 'w') as fcsv:
+    if ANONYMIZED:
+        anon_str = "_anonymized"
+    else:
+        anon_str = ""
+
+    if STARS_EVAL:
+        outFile = dir+"starEval_all"+anon_str+".csv"
+    else:
+        outFile = dir+"all"+anon_str+".csv"
+    with open(outFile, 'w') as fcsv:
         csv_writer = csv.writer(fcsv)
         for row in csv_all_rows:
             csv_writer.writerow(row)

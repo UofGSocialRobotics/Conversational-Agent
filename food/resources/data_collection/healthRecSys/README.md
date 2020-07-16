@@ -33,3 +33,9 @@ The files with the remaining of the data are:
 * `health_wtags.json`: healthy recommender system, not-recommended recipes randomly selected, with tags on eval page.
 
 **For all the pilot files + `hybrid_coef31.json` the _final scores_ and _pref scores_ are switched.**
+
+## Subjective evaluation
+
+Subjective evaluation has the same design, but users rate the 5 recommended recipes (as opposed to choosing 5 recipes out of 30).
+
+The files with the data of this evaluation are `s_pilot_pref.json`, `s_pilot_health.json`, `s_pilot_hybrid.json`. The hybrid system is the Hybrid-31 (pref-score if coef 3 and health score is coef 1).  

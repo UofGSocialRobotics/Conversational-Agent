@@ -1,5 +1,5 @@
 ---
-title: "healthRecSys data analysis"
+title: "healthRecSys data analysis objective eval"
 output: html_document
 ---
 
@@ -13,6 +13,19 @@ data <- read.csv("all.csv")
 data_reco_health_scores <- read.csv("reco_health_scores.csv")
 ```
 
+Libraries
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(magrittr)
+library(car)
+library(lsmeans)
+library(ggpubr)
+```
+
 Check the data
 ```{r}
 View(data)
@@ -23,6 +36,9 @@ Create groups for Tags-Mode and Reco-Mode conditions
 ```{r}
 data$tags_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_health" | data$cond=="cond_hybrid"), 'no-tags', 'tags')
 data$reco_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_pref_with_tags"), 'pref', ifelse((data$cond=="cond_health" | data$cond=="cond_health_with_tags"), 'health', 'hybrid'))
+
+data_no_tags <- subset(data, tags_mode == "no-tags")
+data_tags <- subset(data, tags_mode == "tags")
 ```
 
 Number of data points per condition
@@ -35,7 +51,7 @@ aggregate(cbind(count = cond) ~ cond,
 # Demographics
 
 Age
-```{r tidyr}
+```{r}
 data_age <- data["age"]
 data_long <- gather(data_age, factor_key=TRUE)
 data_long%>% group_by(key)%>%
@@ -48,7 +64,7 @@ data_long%>% group_by(key)%>%
 ```
 
 Number of male / female
-```{r dplyr plyr}
+```{r}
 gender_data <- aggregate(cbind(count = gender) ~ gender, 
           data = data, 
           FUN = function(x){NROW(x)})
@@ -57,7 +73,7 @@ ddply(gender_data, .(), mutate, pct = count / sum(count) * 100)
 ```
 
 Employment category
-```{r dplyr plyr}
+```{r}
 employment_data <- aggregate(cbind(count = employment) ~ employment, 
           data = data, 
           FUN = function(x){NROW(x)})
@@ -66,7 +82,7 @@ ddply(employment_data, .(), mutate, pct = count / sum(count) * 100)
 ```
 
 Education level
-```{r dplyr plyr}
+```{r}
 education_data <- aggregate(cbind(count = education) ~ education, 
           data = data, 
           FUN = function(x){NROW(x)})
@@ -77,62 +93,25 @@ ddply(education_data, .(), mutate, pct = count / sum(count) * 100)
 # Pilot exploration
 
 Mean of health values of recommended recipes for hybrid pilots and mean of f1
-```{r dplyr}
+```{r}
 aggregate(data[, "reco.health.score"], list(data$file), mean)
 aggregate(data[, "f1"], list(data$file), mean)
 ```
 
 Median of health values of recommended recipes for hybrid pilots
-```{r dplyr}
+```{r}
 aggregate(data_reco_health_scores[, "reco.health.score"], list(data_reco_health_scores$file), mean)
 aggregate(data_reco_health_scores[, "reco.health.score"], list(data_reco_health_scores$file), median)
 ```
 
 Get most commun element
-```{r magrittr dplyr}
-library(magrittr)
-library(dplyr)
-data_reco_health_scores %>% 
-  count(file, reco.health.score) %>%
-  slice(which.max(n))
-
-with(data_reco_health_scores,by(reco.health.score,file,function(xx)names(which.max(table(xx)))))
-```
-
-# Plots
-
-Plot F1, HealthScore (eval) and Satisfaction for Tags-Mode (tags VS no-tags)
 ```{r}
-library(ggplot2)
-library(ggpubr)
-# ggboxplot(data, x = "tags_mode", y = "f1", ylab = "F1")
-ggplot(data=data, aes(x=tags_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=tags_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=tags_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-# ggboxplot(data, x = "tags_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
-# ggboxplot(data, x = "tags_mode", y = "satisfaction", ylab = "Satisfaction")
+as.table(with(data_reco_health_scores,by(reco.health.score,file,function(xx)names(which.max(table(xx))))))
 ```
 
-Plot F1, HealthScore (eval) and Satisfaction for Reco-Mode (pref vs health vs hybrid)
-```{r ggplot2}
-ggplot(data=data, aes(x=reco_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=reco_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=reco_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-# ggboxplot(data, x = "reco_mode", y = "f1", ylab = "F1")
-# ggboxplot(data, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
-# ggboxplot(data, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
-```
-
-
-```{r ggplot2}
-ggplot(data=data, aes(x=cond, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=reco.health.score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-```
 
 Plot F1, HealthScore (eval) and Satisfaction for all conditions we tried in pilot
-```{r ggplot2}
+```{r}
 ggplot(data=data, aes(x=file, y=health.score.eval)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
@@ -151,23 +130,67 @@ ggplot(data=data, aes(x=file, y=reco.health.score)) + geom_boxplot() +
 
 ```
 
-# Analysis
+# Plots
+
+Plot F1, HealthScore (eval) and Satisfaction for Tags-Mode (tags VS no-tags)
+```{r}
+# ggboxplot(data, x = "tags_mode", y = "f1", ylab = "F1")
+ggplot(data=data, aes(x=tags_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=tags_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=tags_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+# ggboxplot(data, x = "tags_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+# ggboxplot(data, x = "tags_mode", y = "satisfaction", ylab = "Satisfaction")
+```
+
+Plot F1, HealthScore (eval) and Satisfaction for Reco-Mode (pref vs health vs hybrid)
+```{r}
+ggplot(data=data, aes(x=reco_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=reco_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=reco_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+# ggboxplot(data, x = "reco_mode", y = "f1", ylab = "F1")
+# ggboxplot(data, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+# ggboxplot(data, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
+```
+
+Plot F1, HealthScore (eval), HealthScore (reco) and Satisfaction for all conditions
+```{r}
+ggplot(data=data, aes(x=cond, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=cond, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=cond, y=reco.health.score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data, aes(x=cond, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+
+
+# Analysis 
 
 ## F1 scores
 
 MANOVA for F1 scores
 ```{r}
-library(car)
 model = lm(f1 ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
 print(Anova(model, type = 'II'))
 ```
 
 Post hoc 
 ```{r}
-library(lsmeans)
 lsmeans(model,
         pairwise ~ tags_mode + reco_mode,
         adjust="bonferroni")
+```
+
+### When Tags-Mode = no-tags, cheking for main effect of Reco-Mode
+ANOVA for F1
+```{r}
+model_no_tags = lm(f1 ~ reco_mode, data = data_no_tags)
+print(Anova(model_no_tags, type = 'II'))
+```
+
+### When Tags-Mode = tags, cheking for main effect of Reco-Mode
+ANOVA for F1s
+```{r}
+model_tags = lm(f1 ~ reco_mode, data = data_tags)
+print(Anova(model_tags, type = 'II'))
 ```
 
 ## Health Scores (eval)
@@ -260,14 +283,13 @@ interaction.plot(x.factor     = data$tags_mode,
 # Other influences?
 
 ```{r}
-library(ggpubr)
 cor(data$healthy_food_num, data$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
 cor(data$health.score.eval, data$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
 cor(data$health.score.eval, data$healthy_food_num, method = c("pearson", "kendall", "spearman"))
 ```
 
 Any correlation of demographics variables with Health Score (eval)?
-```{r ggpubr}
+```{r}
 cor(data$health.score.eval, data$age, method = c("pearson", "kendall", "spearman"))
 cor(data$health.score.eval, data$education_num, method = c("pearson", "kendall", "spearman"))
 cor(data$health.score.eval, data$employment_num, method = c("pearson", "kendall", "spearman"))
@@ -275,7 +297,7 @@ cor(data$health.score.eval, data$freq_cook_num, method = c("pearson", "kendall",
 ```
 
 Any correlation of demographics variables with satisfaction?
-```{r ggpubr}
+```{r}
 cor(data$satisfaction, data$age, method = c("pearson", "kendall", "spearman"))
 cor(data$satisfaction, data$education_num, method = c("pearson", "kendall", "spearman"))
 cor(data$satisfaction, data$employment_num, method = c("pearson", "kendall", "spearman"))

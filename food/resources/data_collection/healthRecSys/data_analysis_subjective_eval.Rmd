@@ -1,0 +1,150 @@
+---
+title: "healthRecSys data analysis subjective eval"
+output: html_document
+---
+
+# Set up
+
+Set working directory and load the data. Filter out data from Prolific.
+```{r ggpubr}
+setwd("/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/data_collection/healthRecSys")
+##library(ggpubr)
+data_star_eval <- read.csv("starEval_all.csv")
+```
+
+Libraries
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(magrittr)
+library(car)
+library(lsmeans)
+library(ggpubr)
+```
+
+Check the data
+```{r}
+View(data_star_eval)
+```
+
+Create groups for Tags-Mode and Reco-Mode conditions
+```{r}
+data_star_eval$tags_mode <- ifelse((data_star_eval$file=="s_p_pref" | data_star_eval$file=="s_p_health" | data_star_eval$file=="s_p_hybrid"), 'no-tags', 'tags')
+data_star_eval$reco_mode <- ifelse((data_star_eval$file=="s_p_pref" | data_star_eval$file=="s_p_pref_wtags"), 'pref', ifelse((data_star_eval$file=="s_p_health" | data_star_eval$file=="s_p_health_wtags"), 'health', 'hybrid'))
+
+
+data_no_tags <- subset(data_star_eval, tags_mode == "no-tags")
+data_tags <- subset(data_star_eval, tags_mode == "tags")
+```
+
+Number of data points per condition
+```{r}
+aggregate(cbind(count = file) ~ file, 
+          data = data_star_eval, 
+          FUN = function(x){NROW(x)})
+```
+
+# Demographics
+
+Age
+```{r}
+data_star_eval_age <- data_star_eval["age"]
+data_star_eval_long <- gather(data_star_eval_age, factor_key=TRUE)
+data_star_eval_long%>% group_by(key)%>%
+  summarise(mean= mean(value), 
+            sd= sd(value), 
+            max = max(value),
+            min = min(value), 
+            upperQ = quantile(value,0.75),
+            lowerQ = quantile(value,0.25))
+```
+
+Number of male / female
+```{r}
+gender_data_star_eval <- aggregate(cbind(count = gender) ~ gender, 
+          data = data_star_eval, 
+          FUN = function(x){NROW(x)})
+
+ddply(gender_data_star_eval, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Employment category
+```{r}
+employment_data_star_eval <- aggregate(cbind(count = employment) ~ employment, 
+          data = data_star_eval, 
+          FUN = function(x){NROW(x)})
+
+ddply(employment_data_star_eval, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Education level
+```{r}
+education_data_star_eval <- aggregate(cbind(count = education) ~ education, 
+          data = data_star_eval, 
+          FUN = function(x){NROW(x)})
+
+ddply(education_data_star_eval, .(), mutate, pct = count / sum(count) * 100)
+```
+
+# Plots
+
+Plot user ratings for Reco-Mode and Tags-Mode
+```{r}
+ggplot(data=data_star_eval, aes(x=tags_mode, y=ratings.avg)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=data_star_eval, aes(x=reco_mode, y=ratings.avg)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+Plot ratings averages for all conditions
+```{r}
+ggplot(data=data_star_eval, aes(x=file, y=ratings.avg)) + geom_boxplot() +
+  stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3,show.legend = FALSE)
+```
+
+# Analysis 
+
+## Checking for main effect of Tags-Mode and Reco-Mode + interaction
+
+ANOVA for recipe ratings
+```{r}
+model_star_eval = lm(ratings.avg ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data_star_eval)
+print(Anova(model_star_eval, type = 'II'))
+```
+
+## When Tags-Mode = no-tags, cheking for main effect of Reco-Mode
+ANOVA for recipe ratings
+```{r}
+model_no_tags = lm(ratings.avg ~ reco_mode, data = data_no_tags)
+print(Anova(model_no_tags, type = 'II'))
+```
+
+## When Tags-Mode = tags, cheking for main effect of Reco-Mode
+ANOVA for recipe ratings
+```{r}
+model_tags = lm(ratings.avg ~ reco_mode, data = data_tags)
+print(Anova(model_tags, type = 'II'))
+```
+
+# Interaction plot
+
+```{r}
+interaction.plot(x.factor     = data_star_eval$tags_mode,
+                 trace.factor = data_star_eval$reco_mode,
+                 response     = data_star_eval$ratings.avg,
+                 fun = mean,
+                 type="b",
+                 col=c("black","red","green"),  ##  Colors for levels of trace var.
+                 pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
+                 fixed=TRUE,                    ##  Order by factor order in data
+                 leg.bty = "o",
+                 xlab = "Reco-Mode",
+                 ylab = "Ratings Averages",
+                 #ylim = c(3.7,4.9),
+                 trace.label = "Tag-Mode")
+
+```
+
+
