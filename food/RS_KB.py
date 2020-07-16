@@ -38,12 +38,99 @@ class KBRS():
             "healthy": None
         }
 
+    def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry, healthy):
+        if isinstance(liked_ingredients, list):
+            for elt in liked_ingredients:
+                if not isinstance(elt, str):
+                    raise TypeError("Liked ingredients are supposed to be strings (list of strings)")
+            self.user_profile['liked_ingredients'] = liked_ingredients
+        else:
+            raise TypeError("Was expecting a list of (liked) ingredients (strings)")
+        if isinstance(disliked_ingredients, list):
+            for elt in disliked_ingredients:
+                if not isinstance(elt, str):
+                    raise TypeError("Disliked ingredients are supposed to be strings (list of strings)")
+            self.user_profile['disliked_ingredients'] = disliked_ingredients
+        else:
+            raise TypeError("Was expecting a list of (disliked) ingredients (strings)")
+        if isinstance(diets, list):
+            for elt in diets:
+                if not isinstance(elt, str):
+                    raise TypeError("Diets are supposed to be strings (list of strings)")
+            self.user_profile['diets'] = diets
+        else:
+            raise TypeError("Was expecting a list of diets (strings)")
+        if isinstance(time_val, int):
+            self.user_profile['time'] = time_val
+        else:
+            raise TypeError("Time should be int")
+        if isinstance(hungry, float):
+            if -1 <= hungry <= 1:
+                self.user_profile['hungry'] = hungry
+            else:
+                raise ValueError("\"Hungry\" should be between -1 and 1")
+        else:
+            raise TypeError("\"Hungry\" should be a float between -1 and 1")
+        if isinstance(healthy, float)
+            if -1 <= healthy <= 1:
+                self.user_profile['healthy'] = healthy
+            else:
+                raise ValueError("\"Hungry\" should be between -1 and 1")
+        else:
+            raise TypeError("\"Hungry\" should be a float between -1 and 1")
+
     def get_recipe_for_user(self):
         '''
         Filter recipes according to user profile. We MUST return something, so always check the current user recipeDB is not empty.
         :return:
         '''
-        if diets:
+        if self.user_profile['diets']:
+            for diet in self.user_profile['diets']:
+                OK_recipes = self.get_recipes_with_diet(diet)
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+        if self.user_profile['disliked_ingredients']:
+            for ingredient in self.user_profile['disliked_ingredients']:
+                OK_recipes = self.get_recipes_without_ingredient(ingredient)
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+        if self.user_profile['liked_ingredients']:
+            for ingredient in self.user_profile['liked_ingredients']:
+                OK_recipes = self.get_recipes_with_ingredient(ingredient)
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+        if self.user_profile['time']:
+            OK_recipes = self.get_recipes_ready_in_time(self.user_profile['time'])
+            if OK_recipes:
+                self.set_current_DB(OK_recipes)
+        if self.user_profile['hungry']:
+            if self.user_profile['hungry'] < 0.5:
+                OK_recipes = self.get_light_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+            elif self.user_profile['hungry'] > 0.5:
+                OK_recipes = self.get_heavy_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+            else:
+                OK_recipes = self.get_normal_calories_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+        if self.user_profile['healthy']:
+            if self.user_profile['healthy'] < 0.5:
+                OK_recipes = self.get_FSAred_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+            elif self.user_profile['healthy'] > 0.5:
+                OK_recipes = self.get_FSAgreen_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+            else:
+                OK_recipes = self.get_FSAamber_recipes()
+                if OK_recipes:
+                    self.set_current_DB(OK_recipes)
+
+
 
 
     def reset_current_DB(self):
@@ -67,9 +154,10 @@ class KBRS():
                 for r_ingredient in rdata[fc.ingredients]:
                     if ingredient in r_ingredient.lower():
                         recipes_w_ingredient.append(rid)
-        self.set_current_DB(recipes_w_ingredient)
+        # self.set_current_DB(recipes_w_ingredient)
+        return recipes_w_ingredient
 
-    def remove_recipes_with_ingredient(self, ingredient):
+    def get_recipes_without_ingredient(self, ingredient):
         ingredient = ingredient.lower().strip()
         res = list()
         for rid, rdata in self.recipe_DB.items():
@@ -82,7 +170,8 @@ class KBRS():
                         ingredient_in_recipe_bool = True
                 if not ingredient_in_recipe_bool:
                     res.append(rid)
-        self.set_current_DB(res)
+        # self.set_current_DB(res)
+        return res
 
     def get_recipes_with_diet(self, diet):
         recipes_to_return = list()
@@ -90,20 +179,21 @@ class KBRS():
             # print(rdata)
             if rdata['diets'][diet]:
                 recipes_to_return.append(rid)
-        self.set_current_DB(recipes_to_return)
+        # self.set_current_DB(recipes_to_return)
+        return recipes_to_return
 
     def get_recipes_with_N_calories(self, n_calories, operator):
-        self.get_recipes_with_attribute_val_in_range("calories", n_calories, operator)
+        return self.get_recipes_with_attribute_val_in_range("calories", n_calories, operator)
 
     def get_FSAgreen_recipes(self):
-        self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_HEALTHY, "less")
+        return self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_HEALTHY, "less")
 
     def get_FSAamber_recipes(self):
-        self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_UNHEALTHY, "less")
-        self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_HEALTHY, "more")
+        return self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_UNHEALTHY, "less")
+        return self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_HEALTHY, "more")
 
     def get_FSAred_recipes(self):
-        self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_UNHEALTHY, "more")
+        return self.get_recipes_with_attribute_val_in_range("FSAscore", FSA_UNHEALTHY, "more")
 
     def get_recipes_with_attribute_val_in_range(self, attribute, n, operator):
         recipes_to_return = list()
@@ -114,17 +204,18 @@ class KBRS():
                 att_val = rdata[attribute]
             if (operator == "more" and att_val >= n) or (operator == "less" and att_val < n):
                 recipes_to_return.append(rid)
-        self.set_current_DB(recipes_to_return)
+        # self.set_current_DB(recipes_to_return)
+        return recipes_to_return
 
     def get_light_recipes(self):
-        self.get_recipes_with_N_calories(N_CALORIES_LIGHT_DINNER, "less")
+        return self.get_recipes_with_N_calories(N_CALORIES_LIGHT_DINNER, "less")
 
     def get_heavy_recipes(self):
-        self.get_recipes_with_N_calories(N_CALORIES_HEAVY_DINNER, "more")
+        return self.get_recipes_with_N_calories(N_CALORIES_HEAVY_DINNER, "more")
 
     def get_normal_calories_recipes(self):
-        self.get_recipes_with_N_calories(N_CALORIES_LIGHT_DINNER, "more")
-        self.get_recipes_with_N_calories(N_CALORIES_HEAVY_DINNER, "less")
+        return self.get_recipes_with_N_calories(N_CALORIES_LIGHT_DINNER, "more")
+        return self.get_recipes_with_N_calories(N_CALORIES_HEAVY_DINNER, "less")
 
     def get_recipes_ready_in_time(self, minutes_max):
         recipes_to_return = list()
@@ -135,18 +226,21 @@ class KBRS():
                     recipes_to_return.append(rid)
             else:
                 recipes_to_return.append(rid)
-        self.set_current_DB(recipes_to_return)
-
+        # self.set_current_DB(recipes_to_return)
+        return recipes_to_return
 
 
 
 if __name__ == "__main__":
     kbrs = KBRS()
-    kbrs.get_recipes_with_ingredient("chicken")
-    kbrs.remove_recipes_with_ingredient("broccoli")
-    kbrs.get_recipes_ready_in_time(30)
-    kbrs.get_heavy_recipes()
-    kbrs.get_FSAred_recipes()
-    kbrs.get_recipes_with_diet("keto")
-    kbrs.get_recipes_with_diet("dairy_free")
+    # kbrs.get_recipes_with_ingredient("chicken")
+    # kbrs.remove_recipes_with_ingredient("broccoli")
+    # kbrs.get_recipes_ready_in_time(30)
+    # kbrs.get_heavy_recipes()
+    # kbrs.get_FSAred_recipes()
+    # kbrs.get_recipes_with_diet("keto")
+    # kbrs.get_recipes_with_diet("dairy_free")
+
+    kbrs.set_user_profile(liked_ingredients=['broccoli', 'potato'], disliked_ingredients=['nut'], diets=['low_carbs'], time_val=60, hungry=0.25, healthy=1)
+
     kbrs.print_current_DB_ids()
