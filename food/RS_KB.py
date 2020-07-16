@@ -1,11 +1,13 @@
 import json
 import copy
+from termcolor import colored
 
 import whiteboard_client as wbc
 import helper_functions as helper
 import food.food_config as fc
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import food.RS_utils as rs_utils
+from ca_logging import log
 
 N_CALORIES_LIGHT_DINNER = 300
 N_CALORIES_HEAVY_DINNER = 450
@@ -64,14 +66,14 @@ class KBRS():
             self.user_profile['time'] = time_val
         else:
             raise TypeError("Time should be int")
-        if isinstance(hungry, float):
+        if isinstance(hungry, float) or isinstance(hungry, int):
             if -1 <= hungry <= 1:
                 self.user_profile['hungry'] = hungry
             else:
                 raise ValueError("\"Hungry\" should be between -1 and 1")
         else:
             raise TypeError("\"Hungry\" should be a float between -1 and 1")
-        if isinstance(healthy, float)
+        if isinstance(healthy, float) or isinstance(healthy, int):
             if -1 <= healthy <= 1:
                 self.user_profile['healthy'] = healthy
             else:
@@ -79,7 +81,7 @@ class KBRS():
         else:
             raise TypeError("\"Hungry\" should be a float between -1 and 1")
 
-    def get_recipe_for_user(self):
+    def get_recipe_for_user(self, n_recipes=5):
         '''
         Filter recipes according to user profile. We MUST return something, so always check the current user recipeDB is not empty.
         :return:
@@ -87,48 +89,57 @@ class KBRS():
         if self.user_profile['diets']:
             for diet in self.user_profile['diets']:
                 OK_recipes = self.get_recipes_with_diet(diet)
-                if OK_recipes:
+                if OK_recipes and len(OK_recipes) >= n_recipes:
                     self.set_current_DB(OK_recipes)
+                else:
+                    log.info("Can't get enough recipes with set diet")
+
         if self.user_profile['disliked_ingredients']:
             for ingredient in self.user_profile['disliked_ingredients']:
                 OK_recipes = self.get_recipes_without_ingredient(ingredient)
-                if OK_recipes:
+                if OK_recipes and len(OK_recipes) >= n_recipes:
                     self.set_current_DB(OK_recipes)
+                else:
+                    log.info("Can't get enough recipes with set disliked ingredients %s" % ingredient)
+
         if self.user_profile['liked_ingredients']:
             for ingredient in self.user_profile['liked_ingredients']:
                 OK_recipes = self.get_recipes_with_ingredient(ingredient)
-                if OK_recipes:
+                if OK_recipes and len(OK_recipes) >= n_recipes:
                     self.set_current_DB(OK_recipes)
+                else:
+                    log.info("Can't get enough recipes with set liked ingredient %s (got %d)" % (ingredient, len(OK_recipes)))
+
         if self.user_profile['time']:
             OK_recipes = self.get_recipes_ready_in_time(self.user_profile['time'])
-            if OK_recipes:
+            if OK_recipes and len(OK_recipes) >= n_recipes:
                 self.set_current_DB(OK_recipes)
+            else:
+                log.info("Can't get enough recipes with set time")
+
         if self.user_profile['hungry']:
             if self.user_profile['hungry'] < 0.5:
                 OK_recipes = self.get_light_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
             elif self.user_profile['hungry'] > 0.5:
                 OK_recipes = self.get_heavy_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
             else:
                 OK_recipes = self.get_normal_calories_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
+            if OK_recipes and len(OK_recipes) >= n_recipes:
+                self.set_current_DB(OK_recipes)
+            else:
+                log.info("Can't get enough recipes with set hungry value")
+
         if self.user_profile['healthy']:
             if self.user_profile['healthy'] < 0.5:
                 OK_recipes = self.get_FSAred_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
             elif self.user_profile['healthy'] > 0.5:
                 OK_recipes = self.get_FSAgreen_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
             else:
                 OK_recipes = self.get_FSAamber_recipes()
-                if OK_recipes:
-                    self.set_current_DB(OK_recipes)
+            if OK_recipes and len(OK_recipes) >= n_recipes:
+                self.set_current_DB(OK_recipes)
+            else:
+                log.info("Can't get enough recipes with set healthy value")
 
 
 
@@ -177,8 +188,11 @@ class KBRS():
         recipes_to_return = list()
         for rid, rdata in self.recipe_DB.items():
             # print(rdata)
-            if rdata['diets'][diet]:
-                recipes_to_return.append(rid)
+            if diet not in rdata['diets'].keys():
+                print(colored("Missing diet info for recipe %s!" % rid, "red"))
+            else:
+                if rdata['diets'][diet]:
+                    recipes_to_return.append(rid)
         # self.set_current_DB(recipes_to_return)
         return recipes_to_return
 
@@ -241,6 +255,7 @@ if __name__ == "__main__":
     # kbrs.get_recipes_with_diet("keto")
     # kbrs.get_recipes_with_diet("dairy_free")
 
-    kbrs.set_user_profile(liked_ingredients=['broccoli', 'potato'], disliked_ingredients=['nut'], diets=['low_carbs'], time_val=60, hungry=0.25, healthy=1)
+    kbrs.set_user_profile(liked_ingredients=['broccoli', 'potato'], disliked_ingredients=['nut'], diets=['low_carbs'], time_val=60, hungry=0.25, healthy=0)
+    kbrs.get_recipe_for_user()
 
     kbrs.print_current_DB_ids()

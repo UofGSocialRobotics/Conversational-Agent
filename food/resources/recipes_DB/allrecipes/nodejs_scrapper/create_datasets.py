@@ -520,7 +520,18 @@ def manually_annotate_recipes():
             with open(consts.json_xUsers_Xrecipes_withDiets_path, 'w') as fjsonout:
                 json.dump(content_with_diets, fjsonout, indent=True)
 
-
+def get_recipes_not_annotated_for_diets():
+    keys_list = ['vegan', 'vegetarian', 'pescetarian', 'low_carbs', 'keto', 'gluten_free', 'dairy_free']
+    missing_diet_info = list()
+    with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f_parsed:
+        content_with_diets = json.load(f_parsed)
+    for rid, rdata in content_with_diets['recipes_data'].items():
+        for diet in keys_list:
+            if diet not in rdata['diets'].keys():
+                missing_diet_info.append(rid)
+    missing_diet_info = set(missing_diet_info)
+    print(len(missing_diet_info))
+    print(missing_diet_info)
 
 def check_with_user(rdata, var, label):
     if var == True:
@@ -565,4 +576,5 @@ if __name__ == "__main__":
     # check_vegan_recipes()
     # is_recipe_parsed_for_diets("Califo rnia Chicken")
     # manually_annotate_recipes()
-    find_recipe('8606/ranch-crispy-chicken/')
+    # find_recipe('8606/ranch-crispy-chicken/')
+    get_recipes_not_annotated_for_diets()
