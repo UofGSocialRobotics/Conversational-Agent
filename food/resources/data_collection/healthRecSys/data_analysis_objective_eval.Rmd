@@ -42,6 +42,10 @@ mydata$reco_mode <- ifelse((mydata$cond=="cond_pref" | mydata$cond=="cond_pref_w
 
 mydata_no_tags <- subset(mydata, tags_mode == "no-tags")
 mydata_tags <- subset(mydata, tags_mode == "tags")
+
+attach(mydata)
+df_tags <- mydata[which(tags_mode=="tags"),]
+detach(mydata)
 ```
 
 Number of mydata points per condition
@@ -115,6 +119,31 @@ education_mydata <- aggregate(cbind(count = education) ~ education,
 
 ddply(education_mydata, .(), mutate, pct = count / sum(count) * 100)
 ```
+
+Participants who said they are influenced by the health tag
+```{r}
+healthInfluence_mydata <- aggregate(cbind(count = health_influence) ~ health_influence, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(healthInfluence_mydata, .(), mutate, pct = count / sum(count) * 100)
+
+healthInfluence_mydata <- aggregate(cbind(count = health_influence) ~ health_influence, 
+          data = df_tags, 
+          FUN = function(x){NROW(x)})
+
+ddply(healthInfluence_mydata, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Participants who say healthiness info is important
+```{r}
+tmp_mydata <- aggregate(cbind(count = health_important_str) ~ health_important_str, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp_mydata, .(), mutate, pct = count / sum(count) * 100)
+```
+
 
 # Pilot exploration
 
@@ -338,11 +367,89 @@ interaction.plot(x.factor     = mydata$tags_mode,
 
 # Other influences?
 
+## Healthiness data
+
+Is self-reported score of healthiness correlated with Esther&Larry's healthiness score?
 ```{r}
 cor(mydata$healthy_food_num, mydata$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
+```
+
+Is any of the healthiness data correlated with health score eval?
+```{r}
 cor(mydata$health.score.eval, mydata$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
 cor(mydata$health.score.eval, mydata$healthy_food_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$health_influence, method = c("pearson", "kendall", "spearman"))
 ```
+
+## Investigating the I-am-influenced-by-healthiness-tag variable effects
+
+In the tags_mode=tags condition, what happens with people who say they are influenced by healthiness info vs other people?
+```{r}
+model = lm(f1 ~ health_influence_str, data = df_tags)
+print(Anova(model, type = 'II'))
+model = lm(health.score.eval ~ health_influence_str, data = df_tags)
+print(Anova(model, type = 'II'))
+model = lm(satisfaction ~ health_influence_str, data = df_tags)
+print(Anova(model, type = 'II'))
+model = lm(easiness ~ health_influence_str, data = df_tags)
+print(Anova(model, type = 'II'))
+
+#model = lm(health.score.eval ~ tags_mode + reco_mode + health_influence_str + tags_mode:reco_mode + tags_mode:health_influence_str + reco_mode:health_influence_str, data = mydata)
+#print(Anova(model, type = 'II'))
+```
+
+Plot dependant variables eval for people who say they are influenced by healthiness info vs other people
+```{r}
+ggplot(data=df_tags, aes(x=health_influence_str, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_influence_str, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_influence_str, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_influence_str, y=easiness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+Is this I-am-influenced-by-healthiness-tag variable correlated to any demographics?
+```{r}
+cor(df_tags$health_influence_int, df_tags$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$healthy_food_num, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$health.score.learn.pref, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$health_important_int, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$age, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$education_num, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$employment_num, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health_influence_int, df_tags$freq_cook_num, method = c("pearson", "kendall", "spearman"))
+```
+
+## Investigating the I-consider-healthiness-important-when-looking-for-a-recipe variable effects
+In the tags_mode=tags condition, what happens with people who say they consider healthiness info important vs other people?
+```{r}
+model = lm(f1 ~ health_important_str, data = mydata)
+print(Anova(model, type = 'II'))
+model = lm(health.score.eval ~ health_important_str, data = mydata)
+print(Anova(model, type = 'II'))
+model = lm(satisfaction ~ health_important_str, data = mydata)
+print(Anova(model, type = 'II'))
+model = lm(easiness ~ health_important_str, data = mydata)
+print(Anova(model, type = 'II'))
+
+#model = lm(health.score.eval ~ tags_mode + reco_mode + health_influence_str + tags_mode:reco_mode + tags_mode:health_influence_str + reco_mode:health_influence_str, data = mydata)
+#print(Anova(model, type = 'II'))
+```
+
+Plot dependant variables for people who say healthiness info is important vs other people
+```{r}
+ggplot(data=mydata, aes(x=health_important_str, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=health_important_str, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=health_important_str, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=health_important_str, y=easiness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+```{r}
+ggplot(data=df_tags, aes(x=health_important_str, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_important_str, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_important_str, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=df_tags, aes(x=health_important_str, y=easiness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+## Other demographics
 
 Any correlation of demographics variables with Health Score (eval)?
 ```{r}

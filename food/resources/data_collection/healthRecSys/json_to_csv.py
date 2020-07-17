@@ -78,13 +78,13 @@ def json_to_csv():
     if not STARS_EVAL:
         first_row += [
                  'recipes eval', 'health score eval', "normed health score eval", '# rightClicks eval', 'right-clicked recipes eval',
-                 'satisfaction', 'easiness', 'influence_most', 'rs_satisfaction_comments']
+                 'satisfaction', 'easiness', 'influence_most', 'health_influence_int', 'health_influence_str', 'rs_satisfaction_comments']
     else:
         first_row += ['ratings', "ratings avg", 'ratings std']
 
     if DEMOGRAPHICS:
         first_row += [
-                 'whats_important', 'free_comment',
+                 'whats_important', 'health_important_str', 'health_important_int', 'free_comment',
                  'healthiness habits', 'normed healthiness habits', 'fillingness habits', 'normed fillingness habits',
                  'age', 'gender', 'gender_num', 'from', 'where', 'education', 'education_num', 'employment', 'employment_num', 'freq_cook', 'freq_cook_num', 'healthy_food', "healthy_food_num",
                  'duration', "duration_sec", 'duration_AMT_sec'
@@ -200,6 +200,12 @@ def json_to_csv():
                             if DEMOGRAPHICS:
                                 rs_post_study_anwers = data_collection['rs_post_study_answers']
                                 whats_important = rs_post_study_anwers['whats_important']
+                                if 'input_healthy' in whats_important:
+                                    health_important_str = 'yes'
+                                    health_important_int = 1
+                                else:
+                                    health_important_str = 'no'
+                                    health_important_int = 0
                                 free_comment = rs_post_study_anwers['free_comment']
 
                             if not STARS_EVAL:
@@ -207,14 +213,20 @@ def json_to_csv():
                                 satisfaction = rs_satisfaction['satisfaction']
                                 easiness = rs_satisfaction['easiness']
                                 influence = rs_satisfaction['influence']
+                                health_influence_int = 1 if "health" in influence.lower().strip() else 0
+                                health_influence_str = 'yes' if "health" in influence.lower().strip() else 'no'
                                 rs_satisfaction_comments = rs_satisfaction['comments']
                                 csv_row.append(satisfaction)
                                 csv_row.append(easiness)
                                 csv_row.append(influence)
+                                csv_row.append(health_influence_int)
+                                csv_row.append(health_influence_str)
                                 csv_row.append(rs_satisfaction_comments)
 
                             if DEMOGRAPHICS:
                                 csv_row.append(whats_important)
+                                csv_row.append(health_important_str)
+                                csv_row.append(health_important_int)
                                 csv_row.append(free_comment)
 
 
@@ -464,7 +476,7 @@ def compute_similarities_reco_vs_selected_recipes():
 
 
 if __name__ == "__main__":
-    # json_to_csv()
+    json_to_csv()
     # json_to_csv_health_scores_reco()
     # count_reasons_for_choice()
-    compute_similarities_reco_vs_selected_recipes()
+    # compute_similarities_reco_vs_selected_recipes()
