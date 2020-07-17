@@ -2,7 +2,12 @@ import csv
 import json
 import operator
 import statistics
+import pandas as pd
+import numpy as np
 from termcolor import colored
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.stats import ttest_ind
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 import helper_functions as helper
@@ -402,8 +407,50 @@ def count_reasons_for_choice():
         print(elt[0], elt[1])
 
 
+def compute_similarities_reco_vs_selected_recipes():
+    with open(dir+'all.csv') as csvfile:
+
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        row_count = 0
+        sim_scores_reco = list()
+        sim_scores_selected = list()
+        for row in csv_reader:
+            if row_count > 0:
+                reco_list = row[21].replace('[',"").replace(']',')').replace("'","").split(",")
+                selected_list = row[29].replace('[',"").replace(']',')').replace("'","").split(",")
+                reco_list = [x.split('/')[1].replace('-', ' ') for x in reco_list]
+                selected_list = [x.split('/')[1].replace('-', ' ') for x in selected_list]
+                # print(reco_list, selected_list)
+
+                count_vectorizer = CountVectorizer(stop_words='english')
+                count_vectorizer = CountVectorizer()
+                sparse_matrix_reco = count_vectorizer.fit_transform(reco_list)
+                doc_term_matrix_reco = sparse_matrix_reco.todense()
+                df_reco = pd.DataFrame(doc_term_matrix_reco, columns=count_vectorizer.get_feature_names())
+                cosine_matrix_reco = cosine_similarity(df_reco, df_reco)
+
+                sparse_matrix_selected = count_vectorizer.fit_transform(selected_list)
+                doc_term_matrix_selected = sparse_matrix_selected.todense()
+                df_selected = pd.DataFrame(doc_term_matrix_selected, columns=count_vectorizer.get_feature_names())
+                cosine_matrix_selected = cosine_similarity(df_selected, df_selected)
+
+                sim_scores_reco.append(np.mean(cosine_matrix_reco))
+                sim_scores_selected.append(np.mean(cosine_matrix_selected))
+
+                # print(np.mean(cosine_matrix_reco), np.mean(cosine_matrix_selected))
+
+
+            row_count += 1
+
+        print("Avg sim selected:", statistics.mean(sim_scores_selected), statistics.stdev(sim_scores_selected))
+        print("Avg sim reco:", statistics.mean(sim_scores_reco), statistics.stdev((sim_scores_reco)))
+
+        t, p = ttest_ind(sim_scores_selected, sim_scores_reco, equal_var=False)
+        print(t, p)
+
 
 if __name__ == "__main__":
-    json_to_csv()
+    # json_to_csv()
     # json_to_csv_health_scores_reco()
     # count_reasons_for_choice()
+    compute_similarities_reco_vs_selected_recipes()
