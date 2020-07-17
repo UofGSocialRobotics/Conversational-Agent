@@ -414,20 +414,27 @@ def compute_similarities_reco_vs_selected_recipes():
         row_count = 0
         sim_scores_reco = list()
         sim_scores_selected = list()
+        sim_scores_learpref = list()
         for row in csv_reader:
             if row_count > 0:
                 reco_list = row[21].replace('[',"").replace(']',')').replace("'","").split(",")
+                learn_pref_list = row[24].replace('[',"").replace(']',')').replace("'","").split(",")
                 selected_list = row[29].replace('[',"").replace(']',')').replace("'","").split(",")
                 reco_list = [x.split('/')[1].replace('-', ' ') for x in reco_list]
                 selected_list = [x.split('/')[1].replace('-', ' ') for x in selected_list]
-                # print(reco_list, selected_list)
+                # print(reco_list)
 
                 count_vectorizer = CountVectorizer(stop_words='english')
-                count_vectorizer = CountVectorizer()
+                # count_vectorizer = CountVectorizer()
                 sparse_matrix_reco = count_vectorizer.fit_transform(reco_list)
                 doc_term_matrix_reco = sparse_matrix_reco.todense()
                 df_reco = pd.DataFrame(doc_term_matrix_reco, columns=count_vectorizer.get_feature_names())
                 cosine_matrix_reco = cosine_similarity(df_reco, df_reco)
+
+                sparse_matrix_learnpref = count_vectorizer.fit_transform(learn_pref_list)
+                doc_term_matrix_learnpref = sparse_matrix_learnpref.todense()
+                df_learnpref = pd.DataFrame(doc_term_matrix_learnpref, columns=count_vectorizer.get_feature_names())
+                cosine_matrix_learnpref = cosine_similarity(df_learnpref, df_learnpref)
 
                 sparse_matrix_selected = count_vectorizer.fit_transform(selected_list)
                 doc_term_matrix_selected = sparse_matrix_selected.todense()
@@ -436,16 +443,23 @@ def compute_similarities_reco_vs_selected_recipes():
 
                 sim_scores_reco.append(np.mean(cosine_matrix_reco))
                 sim_scores_selected.append(np.mean(cosine_matrix_selected))
+                sim_scores_learpref.append(np.mean(cosine_matrix_learnpref))
 
-                # print(np.mean(cosine_matrix_reco), np.mean(cosine_matrix_selected))
+                print(np.mean(cosine_matrix_reco), np.mean(cosine_matrix_selected))
 
 
             row_count += 1
 
+        print("Avg sim learn pref:", statistics.mean(sim_scores_learpref), statistics.stdev(sim_scores_learpref))
         print("Avg sim selected:", statistics.mean(sim_scores_selected), statistics.stdev(sim_scores_selected))
         print("Avg sim reco:", statistics.mean(sim_scores_reco), statistics.stdev((sim_scores_reco)))
 
+        print("Significant difference between recommended VS selected (eval) recipes?")
         t, p = ttest_ind(sim_scores_selected, sim_scores_reco, equal_var=False)
+        print(t, p)
+
+        print("Significant difference between select in learn-pref  VS selected (eval) recipes?")
+        t, p = ttest_ind(sim_scores_selected, sim_scores_learpref, equal_var=False)
         print(t, p)
 
 
