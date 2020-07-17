@@ -161,21 +161,29 @@ ggplot(data=mydata, aes(x=file, y=reco.health.score)) + geom_boxplot() +
 F1
 ```{r}
 ddply(mydata,~cond,summarise,mean=mean(f1),sd=sd(f1))
+ddply(mydata,~reco_mode,summarise,mean=mean(f1),sd=sd(f1))
+ddply(mydata,~tags_mode,summarise,mean=mean(f1),sd=sd(f1))
 ```
 
 Health score (eval)
 ```{r}
 ddply(mydata,~cond,summarise,mean=mean(health.score.eval),sd=sd(health.score.eval))
+ddply(mydata,~reco_mode,summarise,mean=mean(health.score.eval),sd=sd(health.score.eval))
+ddply(mydata,~tags_mode,summarise,mean=mean(health.score.eval),sd=sd(health.score.eval))
 ```
 
 Satisfaction
 ```{r}
 ddply(mydata,~cond,summarise,mean=mean(satisfaction),sd=sd(satisfaction))
+ddply(mydata,~reco_mode,summarise,mean=mean(satisfaction),sd=sd(satisfaction))
+ddply(mydata,~tags_mode,summarise,mean=mean(satisfaction),sd=sd(satisfaction))
 ```
 
 Easiness
 ```{r}
 ddply(mydata,~cond,summarise,mean=mean(easiness),sd=sd(easiness))
+ddply(mydata,~reco_mode,summarise,mean=mean(easiness),sd=sd(easiness))
+ddply(mydata,~tags_mode,summarise,mean=mean(easiness),sd=sd(easiness))
 ```
 
 # Plots
