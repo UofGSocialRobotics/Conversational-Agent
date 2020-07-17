@@ -449,6 +449,17 @@ ggplot(data=df_tags, aes(x=health_important_str, y=satisfaction)) + geom_boxplot
 ggplot(data=df_tags, aes(x=health_important_str, y=easiness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
 ```
 
+## Are people able to auto-assess healthiness / evaluate healthiness of recipes?
+
+Check for correlations of healthiness demographics data with healthiness score in learn pref phase
+```{r}
+cor(mydata$health.score.learn.pref, mydata$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.learn.pref, mydata$healthy_food_num, method = c("pearson", "kendall", "spearman"))
+cor(df_tags$health.score.learn.pref, df_tags$health_influence_int, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.learn.pref, mydata$health_important_int, method = c("pearson", "kendall", "spearman"))
+```
+
+
 ## Other demographics
 
 Any correlation of demographics variables with Health Score (eval)?
