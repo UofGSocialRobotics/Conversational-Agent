@@ -1,16 +1,19 @@
 ---
-title: "healthRecSys data analysis objective eval"
-output: html_document
+title: "healthRecSys mydata analysis objective eval"
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
 # Set up
 
-Set working directory and load the data. Filter out data from Prolific.
+Set working directory and load the mydata. Filter out mydata from Prolific.
 ```{r ggpubr}
 setwd("/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/data_collection/healthRecSys")
 ##library(ggpubr)
-data <- read.csv("all.csv")
-data_reco_health_scores <- read.csv("reco_health_scores.csv")
+mydata <- read.csv("all.csv")
+mydata_reco_health_scores <- read.csv("reco_health_scores.csv")
 ```
 
 Libraries
@@ -26,25 +29,25 @@ library(lsmeans)
 library(ggpubr)
 ```
 
-Check the data
+Check the mydata
 ```{r}
-View(data)
-View(data_reco_health_scores)
+View(mydata)
+View(mydata_reco_health_scores)
 ```
 
 Create groups for Tags-Mode and Reco-Mode conditions
 ```{r}
-data$tags_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_health" | data$cond=="cond_hybrid"), 'no-tags', 'tags')
-data$reco_mode <- ifelse((data$cond=="cond_pref" | data$cond=="cond_pref_with_tags"), 'pref', ifelse((data$cond=="cond_health" | data$cond=="cond_health_with_tags"), 'health', 'hybrid'))
+mydata$tags_mode <- ifelse((mydata$cond=="cond_pref" | mydata$cond=="cond_health" | mydata$cond=="cond_hybrid"), 'no-tags', 'tags')
+mydata$reco_mode <- ifelse((mydata$cond=="cond_pref" | mydata$cond=="cond_pref_with_tags"), 'pref', ifelse((mydata$cond=="cond_health" | mydata$cond=="cond_health_with_tags"), 'health', 'hybrid'))
 
-data_no_tags <- subset(data, tags_mode == "no-tags")
-data_tags <- subset(data, tags_mode == "tags")
+mydata_no_tags <- subset(mydata, tags_mode == "no-tags")
+mydata_tags <- subset(mydata, tags_mode == "tags")
 ```
 
-Number of data points per condition
+Number of mydata points per condition
 ```{r}
 aggregate(cbind(count = cond) ~ cond, 
-          data = data, 
+          data = mydata, 
           FUN = function(x){NROW(x)})
 ```
 
@@ -52,9 +55,9 @@ aggregate(cbind(count = cond) ~ cond,
 
 Duration
 ```{r}
-data_age <- data["duration_sec"]
-data_long <- gather(data_age, factor_key=TRUE)
-data_long%>% group_by(key)%>%
+mydata_age <- mydata["duration_sec"]
+mydata_long <- gather(mydata_age, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
   summarise(mean= mean(value), 
             sd= sd(value), 
             max = max(value),
@@ -62,12 +65,22 @@ data_long%>% group_by(key)%>%
             upperQ = quantile(value,0.75),
             lowerQ = quantile(value,0.25))
 ```
+Duration AMT
+```{r}
+mydata_age <- mydata["duration_AMT_sec"]
+mydata_long <- gather(mydata_age, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
+  summarise(mean= mean(value), 
+            sd= sd(value), 
+            max = max(value),
+            min = min(value))
+```
 
 Age
 ```{r}
-data_age <- data["age"]
-data_long <- gather(data_age, factor_key=TRUE)
-data_long%>% group_by(key)%>%
+mydata_age <- mydata["age"]
+mydata_long <- gather(mydata_age, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
   summarise(mean= mean(value), 
             sd= sd(value), 
             max = max(value),
@@ -78,99 +91,121 @@ data_long%>% group_by(key)%>%
 
 Number of male / female
 ```{r}
-gender_data <- aggregate(cbind(count = gender) ~ gender, 
-          data = data, 
+gender_mydata <- aggregate(cbind(count = gender) ~ gender, 
+          data = mydata, 
           FUN = function(x){NROW(x)})
 
-ddply(gender_data, .(), mutate, pct = count / sum(count) * 100)
+ddply(gender_mydata, .(), mutate, pct = count / sum(count) * 100)
 ```
 
 Employment category
 ```{r}
-employment_data <- aggregate(cbind(count = employment) ~ employment, 
-          data = data, 
+employment_mydata <- aggregate(cbind(count = employment) ~ employment, 
+          data = mydata, 
           FUN = function(x){NROW(x)})
 
-ddply(employment_data, .(), mutate, pct = count / sum(count) * 100)
+ddply(employment_mydata, .(), mutate, pct = count / sum(count) * 100)
 ```
 
 Education level
 ```{r}
-education_data <- aggregate(cbind(count = education) ~ education, 
-          data = data, 
+education_mydata <- aggregate(cbind(count = education) ~ education, 
+          data = mydata, 
           FUN = function(x){NROW(x)})
 
-ddply(education_data, .(), mutate, pct = count / sum(count) * 100)
+ddply(education_mydata, .(), mutate, pct = count / sum(count) * 100)
 ```
 
 # Pilot exploration
 
 Mean of health values of recommended recipes for hybrid pilots and mean of f1
 ```{r}
-aggregate(data[, "reco.health.score"], list(data$file), mean)
-aggregate(data[, "f1"], list(data$file), mean)
+aggregate(mydata[, "reco.health.score"], list(mydata$file), mean)
+aggregate(mydata[, "f1"], list(mydata$file), mean)
 ```
 
 Median of health values of recommended recipes for hybrid pilots
 ```{r}
-aggregate(data_reco_health_scores[, "reco.health.score"], list(data_reco_health_scores$file), mean)
-aggregate(data_reco_health_scores[, "reco.health.score"], list(data_reco_health_scores$file), median)
+aggregate(mydata_reco_health_scores[, "reco.health.score"], list(mydata_reco_health_scores$file), mean)
+aggregate(mydata_reco_health_scores[, "reco.health.score"], list(mydata_reco_health_scores$file), median)
 ```
 
 Get most commun element
 ```{r}
-as.table(with(data_reco_health_scores,by(reco.health.score,file,function(xx)names(which.max(table(xx))))))
+as.table(with(mydata_reco_health_scores,by(reco.health.score,file,function(xx)names(which.max(table(xx))))))
 ```
 
 
 Plot F1, HealthScore (eval) and Satisfaction for all conditions we tried in pilot
 ```{r}
-ggplot(data=data, aes(x=file, y=health.score.eval)) + geom_boxplot() +
+ggplot(data=mydata, aes(x=file, y=health.score.eval)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
-ggplot(data=data, aes(x=file, y=AUC)) + geom_boxplot() +
+ggplot(data=mydata, aes(x=file, y=AUC)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
-ggplot(data=data, aes(x=file, y=f1)) + geom_boxplot() +
+ggplot(data=mydata, aes(x=file, y=f1)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
-ggplot(data=data, aes(x=file, y=reco.health.score)) + geom_boxplot() +
+ggplot(data=mydata, aes(x=file, y=reco.health.score)) + geom_boxplot() +
   stat_summary(fun.y=mean, colour="darkred", geom="point", 
                shape=18, size=3,show.legend = FALSE) 
 
+```
+
+# Descriptive stats
+
+F1
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(f1),sd=sd(f1))
+```
+
+Health score (eval)
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(health.score.eval),sd=sd(health.score.eval))
+```
+
+Satisfaction
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(satisfaction),sd=sd(satisfaction))
+```
+
+Easiness
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(easiness),sd=sd(easiness))
 ```
 
 # Plots
 
 Plot F1, HealthScore (eval) and Satisfaction for Tags-Mode (tags VS no-tags)
 ```{r}
-# ggboxplot(data, x = "tags_mode", y = "f1", ylab = "F1")
-ggplot(data=data, aes(x=tags_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=tags_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=tags_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-# ggboxplot(data, x = "tags_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
-# ggboxplot(data, x = "tags_mode", y = "satisfaction", ylab = "Satisfaction")
+# ggboxplot(mydata, x = "tags_mode", y = "f1", ylab = "F1")
+ggplot(data=mydata, aes(x=tags_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=tags_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=tags_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+# ggboxplot(mydata, x = "tags_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+# ggboxplot(mydata, x = "tags_mode", y = "satisfaction", ylab = "Satisfaction")
 ```
 
 Plot F1, HealthScore (eval) and Satisfaction for Reco-Mode (pref vs health vs hybrid)
 ```{r}
-ggplot(data=data, aes(x=reco_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=reco_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=reco_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-# ggboxplot(data, x = "reco_mode", y = "f1", ylab = "F1")
-# ggboxplot(data, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
-# ggboxplot(data, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
+ggplot(data=mydata, aes(x=reco_mode, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=reco_mode, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=reco_mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+# ggboxplot(mydata, x = "reco_mode", y = "f1", ylab = "F1")
+# ggboxplot(mydata, x = "reco_mode", y = "health.score.eval", ylab = "HealthScore (eval)")
+# ggboxplot(mydata, x = "reco_mode", y = "satisfaction", ylab = "Satisfaction")
 ```
 
 Plot F1, HealthScore (eval), HealthScore (reco) and Satisfaction for all conditions
 ```{r}
-ggplot(data=data, aes(x=cond, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=reco.health.score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
-ggplot(data=data, aes(x=cond, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=cond, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=cond, y=health.score.eval)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=cond, y=reco.health.score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=cond, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
 ```
 
 
@@ -181,28 +216,28 @@ ggplot(data=data, aes(x=cond, y=satisfaction)) + geom_boxplot() + stat_summary(f
 
 MANOVA for F1 scores
 ```{r}
-model = lm(f1 ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+model = lm(f1 ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
 print(Anova(model, type = 'II'))
 ```
 
 Post hoc 
 ```{r}
 lsmeans(model,
-        pairwise ~ tags_mode + reco_mode,
+        pairwise ~ reco_mode,
         adjust="bonferroni")
 ```
 
 ### When Tags-Mode = no-tags, cheking for main effect of Reco-Mode
 ANOVA for F1
 ```{r}
-model_no_tags = lm(f1 ~ reco_mode, data = data_no_tags)
+model_no_tags = lm(f1 ~ reco_mode, data = mydata_no_tags)
 print(Anova(model_no_tags, type = 'II'))
 ```
 
 ### When Tags-Mode = tags, cheking for main effect of Reco-Mode
 ANOVA for F1s
 ```{r}
-model_tags = lm(f1 ~ reco_mode, data = data_tags)
+model_tags = lm(f1 ~ reco_mode, data = mydata_tags)
 print(Anova(model_tags, type = 'II'))
 ```
 
@@ -210,7 +245,7 @@ print(Anova(model_tags, type = 'II'))
 
 MANOVA for health scores (eval)
 ```{r}
-model = lm(health.score.eval ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+model = lm(health.score.eval ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
 print(Anova(model, type = 'II'))
 ```
 
@@ -218,7 +253,7 @@ print(Anova(model, type = 'II'))
 
 ANOVA for satisfaction
 ```{r}
-model = lm(satisfaction ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+model = lm(satisfaction ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
 print(Anova(model, type = 'II'))
 ```
 
@@ -226,7 +261,7 @@ print(Anova(model, type = 'II'))
 
 ANOVA for easiness
 ```{r}
-model = lm(easiness ~ tags_mode + reco_mode + tags_mode:reco_mode, data = data)
+model = lm(easiness ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
 print(Anova(model, type = 'II'))
 ```
 
@@ -234,14 +269,14 @@ print(Anova(model, type = 'II'))
 # Interaction plot
 
 ```{r}
-interaction.plot(x.factor     = data$tags_mode,
-                 trace.factor = data$reco_mode,
-                 response     = data$f1,
+interaction.plot(x.factor     = mydata$tags_mode,
+                 trace.factor = mydata$reco_mode,
+                 response     = mydata$f1,
                  fun = mean,
                  type="b",
                  col=c("black","red","green"),  ##  Colors for levels of trace var.
                  pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
-                 fixed=TRUE,                    ##  Order by factor order in data
+                 fixed=TRUE,                    ##  Order by factor order in mydata
                  leg.bty = "o",
                  xlab = "Reco-Mode",
                  ylab = "F1",
@@ -249,42 +284,42 @@ interaction.plot(x.factor     = data$tags_mode,
                  trace.label = "Tag-Mode")
 
 
-interaction.plot(x.factor     = data$tags_mode,
-                 trace.factor = data$reco_mode,
-                 response     = data$health.score.eval,
+interaction.plot(x.factor     = mydata$tags_mode,
+                 trace.factor = mydata$reco_mode,
+                 response     = mydata$health.score.eval,
                  fun = mean,
                  type="b",
                  col=c("black","red","green"),  ##  Colors for levels of trace var.
                  pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
-                 fixed=TRUE,                    ##  Order by factor order in data
+                 fixed=TRUE,                    ##  Order by factor order in mydata
                  leg.bty = "o",
                  xlab = "Reco-Mode",
                  ylab = "Health Score Eval",
                  #ylim = c(3.7,4.9),
                  trace.label = "Tag-Mode")
 
-interaction.plot(x.factor     = data$tags_mode,
-                 trace.factor = data$reco_mode,
-                 response     = data$satisfaction,
+interaction.plot(x.factor     = mydata$tags_mode,
+                 trace.factor = mydata$reco_mode,
+                 response     = mydata$satisfaction,
                  fun = mean,
                  type="b",
                  col=c("black","red","green"),  ##  Colors for levels of trace var.
                  pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
-                 fixed=TRUE,                    ##  Order by factor order in data
+                 fixed=TRUE,                    ##  Order by factor order in mydata
                  leg.bty = "o",
                  xlab = "Reco-Mode",
                  ylab = "Satisfaction",
                  #ylim = c(3.7,4.9),
                  trace.label = "Tag-Mode")
 
-interaction.plot(x.factor     = data$tags_mode,
-                 trace.factor = data$reco_mode,
-                 response     = data$easiness,
+interaction.plot(x.factor     = mydata$tags_mode,
+                 trace.factor = mydata$reco_mode,
+                 response     = mydata$easiness,
                  fun = mean,
                  type="b",
                  col=c("black","red","green"),  ##  Colors for levels of trace var.
                  pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
-                 fixed=TRUE,                    ##  Order by factor order in data
+                 fixed=TRUE,                    ##  Order by factor order in mydata
                  leg.bty = "o",
                  xlab = "Reco-Mode",
                  ylab = "Easiness",
@@ -296,28 +331,28 @@ interaction.plot(x.factor     = data$tags_mode,
 # Other influences?
 
 ```{r}
-cor(data$healthy_food_num, data$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
-cor(data$health.score.eval, data$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
-cor(data$health.score.eval, data$healthy_food_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$healthy_food_num, mydata$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$healthy_food_num, method = c("pearson", "kendall", "spearman"))
 ```
 
 Any correlation of demographics variables with Health Score (eval)?
 ```{r}
-cor(data$health.score.eval, data$age, method = c("pearson", "kendall", "spearman"))
-cor(data$health.score.eval, data$education_num, method = c("pearson", "kendall", "spearman"))
-cor(data$health.score.eval, data$employment_num, method = c("pearson", "kendall", "spearman"))
-cor(data$health.score.eval, data$freq_cook_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$age, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$education_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$employment_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$health.score.eval, mydata$freq_cook_num, method = c("pearson", "kendall", "spearman"))
 ```
 
 Any correlation of demographics variables with satisfaction?
 ```{r}
-cor(data$satisfaction, data$age, method = c("pearson", "kendall", "spearman"))
-cor(data$satisfaction, data$education_num, method = c("pearson", "kendall", "spearman"))
-cor(data$satisfaction, data$employment_num, method = c("pearson", "kendall", "spearman"))
-cor(data$satisfaction, data$freq_cook_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$satisfaction, mydata$age, method = c("pearson", "kendall", "spearman"))
+cor(mydata$satisfaction, mydata$education_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$satisfaction, mydata$employment_num, method = c("pearson", "kendall", "spearman"))
+cor(mydata$satisfaction, mydata$freq_cook_num, method = c("pearson", "kendall", "spearman"))
 ```
 
 Regression
 ```{r}
-summary(lm(formula = f1 ~ freq_cook + healthy_food_num + normed.healthiness.habits + age + employment_num + gender_num + education_num, data = data))
+summary(lm(formula = f1 ~ freq_cook + healthy_food_num + normed.healthiness.habits + age + employment_num + gender_num + education_num, data = mydata))
 ```
