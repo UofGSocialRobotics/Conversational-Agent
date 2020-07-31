@@ -368,7 +368,7 @@ interaction.plot(x.factor     = mydata$tags_mode,
 
 # Other influences?
 
-## Healthiness data
+## Correlation of different ealthiness data?
 
 Is self-reported score of healthiness correlated with Esther&Larry's healthiness score?
 ```{r}
@@ -389,25 +389,112 @@ cor(mydata$health.score.eval, mydata$healthy_food_num, method = c("pearson", "ke
 cor(mydata$health.score.eval, mydata$health_influence_int, method = c("pearson", "kendall", "spearman"))
 ```
 
-## Investigating the I-am-influenced-by-healthiness-tag variable effects
+## In recommended recipes sample, exploring difference of healthiness of selected / not selected recipes
+
+### Descriptive stats
+
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(diff_TP_FP_health_score, na.rm=TRUE),sd=sd(diff_TP_FP_health_score, na.rm=TRUE))
+ddply(mydata,~reco_mode,summarise,mean=mean(diff_TP_FP_health_score, na.rm=TRUE),sd=sd(diff_TP_FP_health_score, na.rm=TRUE))
+ddply(mydata,~tags_mode,summarise,mean=mean(diff_TP_FP_health_score, na.rm=TRUE),sd=sd(diff_TP_FP_health_score, na.rm=TRUE))
+```
+
+### Plots
+```{r}
+ggplot(data=mydata, aes(x=reco_mode, y=diff_TP_FP_health_score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=tags_mode, y=diff_TP_FP_health_score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+Observations:
+
+* Tags-Mode:
+  * In no-tag mode, the health score of the recommended chosen recipes vs the recommended not-chosen recipes does not seem to be different
+  * In health-tag mode, it seems like, from the recommended recipes, people choose the healthiest recipes (score(TP)<score(FP))
+* Reco-Mode:
+  * In hybrid-reco, people tend to choose the least healthy recipes from the sample we recommend (score(TP)>score(FP)).
+  * In pref-reco, people tend to choose the healthiest recipes from those we recommend (score(TP)<score(FP)).
+
+
+### Inferential stats
+```{r}
+t.test(mydata$TP_health_score, mydata$FP_heath_score, paired=TRUE, na.action=na.omit)
+
+
+model = lm(diff_TP_FP_health_score ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+```
+
+Post hoc 
+```{r}
+lsmeans(model,
+        pairwise ~ tags_mode,
+        adjust="bonferroni")
+```
+
+## Exploring difference of healthiness of selected / recommended recipes
+
+### Descriptive stats
+
+```{r}
+ddply(mydata,~cond,summarise,mean=mean(diff_eval_reco_health_score),sd=sd(diff_eval_reco_health_score))
+ddply(mydata,~reco_mode,summarise,mean=mean(diff_eval_reco_health_score),sd=sd(diff_eval_reco_health_score))
+ddply(mydata,~tags_mode,summarise,mean=mean(diff_eval_reco_health_score),sd=sd(diff_eval_reco_health_score))
+```
+
+### Plots
+```{r}
+ggplot(data=mydata, aes(x=reco_mode, y=diff_eval_reco_health_score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+ggplot(data=mydata, aes(x=tags_mode, y=diff_eval_reco_health_score)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+interaction.plot(x.factor     = mydata$tags_mode,
+                 trace.factor = mydata$reco_mode,
+                 response     = mydata$diff_eval_reco_health_score,
+                 fun = mean,
+                 type="b",
+                 col=c("black","red","green"),  ##  Colors for levels of trace var.
+                 pch=c(19, 17, 15),             ##  Symbols for levels of trace var.
+                 fixed=TRUE,                    ##  Order by factor order in mydata
+                 leg.bty = "o",
+                 xlab = "Reco-Mode",
+                 ylab = "Difference of health score between selected and recommended recipes",
+                 #ylim = c(3.7,4.9),
+                 trace.label = "Tag-Mode")
+```
+
+Observations for Reco-Mode:
+* in the pref-reco condition, even though people may select recipes other than those we recommend, the recipes they select have approximately the same level of healthiness than those we recommended --> the recommender system kind of picks up on a healthiness-level preference from the user and recommends corresponding recipes.
+* in the hybrid-reco and health reco, people choose recipes that are less healthy than those we recommend (score(eval)>score(reco)). This difference is much larger in the health-reco mode than in the hybrid-reco mode.
+
+### Inferential stats
+```{r}
+model = lm(diff_eval_reco_health_score ~ tags_mode + reco_mode + tags_mode:reco_mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+```
+
+## Investigating the I-am-influenced-by-healthiness-tag (free text) variable effects
+
+### Descriptive stats
+```{r}
+ddply(df_tags,~health_influence_str,summarise,mean=mean(f1),sd=sd(f1))
+ddply(df_tags,~health_influence_str,summarise,mean=mean(health.score.learn.pref),sd=sd(health.score.learn.pref))
+ddply(df_tags,~health_influence_str,summarise,mean=mean(health.score.eval),sd=sd(health.score.eval))
+ddply(df_tags,~health_influence_str,summarise,mean=mean(satisfaction),sd=sd(satisfaction))
+ddply(df_tags,~health_influence_str,summarise,mean=mean(easiness),sd=sd(easiness))
+```
+
+### T Tests
 
 In the tags_mode=tags condition, what happens with people who say they are influenced by healthiness info (in free text answer) vs other people?
 ```{r}
-model = lm(f1 ~ health_influence_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(health.score.learn.pref ~ health_influence_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(health.score.eval ~ health_influence_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(satisfaction ~ health_influence_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(easiness ~ health_influence_str, data = df_tags)
-print(Anova(model, type = 'II'))
-
-#model = lm(health.score.eval ~ tags_mode + reco_mode + health_influence_str + tags_mode:reco_mode + tags_mode:health_influence_str + reco_mode:health_influence_str, data = mydata)
-#print(Anova(model, type = 'II'))
+t.test(f1 ~ health_influence_str, data = df_tags)
+t.test(health.score.learn.pref ~ health_influence_str, data = df_tags)
+t.test(health.score.eval ~ health_influence_str, data = df_tags)
+t.test(satisfaction ~ health_influence_str, data = df_tags)
+t.test(easiness ~ health_influence_str, data = df_tags)
 ```
 
+### Plots 
 Plot dependant variables eval for people who say they are influenced by healthiness info vs other people
 ```{r}
 ggplot(data=df_tags, aes(x=health_influence_str, y=f1)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
@@ -417,6 +504,7 @@ ggplot(data=df_tags, aes(x=health_influence_str, y=satisfaction)) + geom_boxplot
 ggplot(data=df_tags, aes(x=health_influence_str, y=easiness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
 ```
 
+### Correlations with other demogrpahics?
 Is this I-am-influenced-by-healthiness-tag variable correlated to any demographics?
 ```{r}
 cor(df_tags$health_influence_int, df_tags$normed.healthiness.habits, method = c("pearson", "kendall", "spearman"))
@@ -434,19 +522,11 @@ cor(df_tags$health_influence_int, df_tags$freq_cook_num, method = c("pearson", "
 ### Tag condition
 In the tags_mode=tags condition, what happens with people who say they consider healthiness info important vs other people?
 ```{r}
-model = lm(f1 ~ health_important_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(health.score.learn.pref ~ health_important_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(health.score.eval ~ health_important_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(satisfaction ~ health_important_str, data = df_tags)
-print(Anova(model, type = 'II'))
-model = lm(easiness ~ health_important_str, data = df_tags)
-print(Anova(model, type = 'II'))
-
-#model = lm(health.score.eval ~ tags_mode + reco_mode + health_influence_str + tags_mode:reco_mode + tags_mode:health_influence_str + reco_mode:health_influence_str, data = mydata)
-#print(Anova(model, type = 'II'))
+t.test(f1 ~ health_important_str, data = df_tags)
+t.test(health.score.learn.pref ~ health_important_str, data = df_tags)
+t.test(health.score.eval ~ health_important_str, data = df_tags)
+t.test(satisfaction ~ health_important_str, data = df_tags)
+t.test(easiness ~ health_important_str, data = df_tags)
 ```
 
 
@@ -463,19 +543,11 @@ ggplot(data=df_tags, aes(x=health_important_str, y=easiness)) + geom_boxplot() +
 
 What about for all participants?
 ```{r}
-model = lm(f1 ~ health_important_str, data = mydata)
-print(Anova(model, type = 'II'))
-model = lm(health.score.learn.pref ~ health_important_str, data = mydata)
-print(Anova(model, type = 'II'))
-model = lm(health.score.eval ~ health_important_str, data = mydata)
-print(Anova(model, type = 'II'))
-model = lm(satisfaction ~ health_important_str, data = mydata)
-print(Anova(model, type = 'II'))
-model = lm(easiness ~ health_important_str, data = mydata)
-print(Anova(model, type = 'II'))
-
-#model = lm(health.score.eval ~ tags_mode + reco_mode + health_influence_str + tags_mode:reco_mode + tags_mode:health_influence_str + reco_mode:health_influence_str, data = mydata)
-#print(Anova(model, type = 'II'))
+t.test(f1 ~ health_important_str, data = mydata)
+t.test(health.score.learn.pref ~ health_important_str, data = mydata)
+t.test(health.score.eval ~ health_important_str, data = mydata)
+t.test(satisfaction ~ health_important_str, data = mydata)
+t.test(easiness ~ health_important_str, data = mydata)
 ```
 
 Plot dependant variables for people who say healthiness info is important vs other people
@@ -526,4 +598,9 @@ cor(mydata$satisfaction, mydata$freq_cook_num, method = c("pearson", "kendall", 
 Regression
 ```{r}
 summary(lm(formula = f1 ~ freq_cook + healthy_food_num + normed.healthiness.habits + age + employment_num + gender_num + education_num, data = mydata))
+```
+
+# Similarity of selected vs recommended recipes
+```{r}
+t.test(mydata$sim_score_reco, mydata$sim_score_eval, paired=TRUE)
 ```

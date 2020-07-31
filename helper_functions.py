@@ -4,6 +4,7 @@ import random
 import re
 import copy
 import inflect
+import collections
 from termcolor import colored
 
 def write_json(file_name,dictionary):
@@ -208,3 +209,6 @@ def diff_list(l1, l2):
 def any_elt_of_L1_in_L2(L1, L2):
     res = [i for i in L1 if i in L2]
     return (len(res) > 0)
+
+def duplicates_in_lists(l):
+    return [item for item, count in collections.Counter(l).items() if count > 1]

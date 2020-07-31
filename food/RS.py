@@ -16,7 +16,7 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 from food.healthy_RS import HealthyRS
 
 N_RECIPES_TO_DISPLAY_PREFGATHERING = 30
-N_RECIPES_TO_DISPLAY_EVAL = 5
+N_RECIPES_TO_DISPLAY_EVAL = 30
 N_RECIPES_TO_RECOMMEND = 5
 N_RECIPES_PROFILE = 5
 

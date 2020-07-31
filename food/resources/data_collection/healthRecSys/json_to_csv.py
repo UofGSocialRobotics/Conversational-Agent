@@ -78,6 +78,9 @@ def json_to_csv():
     if not STARS_EVAL:
         first_row += [
                  'recipes eval', 'health score eval', "normed health score eval", '# rightClicks eval', 'right-clicked recipes eval',
+                 'TP_list', 'TP_health_score', 'FP_list', 'FP_heath_score', 'diff_TP_FP_health_score', 'diff_eval_reco_health_score']
+
+        first_row += [
                  'satisfaction', 'easiness', 'influence_most', 'health_influence_int', 'health_influence_str', 'rs_satisfaction_comments']
     else:
         first_row += ['ratings', "ratings avg", 'ratings std']
@@ -137,7 +140,7 @@ def json_to_csv():
                         amtid = data_collection['amt_id']['value']
                         start_time = parse_datetime(data_collection['amt_id']['datetime'])
 
-                        # print(amtid)
+                        print(amtid)
                         if "lucile" in amtid or amtid in BLOCKED_WORKERS:
                             pass
                         else:
@@ -166,9 +169,12 @@ def json_to_csv():
                                 for key, val in tmp_list:
                                     csv_row.append(val)
                                     if key == 'reco':
-                                        csv_row.append(get_avg_healthScore(val))
+                                        reco_list = val
+                                        health_score_reco = get_avg_healthScore(val)
+                                        csv_row.append(health_score_reco)
 
 
+                            eval_phase = False
                             for dialog_unit in data["dialog"].values():
                                 # print(dialog_unit)
                                 if isinstance(dialog_unit, dict) and "liked_recipes" in dialog_unit.keys() and isinstance(dialog_unit['liked_recipes'], list):
@@ -186,6 +192,38 @@ def json_to_csv():
                                     csv_row.append(helper.norm_value_between_zero_and_one(avg_healthScore, 4, 12))
                                     csv_row.append(n_right_clicks)
                                     csv_row.append(right_clicked_recipes)
+
+                                    if eval_phase:
+                                        health_score_eval = avg_healthScore
+
+                                        eval_selection_list = liked_recipes
+                                        long_list = eval_selection_list + reco_list
+                                        TP_list = helper.duplicates_in_lists(long_list)
+                                        csv_row.append(TP_list.__str__())
+                                        if TP_list:
+                                            health_score_TP = get_avg_healthScore(TP_list)
+                                        else:
+                                            health_score_TP = None
+                                        csv_row.append(health_score_TP)
+
+                                        FP_list = helper.diff_list(reco_list, TP_list)
+                                        csv_row.append(FP_list)
+                                        if FP_list:
+                                            health_score_FP = get_avg_healthScore(FP_list)
+                                        else:
+                                            health_score_FP = None
+                                        csv_row.append(health_score_FP)
+
+                                        if health_score_FP and health_score_TP:
+                                            diff_health_score_TP_FP = health_score_TP - health_score_FP
+                                        else:
+                                            diff_health_score_TP_FP = None
+                                        csv_row.append(diff_health_score_TP_FP)
+                                        csv_row.append(health_score_eval - health_score_reco)
+
+                                    else:
+                                        eval_phase = True
+
 
                             if STARS_EVAL:
                                 recipe_ratings = data_collection['recipe_ratings']
@@ -305,7 +343,12 @@ def json_to_csv():
                     # except:
                     #     pass
 
+    save_as_csv(csv_all_rows)
 
+    compute_similarities_reco_vs_selected_recipes()
+
+
+def save_as_csv(csv_all_rows):
     if ANONYMIZED:
         anon_str = "_anonymized"
     else:
@@ -389,6 +432,8 @@ def count_reasons_for_choice():
 
             content = json.load(fjson)
 
+            n_reasons_per_user = list()
+
             for key_user, data in content["Sessions"].items():
                 if isinstance(data, dict) and 'rs_eval_data' in data.keys() and isinstance(data["data_collection"]['rs_satisfaction'], dict) and isinstance(data["data_collection"]['demographics'], dict):
 
@@ -408,18 +453,29 @@ def count_reasons_for_choice():
                             if elt not in reasons_dict.keys():
                                 reasons_dict[elt] = 0
                             reasons_dict[elt] += 1
+                        n_reasons_per_user.append(len(whats_important))
 
+    print("---------\n\nN toal users:")
     print(total_user)
     l = list()
     for k, v in reasons_dict.items():
         l.append((k,v))
 
+    print("---------\n\n")
     l = sorted(l, key=operator.itemgetter(1), reverse=True)
     for elt in l:
         print(elt[0], elt[1])
 
+    print("---------\n\n")
+    print("Users selected on average %.2f (median=%d, std=%.2f, min=%d, max=%d \ total possibilities = 19) different elements that are important to them" % (statistics.mean(n_reasons_per_user), statistics.median(n_reasons_per_user), statistics.stdev(n_reasons_per_user), min(n_reasons_per_user), max(n_reasons_per_user)))
+
+
+
+
 
 def compute_similarities_reco_vs_selected_recipes():
+    new_rows_list = list()
+
     with open(dir+'all.csv') as csvfile:
 
         csv_reader = csv.reader(csvfile, delimiter=',')
@@ -428,6 +484,12 @@ def compute_similarities_reco_vs_selected_recipes():
         sim_scores_selected = list()
         sim_scores_learpref = list()
         for row in csv_reader:
+
+            new_row = row
+
+            if row_count == 0:
+                new_row += ['sim_score_reco', 'sim_score_learn_pref', 'sim_score_eval']
+
             if row_count > 0:
                 reco_list = row[21].replace('[',"").replace(']',')').replace("'","").split(",")
                 learn_pref_list = row[24].replace('[',"").replace(']',')').replace("'","").split(",")
@@ -453,14 +515,24 @@ def compute_similarities_reco_vs_selected_recipes():
                 df_selected = pd.DataFrame(doc_term_matrix_selected, columns=count_vectorizer.get_feature_names())
                 cosine_matrix_selected = cosine_similarity(df_selected, df_selected)
 
-                sim_scores_reco.append(np.mean(cosine_matrix_reco))
-                sim_scores_selected.append(np.mean(cosine_matrix_selected))
-                sim_scores_learpref.append(np.mean(cosine_matrix_learnpref))
+                sim_reco = np.mean(cosine_matrix_reco)
+                sim_scores_reco.append(sim_reco)
+                new_row.append(sim_reco)
 
-                print(np.mean(cosine_matrix_reco), np.mean(cosine_matrix_selected))
+                sim_learn_pref = np.mean(cosine_matrix_learnpref)
+                sim_scores_learpref.append(sim_learn_pref)
+                new_row.append(sim_learn_pref)
+
+                sim_eval = np.mean(cosine_matrix_selected)
+                sim_scores_selected.append(sim_eval)
+                new_row.append(sim_eval)
+
+                # print(np.mean(cosine_matrix_reco), np.mean(cosine_matrix_selected))
 
 
             row_count += 1
+            new_rows_list.append(new_row)
+
 
         print("Avg sim learn pref:", statistics.mean(sim_scores_learpref), statistics.stdev(sim_scores_learpref))
         print("Avg sim selected:", statistics.mean(sim_scores_selected), statistics.stdev(sim_scores_selected))
@@ -475,8 +547,10 @@ def compute_similarities_reco_vs_selected_recipes():
         print(t, p)
 
 
+    save_as_csv(new_rows_list)
+
+
 if __name__ == "__main__":
     json_to_csv()
     # json_to_csv_health_scores_reco()
     # count_reasons_for_choice()
-    # compute_similarities_reco_vs_selected_recipes()
