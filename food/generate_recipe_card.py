@@ -1,5 +1,6 @@
 import json
 import random
+import math
 import urllib.request
 
 
@@ -138,6 +139,22 @@ def ingredients_in_column(ingredients_list):
         col3 = ingredients_list[limit_col2:]
     return col1, col2, col3
 
+
+def replace_fractions(line):
+    line = line.replace("¾", "&frac34;")
+    line = line.replace("½", "&frac12;")
+    line = line.replace("¼", "&frac14;")
+    line = line.replace("⅓", "&frac13;")
+    line = line.replace("⅔", "&frac23;")
+    line = line.replace("⅛", "&frac18;")
+    line = line.replace("⅜", "&frac38;")
+    line = line.replace("⅕", "&frac15;")
+    line = line.replace("⅖", "&frac25;")
+    line = line.replace("⅗", "&frac35;")
+    line = line.replace("⅝", "&frac58;")
+    return line
+
+
 def generate_card(i, rdata):
     urllib.request.urlretrieve(rdata["image_url"], "food/resources/img/recipe_img/"+i.__str__()+".jpg")
 
@@ -154,27 +171,38 @@ def generate_card(i, rdata):
     if "Servings" in rdata["time_info"].keys():
         servings = rdata["time_info"]["Servings"]
 
+    fsa_score = rdata['FSAscore']
+    if fsa_score < 7:
+        color = "green"
+    elif fsa_score > 9:
+        color = "red"
+    else:
+        color = "orange"
+
+    rating = rdata["rating"]
+    n_stars_int = math.floor(rating)
+    reminder = rating - n_stars_int
+    half_star = False
+    if 0.25 <= reminder < 0.75:
+        half_star = True
+    elif reminder >= 0.75:
+        n_stars_int += 1
+
+    n_stars_pic = "stars" + n_stars_int.__str__()
+    if half_star:
+        n_stars_pic += ".5"
+    n_stars_pic += ".png"
+
+
     col1, col2, col3 = ingredients_in_column(rdata['ingredients'])
     col1 = "<span>" + "</span><br><br><span>".join(col1) + "</span>"
-    col1 = col1.replace("¾", "3/4")
-    col1 = col1.replace("½", "&frac12")
-    col1 = col1.replace("¼", "1/4")
-    col1 = col1.replace("⅓", "1/3")
-    col1 = col1.replace("⅛", "1/8")
+    col1 = replace_fractions(col1)
     col2 = "<span>" + "</span><br><br><span>".join(col2) + "</span>"
-    col2 = col2.replace("¾", "3/4")
-    col2 = col2.replace("½", "&frac12")
-    col2 = col2.replace("¼", "1/4")
-    col2 = col2.replace("⅓", "1/3")
-    col2 = col2.replace("⅛", "1/8")
+    col2 = replace_fractions(col2)
     col3 = "<span>" + "</span><br><br><span>".join(col3) + "</span>"
-    col3 = col3.replace("¾", "3/4")
-    col3 = col3.replace("½", "&frac12")
-    col3 = col3.replace("¼", "1/4")
-    col3 = col3.replace("⅓", "1/3")
-    col3 = col3.replace("⅛", "1/8")
+    col3 = replace_fractions(col3)
 
-    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + "stars3.5.png" + html4 + "healthiness_green.png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + rdata['description'] + html12
+    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "healthiness_"+ color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + rdata['description'] + html12
 
     f = open("food/resources/img/recipe_card/recipe"+i.__str__()+".html", "w")
     f.write(html_page)
