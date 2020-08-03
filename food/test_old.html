@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<!--<head>-->
+<!--    <title id="tab_title"></title>-->
+    <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/chat.css" rel="stylesheet" id="bootstrap-css">
+    <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/avatar.css" rel="stylesheet" id="error_css">
+<!--</head>-->
+
+<!--<body onload="on_load();">-->
+<!--    <div class="site-wrapper">-->
+<!--        <main>-->
+<!--            <div id="main_text" style="display:block;">-->
+                <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/rs_eval.css" rel="stylesheet" id="rs-css">
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--                <div id="questionnaire_wrap">-->
+<!--                    <div class="wrap">-->
+<!--                        <div id="rs_eval_div" style="display:block;">-->
+                            <center>
+                                <div class="recipe_grid">
+                                    <div class="recipe_img"><img class="center-cropped-large"
+                                            src="https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fimages.media-allrecipes.com%2Fuserphotos%2F272744.jpg"
+                                            id="recipe_img" height="250px"></div>
+                                    <div class="recipe_title">
+                                        <center><span id="recipe_title">Slow Cooker Chicken Taco Soup</span><br><br>
+                                        </center>
+                                    </div>
+                                    <div class="recipe_rating" id="recipe_rating_id">
+<!--                                        <div class="rating"><span class="rating-number" id="rating-number">(56)</span>-->
+<!--                                            <span id="r1_stars"><span class="emptystar">☆</span><span-->
+<!--                                                    class="halfstar">☆</span><span class="fullstar">☆</span><span-->
+<!--                                                    class="fullstar">☆</span><span class="fullstar">☆</span></span>-->
+<!--                                        </div>-->
+                                        <img
+                                            src="/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/img/stars3.5.png"
+                                            id="rstars_img" height="20px">
+                                    </div>
+                                    <div class="recipe_tag" id="recipe_tag_div"><img src="/Users/lucileca/Desktop/Conversational_Agent/client_side/img/healthiness_red.png"
+                                            width="150px" id="health_tag_img"></div>
+                                    <div class="recipe_time"><b>Prep:</b>
+                                        <span id="prep_time"> </span><br><br><b>Cook:</b>
+                                        <span id="cook_time"> </span><br><br><b>Total:</b>
+                                        <span id="total_time"> </span></div>
+                                    <div class="recipe_servings"><b>Servings:</b>
+                                        <span id="servings"> </span></div>
+                                    <div class="recipe_description" id="recipe_description">You can call this soup or
+                                        chili, but either way it is wonderful! This recipe is also very adaptable to
+                                        your personal taste. I recommend using Bill Echols' Taco Seasoning from this
+                                        website. Serve topped with shredded Cheddar cheese, a dollop of sour cream, and
+                                        crushed tortilla chips, if you like. I hope you enjoy!</div>
+                                    <div class="recipe_ingredients"><br><span
+                                            style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;font-size: 26px;">Ingredients</span><br><br>
+                                        <div class="grid_ingredients">
+                                            <div class="grid_ingredients_item" id="ingredients_col1"></div>
+                                            <div class="grid_ingredients_item" id="ingredients_col2"></div>
+                                            <div class="grid_ingredients_item" id="ingredients_col3"></div>
+                                        </div>
+                                    </div><br>
+                                    <div class="recipe_instructions"><br><span
+                                            style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;font-size: 26px;">Steps</span>
+                                        <div id="instructions_list"></div>
+                                    </div>
+                                </div>
+                            </center>
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </main>-->
+<!--    </div>-->
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="chat.js"></script>
+<!--</body>-->
+
+</html>
+
+
