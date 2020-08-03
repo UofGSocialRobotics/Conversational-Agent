@@ -1,7 +1,5 @@
-import fpdf
 import json
 import random
-import imgkit
 import urllib.request
 
 
@@ -9,11 +7,6 @@ import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
 img_dir_path = 'food/resources/recipes_DB/allrecipes/images/'
 
-
-imgkit.from_url('/Users/lucileca/Desktop/Conversational_Agent/server_side/food/test.html', 'food/out.jpg', options={"enable-local-file-access": ""})
-
-class HTML2PDF(fpdf.FPDF, fpdf.HTMLMixin):
-    pass
 
 html1 = """
 <!DOCTYPE html>
@@ -26,7 +19,7 @@ html1 = """
     <center>
         <div class="recipe_grid">
             <div class="recipe_img"><img class="center-cropped-large"
-                    src="
+                    src="/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/img/recipe_img/
 """
 # add picture
 html2 = """
@@ -47,7 +40,7 @@ html3 = """
 # add stars image
 html4 = """
                     "
-                    id="rstars_img" height="20px">
+                    id="rstars_img" height="25px">
             </div>
             <div class="recipe_tag" id="recipe_tag_div"><img src="/Users/lucileca/Desktop/Conversational_Agent/client_side/img/
 """
@@ -74,13 +67,13 @@ html8 = """
             <div class="recipe_servings"><b>Servings:
 """
 # add servings
-html7 = """
+html8_bis = """
                 </b>
                 <span id="servings"> </span></div>
             <div class="recipe_description" id="recipe_description">
 """
 # add description
-html8 = """
+html8_ter = """
             </div>
             <div class="recipe_ingredients"><br><span
                     style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;font-size: 26px;">Ingredients</span><br><br>
@@ -107,7 +100,7 @@ html11 = """
                 <br>
                 <br>
 """
-# add description
+# add steps
 html12 = """
             </div>
         </div>
@@ -120,23 +113,80 @@ html12 = """
 </html>
 """
 
-def generate_card(rid, rdata):
-    txt_ingredients = "\n".join(rdata['ingredients'])
-    txt_instructions = "\n".join(rdata['instructions'])
+def ingredients_in_column(ingredients_list):
+    n_ingredients = len(ingredients_list)
+    n_ingredients_by_col, remainder = n_ingredients // 3, n_ingredients % 3
+    extra_in_col_1 = 0 if remainder == 0 else 1
+    extra_in_col_2 = 1 if remainder == 2 else 0
+    limit_col1 = n_ingredients_by_col+extra_in_col_1
+    limit_col2 = n_ingredients_by_col*2+extra_in_col_1+extra_in_col_2
+    if limit_col1 == 1:
+        col1 = [ingredients_list[0]]
+    else:
+        col1 = ingredients_list[:limit_col1]
+    if (limit_col2 - limit_col1) == 1:
+        col2 = [ingredients_list[limit_col1]]
+    elif (limit_col2 - limit_col1) == 0:
+        col2 = []
+    else:
+        col2 = ingredients_list[limit_col1:limit_col2]
+    if n_ingredients - limit_col2 == 1:
+        col3 = [ingredients_list[limit_col2]]
+    elif n_ingredients - limit_col2 == 0:
+        col3 = []
+    else:
+        col3 = ingredients_list[limit_col2:]
+    return col1, col2, col3
 
-    pdf = HTML2PDF()
-    pdf.add_page()
-    pdf.write_html(html1)
-    pdf.set_font("Helvetica", size=12)
-    pdf.write_html(html2)
-    pdf.output("simple_demo.pdf")
+def generate_card(i, rdata):
+    urllib.request.urlretrieve(rdata["image_url"], "food/resources/img/recipe_img/"+i.__str__()+".jpg")
+
+    prep_time = "--"
+    if "Prep" in rdata["time_info"].keys():
+        prep_time = rdata["time_info"]["Prep"]
+    cook_time = "--"
+    if "Cook" in rdata["time_info"].keys():
+        cook_time = rdata["time_info"]["Cook"]
+    total_time = "--"
+    if "Total" in rdata["time_info"].keys():
+        total_time = rdata["time_info"]["Total"]
+    servings = "--"
+    if "Servings" in rdata["time_info"].keys():
+        servings = rdata["time_info"]["Servings"]
+
+    col1, col2, col3 = ingredients_in_column(rdata['ingredients'])
+    col1 = "<span>" + "</span><br><br><span>".join(col1) + "</span>"
+    col1 = col1.replace("¾", "3/4")
+    col1 = col1.replace("½", "&frac12")
+    col1 = col1.replace("¼", "1/4")
+    col1 = col1.replace("⅓", "1/3")
+    col1 = col1.replace("⅛", "1/8")
+    col2 = "<span>" + "</span><br><br><span>".join(col2) + "</span>"
+    col2 = col2.replace("¾", "3/4")
+    col2 = col2.replace("½", "&frac12")
+    col2 = col2.replace("¼", "1/4")
+    col2 = col2.replace("⅓", "1/3")
+    col2 = col2.replace("⅛", "1/8")
+    col3 = "<span>" + "</span><br><br><span>".join(col3) + "</span>"
+    col3 = col3.replace("¾", "3/4")
+    col3 = col3.replace("½", "&frac12")
+    col3 = col3.replace("¼", "1/4")
+    col3 = col3.replace("⅓", "1/3")
+    col3 = col3.replace("⅛", "1/8")
+
+    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + "stars3.5.png" + html4 + "healthiness_green.png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + rdata['description'] + html12
+
+    f = open("food/resources/img/recipe_card/recipe"+i.__str__()+".html", "w")
+    f.write(html_page)
+    f.close()
 
 
 if __name__ == "__main__":
-    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
-        content = json.load(fjson)
-    random_recipe_id = random.choice(list(content["recipes_data"].keys()))
-    random_recipe_data = content['recipes_data'][random_recipe_id]
-    generate_card(random_recipe_id, random_recipe_data)
+    for i in range(10):
+        with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+            content = json.load(fjson)
+        random_recipe_id = random.choice(list(content["recipes_data"].keys()))
+        random_recipe_data = content['recipes_data'][random_recipe_id]
+        generate_card(i, random_recipe_data)
 
 
