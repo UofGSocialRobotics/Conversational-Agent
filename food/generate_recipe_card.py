@@ -152,6 +152,12 @@ def replace_fractions(line):
     line = line.replace("⅖", "&frac25;")
     line = line.replace("⅗", "&frac35;")
     line = line.replace("⅝", "&frac58;")
+    line = line.replace(" ", " ")
+    line = line.replace("™", "&trade;")
+    line = line.replace("®", "&reg;")
+    line = line.replace("©", "&copy")
+    line = line.replace("℃", "&#8451;")
+    line = line.replace("℉", "&#8457;")
     return line
 
 
@@ -202,7 +208,9 @@ def generate_card(i, rdata):
     col3 = "<span>" + "</span><br><br><span>".join(col3) + "</span>"
     col3 = replace_fractions(col3)
 
-    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "healthiness_"+ color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + rdata['description'] + html12
+    instructions = "<ol><li>" + "</li><br><li>".join(rdata['instructions']) + "</li></ol>"
+
+    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "healthiness_"+ color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + instructions + html12
 
     f = open("food/resources/img/recipe_card/recipe"+i.__str__()+".html", "w")
     f.write(html_page)
