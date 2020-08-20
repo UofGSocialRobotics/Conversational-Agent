@@ -124,18 +124,27 @@ class DM(wbc.WhiteBoardClient):
         # Todo: Second interaction
         # Todo: no then request(sweet/bitter/...)
 
-        # if "SA" in topic:
-        #     self.from_SA = msg
-        if "NLU" in topic:
+        if "HealthDiagnostic" in topic:
+            self.user_model[fc.food_scores_trait] = msg[fc.food_scores_trait]
+
+
+        if "RS" in topic:
+            subject = msg["msg"]
+            if subject == fc.reco_recipes:
+                self.current_recipe_list = msg[fc.recipes_list]
+                recipe = self.current_recipe_list[0]
+                self.already_recommended_recipe_list.append(recipe[fc.title])
+                self.n_recommendations += 1
+                
+                # self.next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
+                self.move_state_and_publish_for_NLG(recipe=recipe, recipe_ingredients_list=recipe[fc.ingredients])
+
+        elif "NLU" in topic:
             self.from_NLU = msg
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
-        elif "HealthDiagnostic" in topic:
-            self.user_model[fc.food_scores_trait] = msg[fc.food_scores_trait]
-        # Wait for both SA and NLU messages before sending something back to the whiteboard
-        if self.from_NLU: # and self.from_SA:
 
             recipe = None
-            next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
+            self.next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
             if fc.inform_food in self.currState:
                 liked_bool = self.check_if_previous_recommendation_is_liked()
@@ -222,41 +231,51 @@ class DM(wbc.WhiteBoardClient):
             elif fc.time in self.currState:
                 if fc.no in self.from_NLU[fc.intent]:
                     self.user_model[fc.liked_features].append(fc.time)
-            if fc.inform_food in next_state:
-                # if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
-                #     next_state = "bye"
-                # else:
-                self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
-
-                if self.current_recipe_list:
-                    recipe = self.current_recipe_list[0]
-                    # print(recipe)
-                    recipe_ingredients_list = self.get_all_ingredients(recipe)
-                    msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
-                    msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
-                    msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
-                    print(colored(msg, "magenta"))
-                    log.info(msg)
-                    self.already_recommended_recipe_list.append(recipe[fc.title])
-                    self.n_recommendations += 1
+            wait_for_reco = False
+            if fc.inform_food in self.next_state:
+                if self.n_recommendations == fc.MAX_RECOMMENDATIONS:
+                    self.next_state = "bye"
                 else:
-                    next_state = "bye"
+                    # self.recommend(use_local_recipe_DB=self.use_local_recipe_DB)
+                    wait_for_reco = True
+                    self.ask_for_reco()
+
+                # if self.current_recipe_list:
+                #     recipe = self.current_recipe_list[0]
+                #     # print(recipe)
+                #     recipe_ingredients_list = self.get_all_ingredients(recipe)
+                #     msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
+                #     msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
+                #     msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
+                #     print(colored(msg, "magenta"))
+                #     log.info(msg)
+                #     self.already_recommended_recipe_list.append(recipe[fc.title])
+                #     self.n_recommendations += 1
+                # else:
+                #     self.next_state = "bye"
 
             # if the user comes back
-            if next_state == 'greeting' and (self.user_model['liked_food']):
-                next_state = "greet_back"
+            if self.next_state == 'greeting' and (self.user_model['liked_food']):
+                self.next_state = "greet_back"
 
-            # saves the user model at the end of the interaction
-            if next_state == 'bye' and fc.SAVE_USER_MODEL:
-                self.save_user_model()
-                self.save_reco_data()
+            if not wait_for_reco:
+                self.move_state_and_publish_for_NLG(recipe=recipe, recipe_ingredients_list=recipe_ingredients_list)
 
-            prev_state = self.currState
-            self.currState = next_state
-            new_msg = self.msg_to_json(next_state, self.from_NLU, prev_state, self.user_model, recipe, recipe_ingredients_list)
-            self.from_NLU = None
-            self.publish({"current_state": self.currState}, topic=self.publishes[4])
-            self.publish(new_msg, topic=self.publishes[0])
+
+    def move_state_and_publish_for_NLG(self, recipe, recipe_ingredients_list):
+
+        # saves the user model at the end of the interaction
+        if self.next_state == 'bye' and fc.SAVE_USER_MODEL:
+            self.save_user_model()
+            self.save_reco_data()
+
+        prev_state = self.currState
+        self.currState = self.next_state
+        new_msg = self.msg_to_json(self.next_state, self.from_NLU, prev_state, self.user_model, recipe, recipe_ingredients_list)
+        self.from_NLU = None
+        self.publish({"current_state": self.currState}, topic=self.publishes[4])
+        self.publish(new_msg, topic=self.publishes[0])
+
 
     def add_disliked_foods(self, foods_list):
         self.user_model[fc.disliked_food] += foods_list
@@ -407,52 +426,64 @@ class DM(wbc.WhiteBoardClient):
         self.current_recipe_list = new_recipe_list
         # print("len(self.current_recipe_list)", len(self.current_recipe_list))
 
-    def recommend(self, use_local_recipe_DB=False):
 
-        if not self.list_sorted_ingredients:
-            self.sort_ingredients_to_recommend()
+    def ask_for_reco(self):
+        self.publish({"msg": fc.set_user_profile,
+                      fc.liked_food: self.user_model[fc.liked_food],
+                      fc.disliked_food: self.user_model[fc.disliked_food],
+                      fc.diet: self.user_model[fc.diet],
+                      fc.time_to_cook: self.user_model[fc.time_to_cook]}, topic=self.publishes[5])
 
-        # TODO: need to change that and update it each time?
-        if self.requery_because_got_new_required_food:
-            self.current_recipe_list = list()
+        self.publish({"msg": fc.get_reco}, topic=self.publishes[5])
 
-        if not self.current_recipe_list:
-            if use_local_recipe_DB:
-                with open(fc.LOCAL_FOOD_DB, 'rb') as f:
-                    content = json.load(f)
-                    self.current_recipe_list = list()
-                    for i in range(fc.N_RESULTS):
-                        self.current_recipe_list.append(content[i])
-                    # self.current_recipe_list = json.load(f)
-                    if self.current_recipe_list:
-                        for recipe in self.current_recipe_list:
-                            recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
-                            recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
-                            recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
-                            recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
-                            recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
-                        self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
-            else:
-                got_recipe = False
-                n_trials = 0
-                while got_recipe is False and n_trials < 3:
-                    n_trials += 1
-                    log.debug("Trial #%d" % n_trials)
-                    got_recipe = self.get_recipe_list_with_spoonacular_in_no_more_than_two_seconds()
+    # def recommend(self, use_local_recipe_DB=False):
 
-        self.remove_already_recommended_or_disliked_recipes()
-
-        #Sending recipes to NLG so that NLG can start fetching recipe cards
-        thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))
-        thread.setDaemon(True)
-        thread.start()
-
-        # log.debug((food_options,recommended_food,recipe_list))
-        if not self.current_recipe_list:
-            log.critical(colored("No recipe to recommend","cyan"))
+        # if not self.list_sorted_ingredients:
+        #     self.sort_ingredients_to_recommend()
+        #
+        # # TODO: need to change that and update it each time?
+        # if self.requery_because_got_new_required_food:
+        #     self.current_recipe_list = list()
+        #
+        # if not self.current_recipe_list:
+        #     if use_local_recipe_DB:
+        #         with open(fc.LOCAL_FOOD_DB, 'rb') as f:
+        #             content = json.load(f)
+        #             self.current_recipe_list = list()
+        #             for i in range(fc.N_RESULTS):
+        #                 self.current_recipe_list.append(content[i])
+        #             # self.current_recipe_list = json.load(f)
+        #             if self.current_recipe_list:
+        #                 for recipe in self.current_recipe_list:
+        #                     recipe[fc.normed_health_score] = recipe['healthScore'] / float(100) * 2 - 1
+        #                     recipe[fc.health_score_distance_to_user_s_health_value] = abs(recipe[fc.normed_health_score] - self.food_values[fc.healthiness])
+        #                     recipe[fc.normed_fillingness_score] = helper.norm_value_between_minus_one_and_one(self.get_calories(recipe), fc.CALORIES_MIN, fc.CALORIES_MAX)
+        #                     recipe[fc.fillingness_score_distance_to_user_s_fillingness_value] = abs(recipe[fc.normed_fillingness_score] - self.food_values[fc.food_fillingness])
+        #                     recipe[fc.average_health_fillingness_distance] = (recipe[fc.health_score_distance_to_user_s_health_value] + recipe[fc.fillingness_score_distance_to_user_s_fillingness_value]) / float(2)
+        #                 self.current_recipe_list = sorted(self.current_recipe_list, key=lambda i: i[fc.average_health_fillingness_distance])
+        #     else:
+        #         got_recipe = False
+        #         n_trials = 0
+        #         while got_recipe is False and n_trials < 3:
+        #             n_trials += 1
+        #             log.debug("Trial #%d" % n_trials)
+        #             got_recipe = self.get_recipe_list_with_spoonacular_in_no_more_than_two_seconds()
+        #
+        # self.remove_already_recommended_or_disliked_recipes()
+        #
+        # #Sending recipes to NLG so that NLG can start fetching recipe cards
+        # thread = threading.Thread(name=self.name+"/RecipeCards", target=self.publish, args=(self.current_recipe_list, self.publishes[1],))
+        # thread.setDaemon(True)
+        # thread.start()
+        #
+        # # log.debug((food_options,recommended_food,recipe_list))
+        # if not self.current_recipe_list:
+        #     log.critical(colored("No recipe to recommend","cyan"))
 
 
     def get_desired_food_values(self):
+
+
         trait_values = self.user_model[fc.food_scores_trait] 
         state_values = self.user_model[fc.food_scores_state]
         if not trait_values:

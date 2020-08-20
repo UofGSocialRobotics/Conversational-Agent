@@ -1,8 +1,10 @@
 import json
+import os
 import random
 import math
 import urllib.request
 
+from termcolor import colored
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
 
@@ -42,6 +44,9 @@ html3 = """
 html4 = """
                     "
                     id="rstars_img" height="25px">
+"""
+# add number of ratings
+html4_bis = """
             </div>
             <div class="recipe_tag" id="recipe_tag_div"><img src="/Users/lucileca/Desktop/Conversational_Agent/client_side/img/
 """
@@ -161,8 +166,8 @@ def replace_fractions(line):
     return line
 
 
-def generate_card(i, rdata):
-    urllib.request.urlretrieve(rdata["image_url"], "food/resources/img/recipe_img/"+i.__str__()+".jpg")
+def generate_card(rid, rdata):
+    urllib.request.urlretrieve(rdata["image_url"], "food/resources/img/recipe_img/"+rid+".jpg")
 
     prep_time = "--"
     if "Prep" in rdata["time_info"].keys():
@@ -210,19 +215,43 @@ def generate_card(i, rdata):
 
     instructions = "<ol><li>" + "</li><br><li>".join(rdata['instructions']) + "</li></ol>"
 
-    html_page = html1 + i.__str__()+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "healthiness_"+ color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + rdata['description'] + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + instructions + html12
+    description = rdata['description'] if 'description' in rdata.keys() else ""
+    if not description:
+        print(colored("WARNING: no description for %s" % rid, "red"))
 
-    f = open("food/resources/img/recipe_card/recipe"+i.__str__()+".html", "w")
+    html_page = html1 + rid+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "(64)" + html4_bis + "healthiness_" + color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + description + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + instructions + html12
+
+    f = open("food/resources/img/recipe_card/"+rid+".html", "w")
     f.write(html_page)
     f.close()
 
 
+def generate_all_recipe_cards():
+
+    # for i in range(10):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+        for rid, rdata in content['recipes_data'].items():
+            print(rid)
+            rid_noSlash = rid.replace("/", "")
+            try:
+                generate_card(rid_noSlash, rdata)
+            except KeyError:
+                print(colored("Error with %s" % rid, 'red'))
+
+
+def rename_recipe_cards():
+
+    mypath = 'food/resources/img/recipe_card/'
+
+    onlyfiles = [f for f in os.listdir(mypath) if os.path.isfile(mypath + f)]
+    for f in onlyfiles:
+        if "-full.png" in f:
+            # print(f)
+            new_name = f.replace("fileUserslucilecaDesktopConversational_Agentserver_sidefoodresourcesimgrecipe_card", "")
+            os.rename(mypath+f,mypath+new_name)
+
+
+
 if __name__ == "__main__":
-    for i in range(10):
-        with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
-            content = json.load(fjson)
-        random_recipe_id = random.choice(list(content["recipes_data"].keys()))
-        random_recipe_data = content['recipes_data'][random_recipe_id]
-        generate_card(i, random_recipe_data)
-
-
+    rename_recipe_cards()

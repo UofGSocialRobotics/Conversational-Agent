@@ -167,6 +167,9 @@ class ServerUsingFirebase:
                         message_to_send[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
                         print(message_to_send)
                         self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
+                        if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
+                            self.firebase_root_ref.put_here(message_to_send['recipe_card'])
+                            print(colored("trying to push card", 'red'))
                         # publish for data collection
                         topic = config.MSG_DATACOL_IN + client_id
                         for_data_col = dict()

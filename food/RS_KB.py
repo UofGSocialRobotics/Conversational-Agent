@@ -23,6 +23,24 @@ class KBRSModule(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, "KBRS" + clientid, subscribes, publishes, resp_time)
 
         self.client_id = clientid
+        self.kbrs = KBRS()
+
+
+    def treat_message(self, msg, topic):
+        super(KBRSModule, self).treat_message(msg, topic)
+
+        subject = msg['msg']
+        if subject == fc.set_user_profile:
+            self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
+        elif subject == fc.get_reco:
+            reco = self.get_reco(n_reco=5)
+            self.publish({"msg": fc.reco_recipes, fc.recipes_list: reco})
+
+    def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val):
+        self.kbrs.set_user_profile(liked_ingredients=liked_ingredients, disliked_ingredients=disliked_ingredients, diets=diets, time_val=time_val)
+
+    def get_reco(self, n_reco):
+        return self.kbrs.get_recipe_for_user(n_recipes=n_reco)
 
 
 class KBRS():
@@ -42,7 +60,7 @@ class KBRS():
         ## Number of recipes in the list that best fit the required criteria; i.e. when we don't recipes matching one of the user's constraints, we put the ones that match in the beginning of the list and we keep the rest at the end...
         self.best_match_recipes = list()
 
-    def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry, healthy):
+    def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
         if isinstance(liked_ingredients, list):
             for elt in liked_ingredients:
                 if not isinstance(elt, str):
@@ -50,6 +68,7 @@ class KBRS():
             self.user_profile['liked_ingredients'] = liked_ingredients
         else:
             raise TypeError("Was expecting a list of (liked) ingredients (strings)")
+
         if isinstance(disliked_ingredients, list):
             for elt in disliked_ingredients:
                 if not isinstance(elt, str):
@@ -57,6 +76,7 @@ class KBRS():
             self.user_profile['disliked_ingredients'] = disliked_ingredients
         else:
             raise TypeError("Was expecting a list of (disliked) ingredients (strings)")
+
         if isinstance(diets, list):
             for elt in diets:
                 if not isinstance(elt, str):
@@ -64,24 +84,29 @@ class KBRS():
             self.user_profile['diets'] = diets
         else:
             raise TypeError("Was expecting a list of diets (strings)")
+
         if isinstance(time_val, int):
             self.user_profile['time'] = time_val
         else:
             raise TypeError("Time should be int")
-        if isinstance(hungry, float) or isinstance(hungry, int):
-            if -1 <= hungry <= 1:
-                self.user_profile['hungry'] = hungry
+
+        if hungry:
+            if isinstance(hungry, float) or isinstance(hungry, int):
+                if -1 <= hungry <= 1:
+                    self.user_profile['hungry'] = hungry
+                else:
+                    raise ValueError("\"Hungry\" should be between -1 and 1")
             else:
-                raise ValueError("\"Hungry\" should be between -1 and 1")
-        else:
-            raise TypeError("\"Hungry\" should be a float between -1 and 1")
-        if isinstance(healthy, float) or isinstance(healthy, int):
-            if -1 <= healthy <= 1:
-                self.user_profile['healthy'] = healthy
+                raise TypeError("\"Hungry\" should be a float between -1 and 1")
+
+        if healthy:
+            if isinstance(healthy, float) or isinstance(healthy, int):
+                if -1 <= healthy <= 1:
+                    self.user_profile['healthy'] = healthy
+                else:
+                    raise ValueError("\"Hungry\" should be between -1 and 1")
             else:
-                raise ValueError("\"Hungry\" should be between -1 and 1")
-        else:
-            raise TypeError("\"Hungry\" should be a float between -1 and 1")
+                raise TypeError("\"Hungry\" should be a float between -1 and 1")
 
 
     def check_new_recipes_and_set_new_DB(self, n_recipes, OK_recipes, constraint_type_str, constraint_str):
@@ -145,7 +170,15 @@ class KBRS():
                 OK_recipes = self.get_FSAamber_recipes()
             self.check_new_recipes_and_set_new_DB(n_recipes, OK_recipes, "healthy value", self.user_profile['healthy'].__str__())
 
-
+        reco = list()
+        for rid, rdata in self.recipe_DB.items():
+            list_of_keys_to_copy = list(rdata.keys())
+            list_of_keys_to_copy.remove("reviews")
+            new_reco = {'id': rid}
+            for k in list_of_keys_to_copy:
+                new_reco[k] = rdata[k]
+            reco.append(new_reco)
+        return reco
 
 
     def reset_current_DB(self):
@@ -158,8 +191,8 @@ class KBRS():
 
     def print_current_DB_ids(self):
         print(len(self.recipe_DB.keys()))
-        for rid in self.recipe_DB.keys():
-            print(rid)
+        for rid, rdata in self.recipe_DB.items():
+            print(rid, rdata['FSAscore'])
 
     def get_recipes_with_ingredient(self, ingredient):
         ingredient = ingredient.lower().strip()
@@ -254,7 +287,7 @@ class KBRS():
 if __name__ == "__main__":
     kbrs = KBRS()
 
-    kbrs.set_user_profile(liked_ingredients=['apple', 'broccoli'], disliked_ingredients=['nut'], diets=['vegan'], time_val=60, hungry=0, healthy=0)
+    kbrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=[], diets=[], time_val=20)
     kbrs.get_recipe_for_user()
 
     kbrs.print_current_DB_ids()

@@ -1,6 +1,4 @@
-start,request(filling),FALSE,,
-request(filling),request(healthy),TRUE,,
-request(healthy),request(diet),TRUE,,
+start,request(diet),FALSE,,
 request(diet),request(time),TRUE,,
 request(time),request(food),TRUE,,
 request(food),inform(food),TRUE,,

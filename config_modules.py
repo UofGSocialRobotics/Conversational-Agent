@@ -9,6 +9,7 @@ from food import NLG as food_NLG
 from food import NLU as food_NLU
 from food import heath_diagnostic
 from food import RS as food_RS
+from food import RS_KB as food_KBRS
 import ca_logging as logging
 import data_collection
 import config
@@ -64,8 +65,8 @@ class Modules:
             # SA_config = {"module": movies_SA.SentimentAnalysis, "name": "SA", "subscribes": config.SentimentAnalysis_subscribes, "publishes": config.SentimentAnalysis_publishes}
             HeathDiagnostic_config = {"module": heath_diagnostic.HealthDiagnostic, "name": "FD", "subscribes": config.HealthDiagnostic_subscribes, "publishes": config.HealthDiagnostic_publishes}
             # self.modules += [NLU_config, DM_config, NLG_config, SA_config, HeathDiagnostic_config]
-            # RS_config = {"module": RS, "name": "RS", "subscribes": config.RS_subrscribes, "publishes": config.RS_publishes}
-            self.modules += [NLU_config, DM_config, NLG_config, HeathDiagnostic_config]
+            RS_config = {"module": food_KBRS.KBRSModule, "name": "RS", "subscribes": config.RS_subrscribes, "publishes": config.RS_publishes}
+            self.modules += [NLU_config, DM_config, NLG_config, RS_config]
             logging.log.info("(config.py) Set domain as food.")
         elif domain == "RS_eval":
             RS_config = {"module": food_RS.RS, "name": "RS", "subscribes": config.RS_subrscribes, "publishes": config.RS_publishes}

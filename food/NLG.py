@@ -156,15 +156,16 @@ class NLG(wbc.WhiteBoardClient):
     def get_recipe_card(self, recipe):
         # print(recipe['id'], self.recipe_cards)
         # print(self.recipe_cards)
-        if recipe["id"] in self.recipe_cards.keys():
-            log.debug("found recipe %d in localDB" % recipe["id"])
-            return self.recipe_cards[recipe['id']]
-        else:
-            log.debug("can't find card in localDB for recipe %d" % recipe['id'])
-            new_card = self.create_recipe_card(recipe)
-            self.recipe_cards[recipe['id']] = new_card
-            return new_card
-
+        # if recipe["id"] in self.recipe_cards.keys():
+        #     log.debug("found recipe %d in localDB" % recipe["id"])
+        #     return self.recipe_cards[recipe['id']]
+        # else:
+        #     log.debug("can't find card in localDB for recipe %d" % recipe['id'])
+        #     new_card = self.create_recipe_card(recipe)
+        #     self.recipe_cards[recipe['id']] = new_card
+        #     return new_card
+        # return 'food/resources/img/small_recipe_card_test.png'
+        return 'food/resources/img/recipe_card/6725honeywheatbreadihtml-full.png'
 
     def treat_message(self, message, topic):
         start = time.time()
@@ -191,6 +192,7 @@ class NLG(wbc.WhiteBoardClient):
 
             # self.food = message['reco_food']
             if message['recipe']:
+                print(colored("got a recipe", 'blue'))
                 self.recipe = message['recipe']
                 recipe_card = self.get_recipe_card(self.recipe)
 
@@ -221,7 +223,8 @@ class NLG(wbc.WhiteBoardClient):
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
 
             if message['recipe']:
-                recipe = self.recipe['sourceUrl']
+                # recipe = self.recipe['sourceUrl']
+                recipe = self.recipe
                 if not recipe_card:
                     recipe_card = None
                 ingredients_list = message[fc.ingredients]
@@ -322,27 +325,30 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
     def get_random_ingredient_from_recipe(self, recipe):
-        start = time.time()
-        ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] #+ recipe["unusedIngredients"]
-        if 'ingredients' in recipe.keys():
-            ingredients += recipe["ingredients"]
-        # chosen_ingredient = random.choice(ingredients)
-        for ingredient in ingredients:
-            if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
-                return ingredient["name"]
-        try:
-            chosen_ingredient = random.choice(ingredients)
-        except IndexError as e:
-            # print("recipe", "ingredients")
-            # print(recipe, ingredients)
-            error_msg = "Can't find ingredients in recipe"
-            log.warn(error_msg)
-            print(colored(error_msg,"blue"))
-            return recipe["seed_ingredient"]
-            # raise e
-        if self.timeit_details:
-            print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
-        return chosen_ingredient["name"]
+        # TODO: rewrite function to work with local KBRS
+
+        # start = time.time()
+        # # ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] #+ recipe["unusedIngredients"]
+        # if 'ingredients' in recipe.keys():
+        #     ingredients += recipe["ingredients"]
+        # # chosen_ingredient = random.choice(ingredients)
+        # for ingredient in ingredients:
+        #     if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
+        #         return ingredient["name"]
+        # try:
+        #     chosen_ingredient = random.choice(ingredients)
+        # except IndexError as e:
+        #     # print("recipe", "ingredients")
+        #     # print(recipe, ingredients)
+        #     error_msg = "Can't find ingredients in recipe"
+        #     log.warn(error_msg)
+        #     print(colored(error_msg,"blue"))
+        #     return recipe["seed_ingredient"]
+        #     # raise e
+        # if self.timeit_details:
+        #     print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
+        # return chosen_ingredient["name"]
+        return "chicken"
 
     def replace_features(self, sentence):
         start = time.time()
@@ -412,6 +418,8 @@ class NLG(wbc.WhiteBoardClient):
                 usual_dinner_str = "that"
                 sentence = sentence.replace("#usual_dinner", usual_dinner_str)
         if "#recipe" in sentence:
+            print(colored(sentence, 'blue'))
+            print(colored(self.recipe, 'blue'))
             sentence = sentence.replace("#recipe", self.recipe['title'])
         sentence = self.replace_features(sentence)
         if "#last_food" in sentence:

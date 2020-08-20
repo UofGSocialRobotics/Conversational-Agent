@@ -35,6 +35,14 @@ diet = "diet"
 food_type = "food_type"
 food_name = "food_name"
 
+# messages / topics for DM to RS messages
+set_user_profile = "set_user_profile"
+get_reco = "get_reco"
+# messages / topics for RS to DM messages
+reco_recipes = "reco_recipes"
+
+recipes_list = "recipes_list"
+
 # keys words used by NLU
 yes = 'yes'
 no = 'no'

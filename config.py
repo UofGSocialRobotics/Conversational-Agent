@@ -3,7 +3,7 @@ import json
 
 DOMAIN_RS_EVAL = "RS_eval"
 DOMAIN_CORA = "cora"
-DOMAIN = DOMAIN_RS_EVAL
+DOMAIN = DOMAIN_CORA
 
 ####################################################################################################
 ##                                       Experimental conditions                                  ##
@@ -23,7 +23,7 @@ exp_cs_robot = "robot"
 exp_cs_control = "NONE"
 exp_no_ack = "no_ack"
 aamas_study_CS = True
-possible_CS = exp_no_ack
+possible_CS = [exp_cs_human]
 
 health_recsys_study_cond = "pref-based RS"
 
@@ -48,6 +48,7 @@ with open("shared_resources/encryption_key.json", 'rb') as f:
 f = fernet.Fernet(key.encode())
 for key, value in FIREBASE_CONFIG.items():
     FIREBASE_CONFIG[key] = f.decrypt(value).decode()
+    # print(FIREBASE_CONFIG[key])
 
 # Connection timeout, in secondes
 CONNECTION_TIMEOUT = 60 * 15
@@ -110,7 +111,7 @@ NLU_subscribes = [MSG_SERVER_IN, MSG_DM_CONV_STATE]
 NLU_publishes = MSG_NLU
 
 ## DM
-DM_subscribes = [MSG_NLU, MSG_SA,MSG_RS_OUT]
+DM_subscribes = [MSG_NLU, MSG_SA, MSG_RS_OUT]
 DM_publishes = [MSG_DM, MSG_DM_RECIPE_LIST, MSG_DATACOL_IN, MSG_DATACOL_OUT, MSG_DM_CONV_STATE, MSG_RS_IN]
 
 ## NLG
@@ -130,8 +131,12 @@ HealthDiagnostic_subscribes = [MSG_HEALTH_DIAGNOSTIC_IN]
 HealthDiagnostic_publishes = MSG_HEALTH_DIAGNOSTIC_OUT
 
 ## RS
-RS_subrscribes = [MSG_SERVER_IN]
-RS_publishes = [MSG_RS_OUT, MSG_DATACOL_OUT]
+if DOMAIN == DOMAIN_RS_EVAL:
+    RS_subrscribes = [MSG_SERVER_IN]
+    RS_publishes = [MSG_RS_OUT, MSG_DATACOL_OUT]
+if DOMAIN == DOMAIN_CORA:
+    RS_subrscribes = [MSG_RS_IN]
+    RS_publishes = MSG_RS_OUT
 
 ####################################################################################################
 ##                                        Firebase Keys                                           ##
