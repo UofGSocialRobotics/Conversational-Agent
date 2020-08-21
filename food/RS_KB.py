@@ -1,5 +1,6 @@
 import json
 import copy
+import random
 from termcolor import colored
 import pandas as pd
 
@@ -79,6 +80,8 @@ class KBRS():
         self.reco_dict = dict()
         self.n_recipes_in_reco_dict = 0
         self.all_recipes_in_reco_dict = list()
+        # we sometimes get recommendations that don't match the user profile. We need to know how we obtained those reco (i.e. which contraints we relaxed)
+        self.reco_rid_to_user_profile = dict()
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
         if isinstance(liked_ingredients, list):
@@ -149,7 +152,7 @@ class KBRS():
             log.info("Can't any recipes with set %s %s" % (constraint_type_str, constraint_str))
 
 
-    def add_item_to_reco_dict(self, utility, rid_list, relaxed_constraint):
+    def add_item_to_reco_dict(self, utility, rid_list, relaxed_constraint, user_profile):
         if utility not in self.reco_dict.keys():
             self.reco_dict[utility] = {"rids": list(), "relaxed_constraints": list()}
         # self.reco_dict[utility]['rids'] += rid_list
@@ -158,186 +161,205 @@ class KBRS():
                 self.all_recipes_in_reco_dict.append(rid)
                 self.reco_dict[utility]['rids'].append(rid)
                 self.n_recipes_in_reco_dict += 1
-        self.reco_dict[utility]["relaxed_constraints"].append(relaxed_constraint)
+                self.reco_rid_to_user_profile[rid] = user_profile
+        if rid_list:
+            self.reco_dict[utility]["relaxed_constraints"].append(relaxed_constraint)
 
 
-    def get_recipes_with_relaxed_liked_ingredient_constraint(self, user_profile, previous_costs=0, previous_constraints_str=""):
+
+    def get_recipes_with_relaxed_liked_ingredient_constraint(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
 
         for ingredient in user_profile['liked_ingredients']:
             new_user_profile2 = copy.deepcopy(user_profile)
             new_user_profile2['liked_ingredients'].remove(ingredient)
-            print(new_user_profile2)
-            recipes = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-            self.add_item_to_reco_dict(100-(previous_costs+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes, relaxed_constraint=previous_constraints_str+ingredient)
+            recipes = list(self.get_recipes_matching_constraints(new_user_profile2, print_user_profile).keys())
+            self.add_item_to_reco_dict(100-(previous_costs+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes, relaxed_constraint=previous_constraints_str+ingredient, user_profile=new_user_profile2)
 
-    def get_recipes_for_user(self, n_recipes=5):
-        recipes_matching_all_criteria = list(self.get_recipes_matching_constraints(self.user_profile).keys())
-        self.add_item_to_reco_dict(100, recipes_matching_all_criteria, None)
+
+    def get_recipes_with_relaxed_DISliked_ingredient_constraint(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
+
+        for ingredient in user_profile['disliked_ingredients']:
+            new_user_profile2 = copy.deepcopy(user_profile)
+            new_user_profile2['disliked_ingredients'].remove(ingredient)
+            recipes = list(self.get_recipes_matching_constraints(new_user_profile2, print_user_profile).keys())
+            self.add_item_to_reco_dict(100-(previous_costs+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes, relaxed_constraint=previous_constraints_str+ingredient, user_profile=new_user_profile2)
+
+
+    def get_recipes_with_relaxed_diet_constraint(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
+
+        for x in user_profile['diets']:
+            new_user_profile2 = copy.deepcopy(user_profile)
+            new_user_profile2['diets'].remove(x)
+            recipes = list(self.get_recipes_matching_constraints(new_user_profile2, print_user_profile).keys())
+            self.add_item_to_reco_dict(100-(previous_costs+CONSTRAINTS_COSTS[x]), rid_list=recipes, relaxed_constraint=previous_constraints_str+x, user_profile=new_user_profile2)
+
+
+    def get_recipes_for_user(self, n_recipes=5, print_user_profile=False):
+        self.get_recipes_for_user_rec(self.user_profile, n_recipes=n_recipes, print_user_profile=print_user_profile)
+
+        print(self.n_recipes_in_reco_dict, self.reco_dict)
+        random_recipe = random.choice(self.all_recipes_in_reco_dict)
+        user_profile_random_recipe = self.reco_rid_to_user_profile[random_recipe]
+        print(random_recipe, user_profile_random_recipe)
+
+
+    def get_recipes_for_user_rec(self, user_profile, previous_cost=0, n_recipes=5, print_user_profile=False):
+        # print(self.n_recipes_in_reco_dict, user_profile)
+
+        #TODO: use previous cost!
+        recipes_matching_all_criteria = list(self.get_recipes_matching_constraints(user_profile, print_user_profile).keys())
+        self.add_item_to_reco_dict(100-previous_cost, recipes_matching_all_criteria, None, user_profile=user_profile)
 
         #################################################
         ##      Relax one constraint
 
+        # Relax time (+15min)
         if self.n_recipes_in_reco_dict < n_recipes:
             # we don't have enough recipes, let's relax some constraints
-            new_user_profile = copy.deepcopy(self.user_profile)
+            new_user_profile = copy.deepcopy(user_profile)
             if new_user_profile["time"]:
                 new_user_profile['time'] += 15
-                print(new_user_profile)
-                recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile).keys())
-                self.add_item_to_reco_dict(100-CONSTRAINTS_COSTS['time'], rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time")
+                recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
+                self.add_item_to_reco_dict(100-previous_cost-CONSTRAINTS_COSTS['time'], rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time", user_profile=new_user_profile)
 
+        # Relax time (cancelled)
         if self.n_recipes_in_reco_dict < n_recipes:
-            new_user_profile = copy.deepcopy(self.user_profile)
+            new_user_profile = copy.deepcopy(user_profile)
             if new_user_profile["time"]:
                 new_user_profile['time'] = 1000
-                print(new_user_profile)
-                recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile).keys())
-                self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time")
+                # print(new_user_profile)
+                recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
+                self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time", user_profile=new_user_profile)
 
+        # Relax liked ingredient, disliked ingredient, diet
         if self.n_recipes_in_reco_dict < n_recipes:
+            self.get_recipes_with_relaxed_liked_ingredient_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_diet_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
 
-            self.get_recipes_with_relaxed_liked_ingredient_constraint(self.user_profile)
-
-            # relax diet constraints
-            for diet in self.user_profile['diets']:
-                new_user_profile = copy.deepcopy(self.user_profile)
-                new_user_profile['diets'].remove(diet)
-                print(new_user_profile)
-                recipes_matching_all_criteria_but_one_diet = list(self.get_recipes_matching_constraints(new_user_profile).keys())
-                self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS[diet]), rid_list=recipes_matching_all_criteria_but_one_diet, relaxed_constraint=diet)
-
-            # relax disliked ingredients contraint
-            for ingredient in self.user_profile['disliked_ingredients']:
-                new_user_profile = copy.deepcopy(self.user_profile)
-                new_user_profile['disliked_ingredients'].remove(ingredient)
-                print(new_user_profile)
-                recipes_matching_all_criteria_but_one_ingredient = list(self.get_recipes_matching_constraints(new_user_profile).keys())
-                self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_one_ingredient, relaxed_constraint=ingredient)
-
-
-        if self.n_recipes_in_reco_dict < n_recipes:
 
         #################################################
         ##      Relax 2 constraints
 
-            # Relax time (+15min) and another
-            new_user_profile = copy.deepcopy(self.user_profile)
-            if new_user_profile["time"]:
-                new_user_profile['time'] += 15
-
-                self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=CONSTRAINTS_COSTS['time'], previous_constraints_str="time+")
-
-                for diet in self.user_profile['diets']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['diets'].remove(diet)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['time']+CONSTRAINTS_COSTS[diet]), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint="time+"+diet)
+        if self.n_recipes_in_reco_dict < n_recipes:
+            self.get_recipes_2_contraints_relaxed(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
 
 
-                for ingredient in self.user_profile['disliked_ingredients']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['disliked_ingredients'].remove(ingredient)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['time']+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint="time+"+ingredient)
+        #################################################
+        ##      Relax 3 constraints
 
-            # Relax time (cancelled) and another
-            new_user_profile = copy.deepcopy(self.user_profile)
-            if new_user_profile["time"]:
-                new_user_profile['time'] = 1000
-
-                self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=CONSTRAINTS_COSTS['time'], previous_constraints_str="time+")
-
-                for diet in self.user_profile['diets']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['diets'].remove(diet)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['time']*2+CONSTRAINTS_COSTS[diet]), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint="time+"+diet)
+        if self.n_recipes_in_reco_dict < n_recipes:
+            self.get_recipes_3_contraints_relaxed(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
 
 
-                for ingredient in self.user_profile['disliked_ingredients']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['disliked_ingredients'].remove(ingredient)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['time']*2+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint="time+"+ingredient)
+        #################################################
+        ##      If more than 3 constraints to relax, just pick at random constraint to keep
+        if self.n_recipes_in_reco_dict < n_recipes:
+            if len(user_profile['liked_ingredients']) > 3:
+                new_user_profile = copy.deepcopy(user_profile)
+                random.shuffle(new_user_profile['liked_ingredients'])
+                new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
+                # print(new_user_profile)
+                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
+
+            if len(user_profile['disliked_ingredients']) > 3:
+                new_user_profile = copy.deepcopy(user_profile)
+                random.shuffle(new_user_profile['disliked_ingredients'])
+                new_user_profile['disliked_ingredients'] = new_user_profile['disliked_ingredients'][:3]
+                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['disliked_ingredients']) - 3), print_user_profile=print_user_profile)
+
+            if len(user_profile['diets']) > 3:
+                new_user_profile = copy.deepcopy(user_profile)
+                random.shuffle(new_user_profile['diets'])
+                new_user_profile['diets'] = new_user_profile['diets'][:3]
+                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['diets']) - 3), print_user_profile=print_user_profile)
 
 
-            # Relax liked ingredient and another (disliked ingredient or diet)
-            for ingredient in self.user_profile['liked_ingredients']:
-                new_user_profile = copy.deepcopy(self.user_profile)
+
+
+    def get_recipes_3_contraints_relaxed(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
+        #Relax liked ingredients and 2 others
+        for ingredient in user_profile['liked_ingredients']:
+            # print("relaxing ingredient %s" % ingredient)
+            new_user_profile = copy.deepcopy(user_profile)
+            new_user_profile['liked_ingredients'].remove(ingredient)
+            self.get_recipes_2_contraints_relaxed(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
+        #Relax disliked ingredients and 2 others
+        for ingredient in user_profile['disliked_ingredients']:
+            new_user_profile = copy.deepcopy(user_profile)
+            new_user_profile['disliked_ingredients'].remove(ingredient)
+            self.get_recipes_2_contraints_relaxed(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
+        #Relax diets and 2 others
+        for diet in user_profile['diets']:
+            new_user_profile = copy.deepcopy(user_profile)
+            new_user_profile['diets'].remove(diet)
+            self.get_recipes_2_contraints_relaxed(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS[diet], previous_constraints_str=previous_constraints_str+diet+"+", print_user_profile=print_user_profile)
+
+
+    def get_recipes_2_contraints_relaxed(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
+        #################################################
+        ##      Relax 2 constraints
+
+        # Relax time (+15min) and another
+        new_user_profile = copy.deepcopy(user_profile)
+        if new_user_profile["time"]:
+            new_user_profile['time'] += 15
+            self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time'], previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time'], previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time'], previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+
+        # Relax time (cancelled) and another
+        new_user_profile = copy.deepcopy(user_profile)
+        if new_user_profile["time"]:
+            new_user_profile['time'] = 1000
+            self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+
+
+        # Relax liked ingredient and another (disliked ingredient or diet)
+        for ingredient in user_profile['liked_ingredients']:
+            new_user_profile = copy.deepcopy(user_profile)
+            new_user_profile['liked_ingredients'].remove(ingredient)
+            self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
+
+
+        #Relax diet and disliked ingredient
+        for diet in user_profile['diets']:
+            new_user_profile = copy.deepcopy(user_profile)
+            new_user_profile['diets'].remove(diet)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS[diet], previous_constraints_str=previous_constraints_str+diet+"+", print_user_profile=print_user_profile)
+
+
+        #Relax 2 liked ingredients (if more than 2 asked by user)
+        if len(user_profile['liked_ingredients']) >= 2:
+            for ingredient in user_profile['liked_ingredients']:
+                new_user_profile = copy.deepcopy(user_profile)
                 new_user_profile['liked_ingredients'].remove(ingredient)
+                self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
 
-                for diet in self.user_profile['diets']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['diets'].remove(diet)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['ingredient']+CONSTRAINTS_COSTS[diet]), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint=ingredient+"+"+diet)
+        #Relax 2 liked diets (if more than 2 asked by user)
+        if len(user_profile['diets']) >= 2:
+            for x in user_profile['diets']:
+                new_user_profile = copy.deepcopy(user_profile)
+                new_user_profile['diets'].remove(x)
+                self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS[diet], previous_constraints_str=previous_constraints_str+diet+"+", print_user_profile=print_user_profile)
 
-                for dingredient in self.user_profile['disliked_ingredients']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['disliked_ingredients'].remove(dingredient)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(2*CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint=ingredient+"+"+dingredient)
-
-
-            #Relax diet and disliked ingredient
-            for diet in self.user_profile['diets']:
-                new_user_profile = copy.deepcopy(self.user_profile)
-                new_user_profile['diets'].remove(diet)
-
-                for dingredient in self.user_profile['disliked_ingredients']:
-                    new_user_profile2 = copy.deepcopy(new_user_profile)
-                    new_user_profile2['disliked_ingredients'].remove(dingredient)
-                    print(new_user_profile2)
-                    recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                    self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS[diet]+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint=diet+"+"+dingredient)
-
-
-            #Relax 2 liked ingredients (if more than 2 asked by user)
-            if len(self.user_profile['liked_ingredients']) > 2:
-                for ingredient in self.user_profile['liked_ingredients']:
-                    new_user_profile = copy.deepcopy(self.user_profile)
-                    new_user_profile['liked_ingredients'].remove(ingredient)
-
-                    self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=CONSTRAINTS_COSTS['time'], previous_constraints_str="time+")
-
-
-            #Relax 2 liked diets (if more than 2 asked by user)
-            if len(self.user_profile['diets']) > 2:
-                for x in self.user_profile['diets']:
-                    new_user_profile = copy.deepcopy(self.user_profile)
-                    new_user_profile['diets'].remove(x)
-                    for x2 in new_user_profile['diets']:
-                        new_user_profile2 = copy.deepcopy(new_user_profile)
-                        new_user_profile2['diets'].remove(x2)
-                        print(new_user_profile2)
-                        recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                        self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS[x]+CONSTRAINTS_COSTS[x2]), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint=x+"+"+x2)
-
-
-            #Relax 2 liked disliked infredients (if more than 2 asked by user)
-            if len(self.user_profile['disliked_ingredients']) > 2:
-                for x in self.user_profile['disliked_ingredients']:
-                    new_user_profile = copy.deepcopy(self.user_profile)
-                    new_user_profile['disliked_ingredients'].remove(x)
-                    for x2 in new_user_profile['disliked_ingredients']:
-                        new_user_profile2 = copy.deepcopy(new_user_profile)
-                        new_user_profile2['disliked_ingredients'].remove(x2)
-                        print(new_user_profile2)
-                        recipes_matching_all_criteria_but_2_criteria = list(self.get_recipes_matching_constraints(new_user_profile2).keys())
-                        self.add_item_to_reco_dict(100-(CONSTRAINTS_COSTS['ingredient']+CONSTRAINTS_COSTS['ingredient']), rid_list=recipes_matching_all_criteria_but_2_criteria, relaxed_constraint=x+"+"+x2)
-
-
-        print(self.n_recipes_in_reco_dict, self.reco_dict)
+        #Relax 2 disliked infredients (if more than 2 asked by user)
+        if len(user_profile['disliked_ingredients']) >= 2:
+            for x in user_profile['disliked_ingredients']:
+                new_user_profile = copy.deepcopy(user_profile)
+                new_user_profile['disliked_ingredients'].remove(x)
+                self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+x+"+", print_user_profile=print_user_profile)
 
 
 
-    def get_recipes_matching_constraints(self, user_profile):
+
+    def get_recipes_matching_constraints(self, user_profile, print_user_profile=False):
+        if print_user_profile:
+            print(user_profile)
+
         '''
         Filter recipes according to user profile. We MUST return something, so always check the current user recipeDB is not empty.
         :return:
@@ -549,8 +571,8 @@ class KBCFhybrid():
 if __name__ == "__main__":
     kbrs = KBRS()
 
-    kbrs.set_user_profile(liked_ingredients=['broccoli', 'steak', 'chicken'], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto', 'gluten_free'], time_val=15)
-    kbrs.get_recipes_for_user()
+    kbrs.set_user_profile(liked_ingredients=['broccoli', 'steak', 'chicken', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto', 'gluten_free'], time_val=15)
+    kbrs.get_recipes_for_user(n_recipes=5)
 
     kbrs.print_current_DB_ids()
 
