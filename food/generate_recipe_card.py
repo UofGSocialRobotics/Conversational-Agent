@@ -7,117 +7,12 @@ import urllib.request
 from termcolor import colored
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
+from food.resources.img.recipe_card.html_large_recipe_card import *
+from food.resources.img.recipe_card.html_small_recipe_card import *
 
 img_dir_path = 'food/resources/recipes_DB/allrecipes/images/'
 
 
-html1 = """
-<!DOCTYPE html>
-<html>
-    <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/chat.css" rel="stylesheet" id="bootstrap-css">
-    <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/avatar.css" rel="stylesheet" id="error_css">
-
-    <link href="/Users/lucileca/Desktop/Conversational_Agent/client_side/rs_eval.css" rel="stylesheet" id="rs-css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <center>
-        <div class="recipe_grid">
-            <div class="recipe_img"><img class="center-cropped-large"
-                    src="/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/img/recipe_img/
-"""
-# add picture
-html2 = """
-        "
-                    id="recipe_img" height="250px"></div>
-            <div class="recipe_title">
-                <center><span id="recipe_title">
-"""
-# add title
-html3 = """
-                </span><br><br>
-                </center>
-            </div>
-            <div class="recipe_rating" id="recipe_rating_id">
-                <img
-                    src="/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/img/
-"""
-# add stars image
-html4 = """
-                    "
-                    id="rstars_img" height="25px">
-"""
-# add number of ratings
-html4_bis = """
-            </div>
-            <div class="recipe_tag" id="recipe_tag_div"><img src="/Users/lucileca/Desktop/Conversational_Agent/client_side/img/
-"""
-# add health tag img
-html5 = """
-            "
-                    width="150px" id="health_tag_img"></div>
-            <div class="recipe_time"><b>Prep: 
-"""
-# add prep time
-html6 = """
-            </b>
-                <span id="prep_time"> </span><br><br><b>Cook: 
-"""
-# add cook time
-html7 = """
-                </b>
-                <span id="cook_time"> </span><br><br><b>Total: 
-"""
-# add total time
-html8 = """
-                </b>
-                <span id="total_time"> </span></div>
-            <div class="recipe_servings"><b>Servings:
-"""
-# add servings
-html8_bis = """
-                </b>
-                <span id="servings"> </span></div>
-            <div class="recipe_description" id="recipe_description">
-"""
-# add description
-html8_ter = """
-            </div>
-            <div class="recipe_ingredients"><br><span
-                    style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;font-size: 26px;">Ingredients</span><br><br>
-                <div class="grid_ingredients">
-                    <div class="grid_ingredients_item" id="ingredients_col1">
-"""
-# add ingredients col 1
-html9 = """
-                    </div>
-                    <div class="grid_ingredients_item" id="ingredients_col2">
-"""
-# add ingredients col 2
-html10 = """
-                    </div>
-                    <div class="grid_ingredients_item" id="ingredients_col3">
-"""
-# add ingredients col 3
-html11 = """
-                    </div>
-                </div>
-            </div><br>
-            <div class="recipe_instructions"><br><span
-                    style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;font-size: 26px;">Steps</span>
-                <br>
-                <br>
-"""
-# add steps
-html12 = """
-            </div>
-        </div>
-    </center>
-    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
-    <script src="chat.js"></script>
-</html>
-"""
 
 def ingredients_in_column(ingredients_list):
     n_ingredients = len(ingredients_list)
@@ -166,8 +61,11 @@ def replace_fractions(line):
     return line
 
 
-def generate_card(rid, rdata):
-    urllib.request.urlretrieve(rdata["image_url"], "food/resources/img/recipe_img/"+rid+".jpg")
+def generate_card(rid, rdata, size="large"):
+
+    fname = "food/resources/img/recipe_img/"+rid+".jpg"
+    if not os.path.isfile(fname):
+        urllib.request.urlretrieve(rdata["image_url"], fname)
 
     prep_time = "--"
     if "Prep" in rdata["time_info"].keys():
@@ -204,29 +102,71 @@ def generate_card(rid, rdata):
         n_stars_pic += ".5"
     n_stars_pic += ".png"
 
+    if size=="large":
 
-    col1, col2, col3 = ingredients_in_column(rdata['ingredients'])
-    col1 = "<span>" + "</span><br><br><span>".join(col1) + "</span>"
-    col1 = replace_fractions(col1)
-    col2 = "<span>" + "</span><br><br><span>".join(col2) + "</span>"
-    col2 = replace_fractions(col2)
-    col3 = "<span>" + "</span><br><br><span>".join(col3) + "</span>"
-    col3 = replace_fractions(col3)
+        col1, col2, col3 = ingredients_in_column(rdata['ingredients'])
+        col1 = "<span>" + "</span><br><br><span>".join(col1) + "</span>"
+        col1 = replace_fractions(col1)
+        col2 = "<span>" + "</span><br><br><span>".join(col2) + "</span>"
+        col2 = replace_fractions(col2)
+        col3 = "<span>" + "</span><br><br><span>".join(col3) + "</span>"
+        col3 = replace_fractions(col3)
 
-    instructions = "<ol><li>" + "</li><br><li>".join(rdata['instructions']) + "</li></ol>"
+        instructions = "<ol><li>" + "</li><br><li>".join(rdata['instructions']) + "</li></ol>"
 
-    description = rdata['description'] if 'description' in rdata.keys() else ""
-    if not description:
-        print(colored("WARNING: no description for %s" % rid, "red"))
+        description = rdata['description'] if 'description' in rdata.keys() else ""
+        if not description:
+            print(colored("WARNING: no description for %s" % rid, "red"))
 
-    html_page = html1 + rid+".jpg" + html2 + rdata["title"] + html3 + n_stars_pic + html4 + "(64)" + html4_bis + "healthiness_" + color+".png" + html5 + prep_time + html6 + cook_time + html7 + total_time + html8 + servings + html8_bis + description + html8_ter + col1 + html9 + col2 + html10 + col3 + html11 + instructions + html12
+        html_page = large_card_html1 + rid+".jpg" \
+                    + large_card_html2 + rdata["title"] \
+                    + large_card_html3 + n_stars_pic \
+                    + large_card_html4 + "("+rdata['n_reviews_collected'].__str__()+")" \
+                    + large_card_html4_bis + "healthiness_" + color+".png" \
+                    + large_card_html5 + prep_time \
+                    + large_card_html6 + cook_time \
+                    + large_card_html7 + total_time \
+                    + large_card_html8 + servings \
+                    + large_card_html8_bis + description \
+                    + large_card_html8_ter + col1 \
+                    + large_card_html9 + col2 \
+                    + large_card_html10 + col3 \
+                    + large_card_html11 + instructions \
+                    + large_card_html12
 
-    f = open("food/resources/img/recipe_card/"+rid+".html", "w")
+    elif size == "small":
+
+        ingredients = replace_fractions(", ".join(rdata['ingredients']))
+        # if len(ingredients) > 95:
+        #     new_ingredients = ingredients[:95]
+        #     if ingredients[95] != " ":
+        #         new_ingredients_list = new_ingredients.split()[:-1]
+        #         new_ingredients = " ".join(new_ingredients_list)
+
+        title = rdata["title"]
+        if len(title) > 30:
+            title = title[:27] + "..."
+
+        html_page = small_card_html1 + rid+".jpg" \
+                    + small_card_html2 + title \
+                    + small_card_html3 + n_stars_pic \
+                    + small_card_html4 + "("+rdata['n_reviews_collected'].__str__()+")" \
+                    + small_card_html4_bis + "healthiness_" + color+".png" \
+                    + small_card_html5 + prep_time \
+                    + small_card_html6 + cook_time \
+                    + small_card_html7 + total_time \
+                    + small_card_html8 + ingredients \
+                    + small_card_html9
+
+    else:
+        print("Invalid size!")
+
+    f = open("food/resources/img/recipe_card/"+size+"/HTMLs/"+rid+".html", "w")
     f.write(html_page)
     f.close()
 
 
-def generate_all_recipe_cards():
+def generate_all_recipe_cards(size="large"):
 
     # for i in range(10):
     with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
@@ -235,23 +175,52 @@ def generate_all_recipe_cards():
             print(rid)
             rid_noSlash = rid.replace("/", "")
             try:
-                generate_card(rid_noSlash, rdata)
+                generate_card(rid_noSlash, rdata, size)
             except KeyError:
                 print(colored("Error with %s" % rid, 'red'))
 
 
+def test_generate_random_card(size="large"):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as fjson:
+        content = json.load(fjson)
+        random_id = random.choice(list(content['recipes_data'].keys()))
+        random_data = content['recipes_data'][random_id]
+        rid_noSlash = random_id.replace("/", "")
+        generate_card(rid_noSlash, random_data, size)
+
+
 def rename_recipe_cards():
 
-    mypath = 'food/resources/img/recipe_card/'
+    mypath = 'food/resources/img/'
 
     onlyfiles = [f for f in os.listdir(mypath) if os.path.isfile(mypath + f)]
     for f in onlyfiles:
         if "-full.png" in f:
             # print(f)
             new_name = f.replace("fileUserslucilecaDesktopConversational_Agentserver_sidefoodresourcesimgrecipe_card", "")
-            os.rename(mypath+f,mypath+new_name)
+            new_name = new_name.replace("smallHTMLs", "")
+            new_name = new_name.replace("-full", "")
+            os.rename(mypath+f, mypath+new_name)
 
 
+def move_PNGs_to_PNGs_folder():
+    mypath = 'food/resources/img/'
+    mynewpath = 'food/resources/img/recipe_card/small/PNGs/'
+    onlyPNGfiles = [f for f in os.listdir(mypath) if (os.path.isfile(mypath + f) and ".png" in f)]
+    for f in onlyPNGfiles:
+        os.rename(mypath+f, mynewpath+f)
+
+
+def move_HTMLs_to_HTMLs_folder():
+    mypath = 'food/resources/img/recipe_card/'
+    mynewpath = 'food/resources/img/recipe_card/HTMLs/'
+    onlyPNGfiles = [f for f in os.listdir(mypath) if (os.path.isfile(mypath + f) and ".html" in f)]
+    for f in onlyPNGfiles:
+        os.rename(mypath+f, mynewpath+f)
 
 if __name__ == "__main__":
-    rename_recipe_cards()
+    # move_HTMLs_to_HTMLs_folder()
+    # test_generate_random_card("small")
+    # generate_all_recipe_cards(size="small")
+    # rename_recipe_cards()
+    move_PNGs_to_PNGs_folder()

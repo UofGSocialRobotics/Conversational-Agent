@@ -14,8 +14,6 @@ class PyrebaseMultipleRefs:
                 log.error("Cannot be used as a reference!! Expecting pyrebase.pyrebase.Database, got %s" % type(ref).__name__)
         else:
             self.firebase = pyrebase.initialize_app(config.FIREBASE_CONFIG)
-            # auth = self.firebase.auth()
-            # self.user = auth.sign_in_with_email_and_password('gsGMD4gSFIS2QtOsrANSfHM5fM53', 'GWiGfyS0_0')
             self.reference = self.firebase.database()
             self.img_ref = self.firebase.storage()
 
