@@ -1,6 +1,7 @@
 import json
 import copy
 import random
+import operator
 from termcolor import colored
 import pandas as pd
 
@@ -29,8 +30,9 @@ CONSTRAINTS_COSTS = {"vegan": 10,
                      "ingredient": 5,
                      "time": 3}
 
-with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f:
+with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
     TOTAL_RECIPES = len(list(json.load(f)['recipes_data'].keys()))
+    print(TOTAL_RECIPES)
 
 class KBRSModule(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -82,6 +84,9 @@ class KBRS():
         self.all_recipes_in_reco_dict = list()
         # we sometimes get recommendations that don't match the user profile. We need to know how we obtained those reco (i.e. which contraints we relaxed)
         self.reco_rid_to_user_profile = dict()
+
+        # reco list --> list of lists that will help get order the elements of the reco dict
+        self.reco_list = list()
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
         if isinstance(liked_ingredients, list):
@@ -153,16 +158,16 @@ class KBRS():
 
 
     def add_item_to_reco_dict(self, utility, rid_list, relaxed_constraint, user_profile):
-        if utility not in self.reco_dict.keys():
-            self.reco_dict[utility] = {"rids": list(), "relaxed_constraints": list()}
-        # self.reco_dict[utility]['rids'] += rid_list
-        for rid in rid_list:
-            if rid not in self.all_recipes_in_reco_dict:
-                self.all_recipes_in_reco_dict.append(rid)
-                self.reco_dict[utility]['rids'].append(rid)
-                self.n_recipes_in_reco_dict += 1
-                self.reco_rid_to_user_profile[rid] = user_profile
         if rid_list:
+            if utility not in self.reco_dict.keys():
+                self.reco_dict[utility] = {"rids": list(), "relaxed_constraints": list()}
+            # self.reco_dict[utility]['rids'] += rid_list
+            for rid in rid_list:
+                if rid not in self.all_recipes_in_reco_dict:
+                    self.all_recipes_in_reco_dict.append(rid)
+                    self.reco_dict[utility]['rids'].append(rid)
+                    self.n_recipes_in_reco_dict += 1
+                    self.reco_rid_to_user_profile[rid] = user_profile
             self.reco_dict[utility]["relaxed_constraints"].append(relaxed_constraint)
 
 
@@ -196,11 +201,15 @@ class KBRS():
 
     def get_recipes_for_user(self, n_recipes=5, print_user_profile=False):
         self.get_recipes_for_user_rec(self.user_profile, n_recipes=n_recipes, print_user_profile=print_user_profile)
-
-        print(self.n_recipes_in_reco_dict, self.reco_dict)
-        random_recipe = random.choice(self.all_recipes_in_reco_dict)
-        user_profile_random_recipe = self.reco_rid_to_user_profile[random_recipe]
-        print(random_recipe, user_profile_random_recipe)
+        # print(self.n_recipes_in_reco_dict, self.reco_dict)
+        # random_recipe = random.choice(self.all_recipes_in_reco_dict)
+        # user_profile_random_recipe = self.reco_rid_to_user_profile[random_recipe]
+        # print(random_recipe, user_profile_random_recipe)
+        for utility, reco_item in self.reco_dict.items():
+            rids = reco_item['rids']
+            self.reco_list.append([rids, utility])
+        self.reco_list = sorted(self.reco_list, key=operator.itemgetter(1), reverse=True)
+        # print(self.reco_list[:3])
 
 
     def get_recipes_for_user_rec(self, user_profile, previous_cost=0, n_recipes=5, print_user_profile=False):
@@ -541,6 +550,10 @@ class KBCFhybrid():
 
         self.cfrs_ratings_dict = dict()
 
+        # list of lists of reco
+        self.reco_list = list()
+
+
 
     def set_user_ratings_list(self, ratings_list):
         self.user_ratings_list = ratings_list
@@ -553,35 +566,52 @@ class KBCFhybrid():
 
     def get_cfrs_ratings_dict(self):
         cfrs_ratings = self.cfrs.get_reco(self.user_name, self.user_ratings_list, n_reco=TOTAL_RECIPES)
+        print(len(cfrs_ratings))
         for [_, rid, rating] in cfrs_ratings:
             self.cfrs_ratings_dict[rid] = rating
 
 
     def get_reco(self, n_reco=10):
-        kbrs_reco = self.kbrs.get_recipe_for_user(n_reco)
-        kbrs_reco = [rdata['id'] for rdata in kbrs_reco]
-        print(kbrs_reco)
+        self.kbrs.get_recipes_for_user(n_reco)
+        # print(self.kbrs.reco_list[:3])
 
-        print(cfrs_reco[:10])
+        for [rids_list, utility] in self.kbrs.reco_list:
+            sublist = list()
+            for rid in rids_list:
+                if rid in self.cfrs_ratings_dict.keys():
+                    rid_w_cf_rating = [rid, self.cfrs_ratings_dict[rid]]
+                    sublist.append(rid_w_cf_rating)
+            sublist = sorted(sublist, key=operator.itemgetter(1), reverse=True)
+            self.reco_list.append([utility, sublist])
+
+        print(self.reco_list[:3])
+
+
+        # print(kbrs_reco)
+        #
+        # print(cfrs_reco[:10])
 
 
 
 
 
 if __name__ == "__main__":
-    kbrs = KBRS()
-
-    kbrs.set_user_profile(liked_ingredients=['broccoli', 'steak', 'chicken', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto', 'gluten_free'], time_val=15)
-    kbrs.get_recipes_for_user(n_recipes=5)
-
-    kbrs.print_current_DB_ids()
-
-    # hybridrs = KBCFhybrid("lucile")
+    # kbrs = KBRS()
     #
-    # df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-    # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    # hybridrs.set_user_ratings_list(ratings)
+    # kbrs.set_user_profile(liked_ingredients=['broccoli', 'steak', 'chicken', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto', 'gluten_free'], time_val=15)
+    # kbrs.get_recipes_for_user(n_recipes=5)
     #
-    # hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=[], diets=[], time_val=20)
-    #
-    # hybridrs.get_reco()
+    # kbrs.print_current_DB_ids()
+
+    hybridrs = KBCFhybrid("lucile")
+
+    df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+    print(df.shape)
+    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    print(ratings)
+    hybridrs.set_user_ratings_list(ratings)
+
+    hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto'], time_val=20)
+    hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=['onion'], diets=[], time_val=20)
+
+    hybridrs.get_reco()
