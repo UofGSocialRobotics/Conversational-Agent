@@ -154,18 +154,10 @@ class NLG(wbc.WhiteBoardClient):
             # threading.current_thread().join()
 
     def get_recipe_card(self, recipe):
-        # print(recipe['id'], self.recipe_cards)
-        # print(self.recipe_cards)
-        # if recipe["id"] in self.recipe_cards.keys():
-        #     log.debug("found recipe %d in localDB" % recipe["id"])
-        #     return self.recipe_cards[recipe['id']]
-        # else:
-        #     log.debug("can't find card in localDB for recipe %d" % recipe['id'])
-        #     new_card = self.create_recipe_card(recipe)
-        #     self.recipe_cards[recipe['id']] = new_card
-        #     return new_card
-        # return 'food/resources/img/small_recipe_card_test.png'
-        return 'food/resources/img/recipe_card/6725honeywheatbreadihtml-full.png'
+        rid = recipe['id']
+        rid_no_slash = rid.replace('/', '')
+        rid_no_slash = rid_no_slash.replace('-', '')
+        return 'food/resources/img/recipe_card/small/PNGs/reduced' + rid_no_slash + 'html.png'
 
     def treat_message(self, message, topic):
         start = time.time()
@@ -192,7 +184,7 @@ class NLG(wbc.WhiteBoardClient):
 
             # self.food = message['reco_food']
             if message['recipe']:
-                print(colored("got a recipe", 'blue'))
+                # print(colored("got a recipe", 'blue'))
                 self.recipe = message['recipe']
                 recipe_card = self.get_recipe_card(self.recipe)
 
@@ -204,7 +196,6 @@ class NLG(wbc.WhiteBoardClient):
                 elif message['user_intent']['entity_type'] == "duration":
                     valence = "yes" if message['user_intent']['entity'] > 30 else "no"
                 elif message['user_intent']['entity_type']:
-                    print(colored("Here we are", "magenta"))
                     if message['user_intent']['entity_type'] == "hungry" or message['user_intent']['entity_type'] == "healthy":
                         valence = "yes" if message['user_intent']['entity'] > 0 else "no"
                     else:
@@ -223,15 +214,15 @@ class NLG(wbc.WhiteBoardClient):
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
 
             if message['recipe']:
-                # recipe = self.recipe['sourceUrl']
                 recipe = self.recipe
                 if not recipe_card:
                     recipe_card = None
-                ingredients_list = message[fc.ingredients]
+                # ingredients_list = message[fc.ingredients]
             else:
                 recipe, recipe_card, ingredients_list = None, None, None
                 # msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
-            msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
+            # msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
+            msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=None, food_poster=recipe_card, ingredients_list=None)
 
         if self.timeit_details:
             print("Response time treat_message: %.3f sec" % (time.time() - start))
@@ -418,8 +409,8 @@ class NLG(wbc.WhiteBoardClient):
                 usual_dinner_str = "that"
                 sentence = sentence.replace("#usual_dinner", usual_dinner_str)
         if "#recipe" in sentence:
-            print(colored(sentence, 'blue'))
-            print(colored(self.recipe, 'blue'))
+            # print(colored(sentence, 'blue'))
+            # print(colored(self.recipe, 'blue'))
             sentence = sentence.replace("#recipe", self.recipe['title'])
         sentence = self.replace_features(sentence)
         if "#last_food" in sentence:
@@ -435,6 +426,7 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = sentence.replace(" #user_name", "")
         if self.timeit_details:
             print("Response time replace: %.3f sec" % (time.time() - start))
+        sentence = sentence.strip()
         return sentence
 
 

@@ -56,7 +56,7 @@ class PyrebaseMultipleRefs:
 
     def put_here(self, data):
         print(colored(data,'red'))
-        self.img_ref.child("images/example2.jpg").put(data)
+        self.img_ref.child("images/"+data.__str__()).put(data)
         # url = self.img_ref.child("images/example2.jpg").get_url()
         # print(colored(url))
         # return url

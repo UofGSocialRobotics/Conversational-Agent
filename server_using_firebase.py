@@ -165,7 +165,9 @@ class ServerUsingFirebase:
                         timestamp = datetime.datetime.now().__str__()
                         message_to_send[config.FIREBASE_KEY_DATETIME] = timestamp
                         message_to_send[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
-                        print(message_to_send)
+                        message_to_send['food_recipe'] = None
+                        print(colored(message_to_send, 'blue'))
+                        print(colored(type(message_to_send), 'blue'))
                         self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
                         if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
                             self.firebase_root_ref.put_here(message_to_send['recipe_card'])
@@ -263,6 +265,7 @@ class ServerUsingFirebase:
         if config.MSG_DATACOL_OUT in topic:
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)
         elif config.MSG_NLG in topic:
+            # print(colored(message, 'blue'))
             self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_DIALOG)
             if isinstance(message, dict) and "intent" in message.keys() and message["intent"] == "bye":
                 self.publish_for_client(message, client_id, firebase_key=config.FIREBASE_KEY_ACK)

@@ -131,8 +131,8 @@ class DM(wbc.WhiteBoardClient):
         if "RS" in topic:
             subject = msg["msg"]
             if subject == fc.reco_recipes:
-                self.current_recipe_list = msg[fc.recipes_list]
-                recipe = self.current_recipe_list[0]
+                # self.current_recipe_list = msg[fc.recipes_list]
+                recipe = msg[fc.reco_pref]
                 self.already_recommended_recipe_list.append(recipe[fc.title])
                 self.n_recommendations += 1
                 

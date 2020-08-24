@@ -42,6 +42,7 @@ get_reco = "get_reco"
 reco_recipes = "reco_recipes"
 
 recipes_list = "recipes_list"
+reco_pref = 'reco_pref'
 
 # keys words used by NLU
 yes = 'yes'

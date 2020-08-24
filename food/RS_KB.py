@@ -31,8 +31,15 @@ CONSTRAINTS_COSTS = {"vegan": 10,
                      "time": 3}
 
 with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
-    TOTAL_RECIPES = len(list(json.load(f)['recipes_data'].keys()))
-    print(TOTAL_RECIPES)
+    recipes_data = json.load(f)['recipes_data']
+    TOTAL_RECIPES = len(list(recipes_data.keys()))
+    # print(TOTAL_RECIPES)
+
+
+def get_health_score(rid):
+    rdata = recipes_data[rid]
+    return rdata['FSAscore']
+    
 
 class KBRSModule(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, resp_time=False):
@@ -42,25 +49,39 @@ class KBRSModule(wbc.WhiteBoardClient):
         wbc.WhiteBoardClient.__init__(self, "KBRS" + clientid, subscribes, publishes, resp_time)
 
         self.client_id = clientid
-        self.kbrs = KBRS()
-
+        # self.kbrs = KBRS()
+        self.hybridrs = KBCFhybrid(clientid=clientid)
 
     def treat_message(self, msg, topic):
         super(KBRSModule, self).treat_message(msg, topic)
 
         subject = msg['msg']
         if subject == fc.set_user_profile:
+            #TODO: get ratings from user for cf.
+            df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+            ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+            self.hybridrs.set_user_ratings_list(ratings)
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
-            reco = self.get_reco(n_reco=5)
-            self.publish({"msg": fc.reco_recipes, fc.recipes_list: reco})
+            # reco = self.get_reco(n_reco=10)
+            reco_pref = self.get_reco_pref()
+            reco_pref_id = reco_pref[0]
+            reco_pref_data = copy.deepcopy(recipes_data[reco_pref_id])
+            reco_pref_data['reviews'] = None
+            del reco_pref_data['reviews']
+            reco_pref_data['id'] = reco_pref_id
+            reco_pref_data['utility'] = reco_pref[1]
+            reco_pref_data['cf_score'] = reco_pref[2]
+            self.publish({"msg": fc.reco_recipes, fc.reco_pref: reco_pref_data})
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val):
-        self.kbrs.set_user_profile(liked_ingredients=liked_ingredients, disliked_ingredients=disliked_ingredients, diets=diets, time_val=time_val)
+        self.hybridrs.set_user_profile(liked_ingredients=liked_ingredients, disliked_ingredients=disliked_ingredients, diets=diets, time_val=time_val)
 
-    def get_reco(self, n_reco):
-        return self.kbrs.get_recipe_for_user(n_recipes=n_reco)
+    # def get_reco(self, n_reco):
+    #     return self.kbrs.get_recipe_for_user(n_recipes=n_reco)
 
+    def get_reco_pref(self):
+        return self.hybridrs.get_recipe_pref()
 
 class KBRS():
     def __init__(self):
@@ -84,6 +105,7 @@ class KBRS():
         self.all_recipes_in_reco_dict = list()
         # we sometimes get recommendations that don't match the user profile. We need to know how we obtained those reco (i.e. which contraints we relaxed)
         self.reco_rid_to_user_profile = dict()
+        self.rid_to_utility = dict()
 
         # reco list --> list of lists that will help get order the elements of the reco dict
         self.reco_list = list()
@@ -168,6 +190,7 @@ class KBRS():
                     self.reco_dict[utility]['rids'].append(rid)
                     self.n_recipes_in_reco_dict += 1
                     self.reco_rid_to_user_profile[rid] = user_profile
+                    self.rid_to_utility[rid] = utility
             self.reco_dict[utility]["relaxed_constraints"].append(relaxed_constraint)
 
 
@@ -548,7 +571,7 @@ class KBCFhybrid():
 
         self.user_ratings_list = list()
 
-        self.cfrs_ratings_dict = dict()
+        self.rid_to_cfscore = dict()
 
         # list of lists of reco
         self.reco_list = list()
@@ -566,9 +589,9 @@ class KBCFhybrid():
 
     def get_cfrs_ratings_dict(self):
         cfrs_ratings = self.cfrs.get_reco(self.user_name, self.user_ratings_list, n_reco=TOTAL_RECIPES)
-        print(len(cfrs_ratings))
+        # print(len(cfrs_ratings))
         for [_, rid, rating] in cfrs_ratings:
-            self.cfrs_ratings_dict[rid] = rating
+            self.rid_to_cfscore[rid] = rating
 
 
     def get_reco(self, n_reco=10):
@@ -578,20 +601,45 @@ class KBCFhybrid():
         for [rids_list, utility] in self.kbrs.reco_list:
             sublist = list()
             for rid in rids_list:
-                if rid in self.cfrs_ratings_dict.keys():
-                    rid_w_cf_rating = [rid, self.cfrs_ratings_dict[rid]]
+                if rid in self.rid_to_cfscore.keys():
+                    rid_w_cf_rating = [rid, self.rid_to_cfscore[rid]]
                     sublist.append(rid_w_cf_rating)
             sublist = sorted(sublist, key=operator.itemgetter(1), reverse=True)
             self.reco_list.append([utility, sublist])
 
-        print(self.reco_list[:3])
+        # print(self.reco_list[:3])
 
 
-        # print(kbrs_reco)
-        #
-        # print(cfrs_reco[:10])
+    def get_recipe_pref(self):
+        '''
+        :return: the recipe that best corresponds to the user's tastes; i.e. recipe with the hight (utility, cf-score).
+        '''
+        if not self.reco_list:
+            self.get_reco()
+        rid = self.reco_list[0][1][0][0]
+        utility = self.reco_list[0][0]
+        cf_score = self.reco_list[0][1][0][1]
+        health_score = get_health_score(rid)
+        return rid, utility, cf_score, health_score
 
 
+    def get_recipe_healthier_than_pref(self):
+        '''
+        :return: a recipe that still corresponds to the user's tastes; but that has a higher health score.
+        '''
+        if not self.reco_list:
+            self.get_reco()
+        reco_with_healthscores_list = list()
+        for [utility, sublist] in self.reco_list:
+            for [rid, cf_score] in sublist:
+                reco_with_healthscores_list.append([rid, get_health_score(rid)])
+        reco_with_healthscores_list = sorted(reco_with_healthscores_list, key=operator.itemgetter(1))
+        rid = reco_with_healthscores_list[0][0]
+        utility = self.kbrs.rid_to_utility[rid]
+        cf_score = self.rid_to_cfscore[rid]
+        health_score = reco_with_healthscores_list[0][1]
+        return rid, utility, cf_score, health_score
+    
 
 
 
@@ -606,12 +654,13 @@ if __name__ == "__main__":
     hybridrs = KBCFhybrid("lucile")
 
     df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-    print(df.shape)
+    # print(df.shape)
     ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
     print(ratings)
     hybridrs.set_user_ratings_list(ratings)
 
     hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto'], time_val=20)
-    hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=['onion'], diets=[], time_val=20)
+    # hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=['onion'], diets=[], time_val=20)
 
-    hybridrs.get_reco()
+    print(hybridrs.get_recipe_pref())
+    print(hybridrs.get_recipe_healthier_than_pref())
