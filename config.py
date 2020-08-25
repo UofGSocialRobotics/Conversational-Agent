@@ -24,6 +24,7 @@ exp_cs_control = "NONE"
 exp_no_ack = "no_ack"
 aamas_study_CS = True
 possible_CS = [exp_cs_human]
+chi_study_cs = exp_cs_human
 
 health_recsys_study_cond = "pref-based RS"
 

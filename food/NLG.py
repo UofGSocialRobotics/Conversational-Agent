@@ -20,7 +20,6 @@ AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.cur
 
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False, delay=False, cut_message=False):
-        print("NLG, cs = ", cs)
         subscribes = helper.append_c_to_elts(subscribes, clientid)
         publishes = publishes + clientid
         wbc.WhiteBoardClient.__init__(self, "NLG" + clientid, subscribes, publishes, resp_time)
@@ -43,7 +42,6 @@ class NLG(wbc.WhiteBoardClient):
         self.timeit_details = False
 
         self.cs = cs
-        print("NLG, cs", cs)
 
         self.recipe_cards = dict()
 
@@ -183,6 +181,7 @@ class NLG(wbc.WhiteBoardClient):
             tags = self.tags_explanation_types if intent == fc.inform_food else []
 
             # self.food = message['reco_food']
+            self.recipe = None
             if message['recipe']:
                 # print(colored("got a recipe", 'blue'))
                 self.recipe = message['recipe']
@@ -212,6 +211,9 @@ class NLG(wbc.WhiteBoardClient):
             if not sentence:
                 sentence = ""
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
+            explanation = self.generate_explanation()
+            if explanation:
+                final_sentence = explanation
 
             if message['recipe']:
                 recipe = self.recipe
@@ -228,53 +230,6 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time treat_message: %.3f sec" % (time.time() - start))
         self.publish(msg_to_send)
 
-    def create_recipe_card(self, recipe):
-        # print(colored("in create_recipe_card for recipe " + recipe['id'].__str__(), "blue"))
-        start = time.time()
-        query = fc.SPOONACULAR_API_VISUALIZE + fc.SPOONACULAR_KEY
-
-        imageURL = requests.get(recipe['image'])
-
-        steps_string = ''
-        if recipe['analyzedInstructions']:
-            for step in recipe['analyzedInstructions'][0]['steps']:
-                steps_string = steps_string + step['step'] + "\n"
-        else:
-            steps_string = "Toss everything in and enjoy!"
-
-        ingredients_string = ''
-        for ingredient in recipe['missedIngredients']:
-            ingredients_string = ingredients_string + ingredient['originalString'] + "\n"
-
-        files = {
-            # "source": recipe['sourceUrl'],
-            "backgroundColor": "#ffffff",
-            "fontColor": "#333333",
-            "title": recipe['title'],
-            "backgroundImage": "background1",
-            "image": BytesIO(imageURL.content),
-            "ingredients": ingredients_string,
-            "instructions": steps_string,
-            "mask": "potMask",
-            "readyInMinutes": recipe['readyInMinutes'],
-            "servings": recipe['servings']
-        }
-
-        response = requests.post(query, files=files)
-        card_json = json.loads(response.text)
-        if self.timeit_details:
-            print("Response time create_recipe_card: %.3f sec" % (time.time() - start))
-        try:
-            url = card_json['url']
-            self.recipe_cards[recipe['id']] = url
-            return url
-        except KeyError as e:
-            error_message = "Can't get recipe card! Error: " + e.__str__()
-            # print(e)
-            # print(card_json)
-            log.warn(error_message)
-            print(colored(error_message, "green"))
-            return None
 
 
     def pick_ack_social_strategy(self):
@@ -315,31 +270,11 @@ class NLG(wbc.WhiteBoardClient):
             print("Response time replace_food: %.3f sec" % (time.time() - start))
         return sentence
 
+
     def get_random_ingredient_from_recipe(self, recipe):
         # TODO: rewrite function to work with local KBRS
-
-        # start = time.time()
-        # # ingredients = recipe["missedIngredients"] + recipe["usedIngredients"] #+ recipe["unusedIngredients"]
-        # if 'ingredients' in recipe.keys():
-        #     ingredients += recipe["ingredients"]
-        # # chosen_ingredient = random.choice(ingredients)
-        # for ingredient in ingredients:
-        #     if helper.string_contain_common_word(recipe['title'].lower(), ingredient["name"].lower()):
-        #         return ingredient["name"]
-        # try:
-        #     chosen_ingredient = random.choice(ingredients)
-        # except IndexError as e:
-        #     # print("recipe", "ingredients")
-        #     # print(recipe, ingredients)
-        #     error_msg = "Can't find ingredients in recipe"
-        #     log.warn(error_msg)
-        #     print(colored(error_msg,"blue"))
-        #     return recipe["seed_ingredient"]
-        #     # raise e
-        # if self.timeit_details:
-        #     print("Response time get_random_ingredient_from_recipe: %.3f sec" % (time.time() - start))
-        # return chosen_ingredient["name"]
         return "chicken"
+
 
     def replace_features(self, sentence):
         start = time.time()
@@ -419,7 +354,6 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 sentence = "I know you did not accept any of my recommendations last time but did you eat something instead?"
         if "#user_name" in sentence:
-            print("NLG here")
             if self.user_model[fc.user_name]:
                 sentence = sentence.replace("#user_name", self.user_model[fc.user_name])
             else:
@@ -430,9 +364,69 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
+    def generate_explanation(self):
+        explanation = ""
+        if self.recipe:
+            # print(colored(self.recipe['relaxed_constraints'], 'red'))
+            relaxed_constraint_str = self.recipe['relaxed_constraints']
+            if relaxed_constraint_str:
+                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketogenic")
+                relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
+                relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
+                relaxed_constraints_list = relaxed_constraint_str.split('+')
+                explanation = self.recipe['title'] + " corresponds to your preferences except that"
+                args_list = list()
+                missing_liked_ingredients = list()
+                added_disliked_ingredients = list()
+                for constraint in relaxed_constraints_list:
+                    if "time2" == constraint:
+                        args_list.append(" it takes longer to prepare")
+                    elif "time" == constraint:
+                        args_list.append(" it takes a bit longer to prepare")
+                    elif constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
+                        args_list.append(" it is not " + constraint)
+                    elif constraint in ["keto", "low cal"]:
+                        args_list.append(" it does not correspond to a " + constraint + " diet")
+                    else:
+                        if constraint in self.user_model[fc.liked_food]:
+                            missing_liked_ingredients.append(constraint)
+                        elif constraint in self.user_model[fc.disliked_food]:
+                            added_disliked_ingredients.append(constraint)
+                        else:
+                            print(colored("Don't know what to do with %s" % constraint, "red"))
+                if missing_liked_ingredients:
+                    missing_ingredients_str = " it does not contain "
+                    if len(missing_liked_ingredients) == 1:
+                        missing_ingredients_str += missing_liked_ingredients[0]
+                    else:
+                        missing_ingredients_str += ", ".join(missing_liked_ingredients[:-1]) + " or " + missing_liked_ingredients[-1]
+                    args_list.append(missing_ingredients_str)
+                if added_disliked_ingredients:
+                    added_ingredients_str = " it contains "
+                    if len(added_disliked_ingredients) == 1:
+                        added_ingredients_str += added_disliked_ingredients[0]
+                    else:
+                        added_ingredients_str += ", ".join(added_disliked_ingredients[:-1]) + " and " + added_disliked_ingredients[-1]
+                    args_list.append(added_ingredients_str)
+
+                if len(args_list) == 1:
+                    explanation += args_list[0] + "."
+                else:
+                    explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1] + "."
+                explanation += " What do you think?"
+
+
+            else:
+                explanation = self.recipe['title'] + " corresponds to your preferences! What do you think?"
+
+
+            return explanation
+
+
     def cut_message(self, message):
         tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
         return tokenizer.tokenize(message)
+
 
     def delay_answer(self, sentence):
         setence_wo_spaces = sentence.replace(" ", '')
@@ -441,6 +435,7 @@ class NLG(wbc.WhiteBoardClient):
         return delay
         # print("Delaying answer by %.2f sec" % delay)
         # time.sleep(delay)
+
 
     def msg_to_json(self, intent, message, food_recipe, food_poster, ingredients_list):
         if self.cut_message_bool:
@@ -457,7 +452,5 @@ class NLG(wbc.WhiteBoardClient):
             return self.single_msg_to_json(intent, [{'sentence': message, 'delay': delay}], food_recipe, food_poster, ingredients_list)
 
     def single_msg_to_json(self, intent, sentences_and_delays, food_recipe, food_poster, ingredients_list):
-        print('in single_msg_to_json')
         frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'food_recipe': food_recipe, 'recipe_card': food_poster, fc.ingredients: ingredients_list}
-        #json_msg = json.dumps(frame)
         return frame

@@ -16,7 +16,7 @@ def int_to_word(n):
     return inflect.engine().number_to_words(n)
 
 def print_message(name,action,msg_txt,topic):
-    print(msg_txt)
+    # print(msg_txt)
     msg_to_print = copy.deepcopy(msg_txt)
     if isinstance(msg_txt,dict) and "intent" in msg_txt.keys():
         if "user_model" in msg_txt.keys():

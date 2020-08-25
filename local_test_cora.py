@@ -124,7 +124,6 @@ if __name__ == "__main__":
     argp.add_argument("--randomtest", help="To test the system with random utterances (chosen from list written in this file)", action="store_true")
     argp.add_argument("--test", help="To test the NLU module yourself", action="store_true")
     argp.add_argument("--logs", help="If you want to see the python logs in the console", action="store_true")
-    argp.add_argument("--localDB", help="If you want avoid querying Spoonacular and use the limited local recipe DB instead", action="store_true")
     argp.add_argument("--timeit", help="If you want get the execution time for each module", action="store_true")
 
     hi = ["hi", "hello", "good morning", "hiya", "hallo"]
@@ -138,8 +137,10 @@ if __name__ == "__main__":
 
 
     autotest_scripts = dict()
-    autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
-                                                     "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
+    # autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
+    #                                                  "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
+    autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'no', 'up to an hour', 'beef', 'yes i like it']
+
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False
@@ -154,12 +155,10 @@ if __name__ == "__main__":
                 for script_name, script in autotest_scripts.items():
                     print(colored(script_name, "blue"))
                     test = TestCora(timeit, script)
-                    test.set_use_local_DB_value(args.localDB)
                     test.start_testCora()
 
             elif args.test:
                 test = TestCora(timeit)
-                test.set_use_local_DB_value(args.localDB)
                 test.start_testCora()
 
             elif args.randomtest:
@@ -169,7 +168,6 @@ if __name__ == "__main__":
                 for i in range(10):
                     script.append(random.choice(conversation_stages[-1]))
                 test = TestCora(timeit, script)
-                test.set_use_local_DB_value(args.localDB)
                 test.start_testCora()
 
             else:

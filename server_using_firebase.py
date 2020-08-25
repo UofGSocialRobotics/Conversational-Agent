@@ -140,9 +140,9 @@ class ServerUsingFirebase:
 
      # @overrides(ds_manager.DSManager)
     def publish_for_client(self, message, client_id, firebase_key):
-        log.debug("In publish_for_client")
-        log.debug("firebase key")
-        log.debug(firebase_key)
+        # log.debug("In publish_for_client")
+        # log.debug("firebase key")
+        # log.debug(firebase_key)
         if client_id in self.clients_services:
             # ref = self.firebase_db.child(config.FIREBASE_KEY_SESSIONS).child(client_id)
             if firebase_key == config.FIREBASE_KEY_DIALOG or firebase_key == config.FIREBASE_KEY_ACK or firebase_key == config.FIREBASE_KEY_XP_COND or firebase_key == config.FIREBASE_KEY_RECIPE:
@@ -169,9 +169,9 @@ class ServerUsingFirebase:
                         print(colored(message_to_send, 'blue'))
                         print(colored(type(message_to_send), 'blue'))
                         self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
-                        if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
-                            self.firebase_root_ref.put_here(message_to_send['recipe_card'])
-                            print(colored("trying to push card", 'red'))
+                        # if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
+                        #     self.firebase_root_ref.put_here(message_to_send['recipe_card'])
+                        #     print(colored("trying to push card", 'red'))
                         # publish for data collection
                         topic = config.MSG_DATACOL_IN + client_id
                         for_data_col = dict()
@@ -237,10 +237,8 @@ class ServerUsingFirebase:
         log.debug("%s: new client, id = %s" % (self.name, client_id))
         # Listeners: for modules
         if config.DOMAIN == config.DOMAIN_RS_EVAL:
-            print("server, her in if")
             self.subscribe_whiteboard(config.MSG_RS_OUT + client_id)
         else:
-            print("server, her in else")
             self.subscribe_whiteboard(config.MSG_NLG + client_id)
         self.subscribe_whiteboard(config.MSG_DATACOL_OUT + client_id)
         # Listener: for client

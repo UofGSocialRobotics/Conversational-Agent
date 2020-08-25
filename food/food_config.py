@@ -191,7 +191,7 @@ reco = "recommendation"
 ##                                          Resources Path                                        ##
 ####################################################################################################
 
-DM_MODEL = "food/resources/dm/model_nosmalltalk.csv"
+DM_MODEL = "food/resources/dm/model.csv"
 USER_MODELS = "food/resources/user_models/"
 NLG_SENTENCE_DB = "food/resources/nlg/sentence_db.csv"
 if "nosmalltalk" in DM_MODEL:
@@ -212,7 +212,7 @@ NLG_USE_ACKS_CS = True
 NLG_USE_CS = True
 NLG_USE_EXPLANATIONS = False
 CS_LABELS = ["SD", "PR", "HE", "VSN", "NONE", 'QESD']
-MAX_RECOMMENDATIONS = 5
+MAX_RECOMMENDATIONS = 1
 
 EDAMAM_APP_ID = "&app_id=31e2abca"
 EDAMAM_KEY = "&app_key=befbcff0d60f1af684f881c7f24ed296"

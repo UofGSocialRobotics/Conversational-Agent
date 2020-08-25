@@ -72,6 +72,7 @@ class KBRSModule(wbc.WhiteBoardClient):
             reco_pref_data['id'] = reco_pref_id
             reco_pref_data['utility'] = reco_pref[1]
             reco_pref_data['cf_score'] = reco_pref[2]
+            reco_pref_data['relaxed_constraints'] = self.hybridrs.get_relaxed_constraints(reco_pref_id)
             self.publish({"msg": fc.reco_recipes, fc.reco_pref: reco_pref_data})
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val):
@@ -105,6 +106,7 @@ class KBRS():
         self.all_recipes_in_reco_dict = list()
         # we sometimes get recommendations that don't match the user profile. We need to know how we obtained those reco (i.e. which contraints we relaxed)
         self.reco_rid_to_user_profile = dict()
+        self.reco_rid_to_relaxed_constraint = dict()
         self.rid_to_utility = dict()
 
         # reco list --> list of lists that will help get order the elements of the reco dict
@@ -190,6 +192,7 @@ class KBRS():
                     self.reco_dict[utility]['rids'].append(rid)
                     self.n_recipes_in_reco_dict += 1
                     self.reco_rid_to_user_profile[rid] = user_profile
+                    self.reco_rid_to_relaxed_constraint[rid] = relaxed_constraint
                     self.rid_to_utility[rid] = utility
             self.reco_dict[utility]["relaxed_constraints"].append(relaxed_constraint)
 
@@ -261,7 +264,7 @@ class KBRS():
                 new_user_profile['time'] = 1000
                 # print(new_user_profile)
                 recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
-                self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time", user_profile=new_user_profile)
+                self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time2", user_profile=new_user_profile)
 
         # Relax liked ingredient, disliked ingredient, diet
         if self.n_recipes_in_reco_dict < n_recipes:
@@ -344,9 +347,9 @@ class KBRS():
         new_user_profile = copy.deepcopy(user_profile)
         if new_user_profile["time"]:
             new_user_profile['time'] = 1000
-            self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
-            self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
-            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_liked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time2+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_diet_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time2+", print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['time']*2, previous_constraints_str=previous_constraints_str+"time2+", print_user_profile=print_user_profile)
 
 
         # Relax liked ingredient and another (disliked ingredient or diet)
@@ -641,6 +644,8 @@ class KBCFhybrid():
         return rid, utility, cf_score, health_score
     
 
+    def get_relaxed_constraints(self, rid):
+        return self.kbrs.reco_rid_to_relaxed_constraint[rid]
 
 
 if __name__ == "__main__":

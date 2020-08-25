@@ -2,6 +2,7 @@ import pyrebase
 from ca_logging import log
 import copy
 import config
+import os
 
 from termcolor import colored
 
@@ -60,3 +61,15 @@ class PyrebaseMultipleRefs:
         # url = self.img_ref.child("images/example2.jpg").get_url()
         # print(colored(url))
         # return url
+
+
+if __name__ == "__main__":
+    fb = PyrebaseMultipleRefs()
+    mypath = 'food/resources/img/recipe_card/small/PNGs/'
+    onlyfiles = [f for f in os.listdir(mypath) if (os.path.isfile(mypath + f) and "reduced" in f)]
+    c = 0
+    for f in onlyfiles:
+        fb.put_here(mypath+f)
+        if c % 50 == 0:
+            print(c)
+        c += 1

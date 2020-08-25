@@ -49,7 +49,6 @@ class WhiteBoardClient:
 
     def treat_message(self, message, topic):
         # log.error("$s: method treat_message should be overwriten in inherited classes!" % self.name)
-        print("treat_message WhiteBoardClient %s" % self.name)
         self.time_start = time.time()
 
     def publish(self, message, topic=None):
@@ -57,7 +56,7 @@ class WhiteBoardClient:
         if self.resp_time:
             resp_time = time.time() - self.time_start
             color = "green" if resp_time < 0.5 else "red"
-            print(colored("%s response time: " % self.name, "green") + colored( "%.3f sec" % resp_time, color) )
+            # print(colored("%s response time: " % self.name, "green") + colored( "%.3f sec" % resp_time, color) )
         if isinstance(self.publishes, list):
             if not topic:
                 log.critical("No topic provided. %s can publish on :" % self.name + self.publishes)
