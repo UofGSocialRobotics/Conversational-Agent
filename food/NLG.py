@@ -1,8 +1,5 @@
-import whiteboard_client as wbc
-import helper_functions as helper
 import json
 import random
-import food.food_config as fc
 import requests
 from io import BytesIO
 from ca_logging import log
@@ -14,6 +11,12 @@ import math
 import nltk.data
 import config
 import time
+
+import food.food_config as fc
+import whiteboard_client as wbc
+import helper_functions as helper
+import config
+
 
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
@@ -32,7 +35,7 @@ class NLG(wbc.WhiteBoardClient):
         self.user_model = None
         self.user_intent = None
         self.food = None
-        self.recipe = None
+        self.recipes = None
         self.situation = None
 
         self.features_last_enumareted_on_turn = None
@@ -109,11 +112,9 @@ class NLG(wbc.WhiteBoardClient):
         start = time.time()
         ack_params_list = self.ackDB.keys()
         key_res = [ack_params for ack_params in ack_params_list if ack_params.previous_intent == previous_intent]
-        # print(key_res)
 
         if CS:
             key_res = [ack_params for ack_params in key_res if ack_params.cs == CS]
-        # print(key_res)
         key_res_tmp = key_res
         if valence:
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence)]
@@ -121,35 +122,20 @@ class NLG(wbc.WhiteBoardClient):
             key_res = [ack_params for ack_params in key_res if ("NONE" in ack_params.valence)]
         if not key_res:
             key_res = key_res_tmp
-            # print(key_res_tmp)
-            # for ack_params in key_res:
-                # print(ack_params.valence, valence)
             key_res = [ack_params for ack_params in key_res if (valence in ack_params.valence or ack_params.valence == "NONE")]
-        # print(key_res)
         if current_intent:
             key_res = [ack_params for ack_params in key_res if current_intent not in ack_params.current_intent_should_not_be]
             key_res = [ack_params for ack_params in key_res if (ack_params.current_intent_should_be == 'NONE' or current_intent in ack_params.current_intent_should_be)]
-
-        # print(key_res)
 
         if key_res and len(key_res) > 0:
             to_return = random.choice(self.ackDB[key_res[0]])
         else:
             error_message = "Could not find ack for previous_intent=" + previous_intent.__str__() + ", valence=" + valence.__str__() + ", CS=" + CS.__str__() + ", current_intent="+current_intent.__str__()
             log.warn(error_message)
-            # print(colored(error_message, "blue"))
             to_return = ""
         if self.timeit_details:
             print("Response time choose_ack: %.3f sec" % (time.time() - start))
-        # print(to_return)
         return to_return
-
-    def get_create_all_cards(self, recipe_list):
-        for recipe in recipe_list:
-            # print(recipe['id'], type(self.recipe_cards.keys()))
-            if recipe["id"] not in self.recipe_cards.keys():
-                self.create_recipe_card(recipe)
-            # threading.current_thread().join()
 
     def get_recipe_card(self, recipe):
         rid = recipe['id']
@@ -171,7 +157,6 @@ class NLG(wbc.WhiteBoardClient):
             # message = json.loads(msg)
             recipe_card = None
             self.user_model = message['user_model']
-            # print(self.user_model)
             self.user_intent = message['user_intent']
             self.situation = self.user_model['situation']
 
@@ -181,11 +166,12 @@ class NLG(wbc.WhiteBoardClient):
             tags = self.tags_explanation_types if intent == fc.inform_food else []
 
             # self.food = message['reco_food']
-            self.recipe = None
-            if message['recipe']:
-                # print(colored("got a recipe", 'blue'))
-                self.recipe = message['recipe']
-                recipe_card = self.get_recipe_card(self.recipe)
+            self.recipes = None
+            if message['recipes']:
+                self.recipes = message['recipes']
+                recipe_cards = list()
+                for recipe in self.recipes:
+                    self.get_recipe_card(recipe)
 
             sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
 
@@ -210,21 +196,26 @@ class NLG(wbc.WhiteBoardClient):
                 ack = ""
             if not sentence:
                 sentence = ""
-            final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
-            explanation = self.generate_explanation()
-            if explanation:
-                final_sentence = explanation
 
-            if message['recipe']:
-                recipe = self.recipe
-                if not recipe_card:
-                    recipe_card = None
+            if self.recipes:
+                if config.chi_study_explanation_mode == config.chi_study_explanations:
+                    sentence = self.generate_explanation()
+                elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
+                    sentence = "What do you think about " + self.recipes[0][fc.title] + "?"
+
+
+            final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
+
+            if message['recipes']:
+                recipes = self.recipes
+                if not recipe_cards:
+                    recipe_cards = None
                 # ingredients_list = message[fc.ingredients]
             else:
-                recipe, recipe_card, ingredients_list = None, None, None
+                recipes, recipe_cards, ingredients_list = None, None, None
                 # msg_to_send = self.msg_to_json(intent=message['intent'], sentence=final_sentence, food_recipe=None, food_poster=None)
             # msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=recipe, food_poster=recipe_card, ingredients_list=ingredients_list)
-            msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=None, food_poster=recipe_card, ingredients_list=None)
+            msg_to_send = self.msg_to_json(intent=message['intent'], message=final_sentence, food_recipe=recipes, food_poster=recipe_cards, ingredients_list=None)
 
         if self.timeit_details:
             print("Response time treat_message: %.3f sec" % (time.time() - start))
@@ -258,16 +249,16 @@ class NLG(wbc.WhiteBoardClient):
         return to_return
 
     def replace_food(self, sentence, food_tag, food_key):
-        start = time.time()
-        if food_tag in sentence:
-            if food_tag == "#mainfood":
-                replace_with = self.get_random_ingredient_from_recipe(self.recipe)
-            # else:
-            #     replace_with = self.food[food_key]
-            #     replace_with = replace_with.replace(" dish", "")
-            sentence = sentence.replace(food_tag, replace_with)
-        if self.timeit_details:
-            print("Response time replace_food: %.3f sec" % (time.time() - start))
+        # start = time.time()
+        # if food_tag in sentence:
+        #     if food_tag == "#mainfood":
+        #         replace_with = self.get_random_ingredient_from_recipe(self.recipe)
+        #     # else:
+        #     #     replace_with = self.food[food_key]
+        #     #     replace_with = replace_with.replace(" dish", "")
+        #     sentence = sentence.replace(food_tag, replace_with)
+        # if self.timeit_details:
+        #     print("Response time replace_food: %.3f sec" % (time.time() - start))
         return sentence
 
 
@@ -346,7 +337,7 @@ class NLG(wbc.WhiteBoardClient):
         if "#recipe" in sentence:
             # print(colored(sentence, 'blue'))
             # print(colored(self.recipe, 'blue'))
-            sentence = sentence.replace("#recipe", self.recipe['title'])
+            sentence = sentence.replace("#recipe", self.recipes[0]['title'])
         sentence = self.replace_features(sentence)
         if "#last_food" in sentence:
             if self.user_model['liked_food']:
@@ -366,15 +357,16 @@ class NLG(wbc.WhiteBoardClient):
 
     def generate_explanation(self):
         explanation = ""
-        if self.recipe:
+        if self.recipes:
+            recipe = self.recipes[0]
             # print(colored(self.recipe['relaxed_constraints'], 'red'))
-            relaxed_constraint_str = self.recipe['relaxed_constraints']
+            relaxed_constraint_str = recipe['relaxed_constraints']
             if relaxed_constraint_str:
                 relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
                 relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
                 relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
                 relaxed_constraints_list = relaxed_constraint_str.split('+')
-                explanation = self.recipe['title'] + " corresponds to your preferences except that"
+                explanation = recipe['title'] + " corresponds to your preferences except that"
                 args_list = list()
                 missing_liked_ingredients = list()
                 added_disliked_ingredients = list()
@@ -410,14 +402,15 @@ class NLG(wbc.WhiteBoardClient):
                     args_list.append(added_ingredients_str)
 
                 if len(args_list) == 1:
-                    explanation += args_list[0] + "."
+                    explanation += args_list[0]
                 else:
-                    explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1] + "."
+                    explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
+                explanation += "; but it is healthier than other options."
                 explanation += " What do you think?"
 
 
             else:
-                explanation = self.recipe['title'] + " corresponds to your preferences! What do you think?"
+                explanation = recipe['title'] + " is the healthiest recipe corresponding to your preferences! What do you think?"
 
 
             return explanation
@@ -451,6 +444,15 @@ class NLG(wbc.WhiteBoardClient):
                 delay = self.delay_answer(message)
             return self.single_msg_to_json(intent, [{'sentence': message, 'delay': delay}], food_recipe, food_poster, ingredients_list)
 
-    def single_msg_to_json(self, intent, sentences_and_delays, food_recipe, food_poster, ingredients_list):
-        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'food_recipe': food_recipe, 'recipe_card': food_poster, fc.ingredients: ingredients_list}
+    def single_msg_to_json(self, intent, sentences_and_delays, food_recipes, food_posters, ingredients_list):
+        if food_recipes and food_posters:
+            if len(food_recipes) != len(food_posters):
+                raise AttributeError("We should have the same number of recipes and of posters! (got %d and %d)" % (len(food_recipes), len(food_posters)))
+        recipes_data = list()
+        if food_recipes and food_posters:
+            for i, recipe in enumerate(food_recipes):
+                rid = recipe['id'] if recipe else None
+                rdata_item = {'rid': rid, 'recipe_card': food_posters[i]}
+                recipes_data.append(rdata_item)
+        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'recipes': recipes_data, fc.ingredients: ingredients_list}
         return frame

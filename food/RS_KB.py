@@ -5,6 +5,7 @@ import operator
 from termcolor import colored
 import pandas as pd
 
+import config
 import whiteboard_client as wbc
 import helper_functions as helper
 import food.food_config as fc
@@ -52,6 +53,7 @@ class KBRSModule(wbc.WhiteBoardClient):
         # self.kbrs = KBRS()
         self.hybridrs = KBCFhybrid(clientid=clientid)
 
+
     def treat_message(self, msg, topic):
         super(KBRSModule, self).treat_message(msg, topic)
 
@@ -63,17 +65,23 @@ class KBRSModule(wbc.WhiteBoardClient):
             self.hybridrs.set_user_ratings_list(ratings)
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
-            # reco = self.get_reco(n_reco=10)
-            reco_pref = self.get_reco_pref()
-            reco_pref_id = reco_pref[0]
-            reco_pref_data = copy.deepcopy(recipes_data[reco_pref_id])
-            reco_pref_data['reviews'] = None
-            del reco_pref_data['reviews']
-            reco_pref_data['id'] = reco_pref_id
-            reco_pref_data['utility'] = reco_pref[1]
-            reco_pref_data['cf_score'] = reco_pref[2]
-            reco_pref_data['relaxed_constraints'] = self.hybridrs.get_relaxed_constraints(reco_pref_id)
-            self.publish({"msg": fc.reco_recipes, fc.reco_pref: reco_pref_data})
+
+            if config.chi_study_comparison_mode == config.chi_study_no_comp:
+
+                # reco = self.get_reco(n_reco=10)
+                reco_list = list()
+                # reco = self.get_reco_pref()
+                reco = self.get_reco_healthier_than_pref()
+                reco_id = reco[0]
+                reco_data = copy.deepcopy(recipes_data[reco_id])
+                reco_data['reviews'] = None
+                del reco_data['reviews']
+                reco_data['id'] = reco_id
+                reco_data['utility'] = reco[1]
+                reco_data['cf_score'] = reco[2]
+                reco_data['relaxed_constraints'] = self.hybridrs.get_relaxed_constraints(reco_id)
+                reco_list.append(reco_data)
+                self.publish({"msg": fc.reco_recipes, fc.reco_list: reco_list})
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val):
         self.hybridrs.set_user_profile(liked_ingredients=liked_ingredients, disliked_ingredients=disliked_ingredients, diets=diets, time_val=time_val)
@@ -83,6 +91,9 @@ class KBRSModule(wbc.WhiteBoardClient):
 
     def get_reco_pref(self):
         return self.hybridrs.get_recipe_pref()
+
+    def get_reco_healthier_than_pref(self):
+        return self.hybridrs.get_recipe_healthier_than_pref()
 
 class KBRS():
     def __init__(self):
@@ -708,7 +719,7 @@ if __name__ == "__main__":
         hybridrs.set_user_profile(liked_ingredients=[ingredient], disliked_ingredients=[], diets=[], time_val=1000)
 
         rid, utility, cf_score, health_score = hybridrs.get_recipe_pref()
-        print(rid ,utility)
+        print(rid, utility)
 
         if utility != 100:
             print(colored("No recipe with " + ingredient, 'red'))

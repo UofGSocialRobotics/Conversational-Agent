@@ -42,7 +42,7 @@ get_reco = "get_reco"
 reco_recipes = "reco_recipes"
 
 recipes_list = "recipes_list"
-reco_pref = 'reco_pref'
+reco_list = 'reco_list'
 
 # keys words used by NLU
 yes = 'yes'
@@ -87,6 +87,7 @@ previous_intent = 'previous_intent'
 user_model = 'user_model'
 reco_food = 'reco_food'
 recipe = 'recipe'
+recipes = 'recipes'
 title = "title"
 ingredients = "ingredients"
 

@@ -165,9 +165,10 @@ class ServerUsingFirebase:
                         timestamp = datetime.datetime.now().__str__()
                         message_to_send[config.FIREBASE_KEY_DATETIME] = timestamp
                         message_to_send[config.FIREBASE_KEY_SOURCE] = config.FIREBASE_VALUE_SOURCE_AGENT
-                        message_to_send['food_recipe'] = None
+                        # if message_to_send['food_recipe']:
+                        #     message_to_send['rid'] = message_to_send['food_recipe']['id']
+                        # message_to_send['food_recipe'] = None
                         print(colored(message_to_send, 'blue'))
-                        print(colored(type(message_to_send), 'blue'))
                         self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
                         # if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
                         #     self.firebase_root_ref.put_here(message_to_send['recipe_card'])

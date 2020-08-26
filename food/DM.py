@@ -83,7 +83,6 @@ class DM(wbc.WhiteBoardClient):
                     if "-" in line_input[i]:
                         node.add(line_input[i])
                 self.nodes[node.stateName] = node
-        # print(self.nodes)
 
     def save_user_model(self):
         file = fc.USER_MODELS + self.client_id + ".prefs"
@@ -117,8 +116,6 @@ class DM(wbc.WhiteBoardClient):
         self.requery_because_got_new_required_food = False
         recipe_ingredients_list = None
 
-        # print(self.currState)
-
         super(DM, self).treat_message(msg, topic)
 
         # Todo: Second interaction
@@ -130,23 +127,22 @@ class DM(wbc.WhiteBoardClient):
         if "RS" in topic:
             subject = msg["msg"]
             if subject == fc.reco_recipes:
-                recipe = msg[fc.reco_pref]
+                recipes = msg[fc.reco_list]
                 self.n_recommendations += 1
 
-                self.move_state_and_publish_for_NLG(recipe=recipe, recipe_ingredients_list=recipe[fc.ingredients])
+                self.move_state_and_publish_for_NLG(recipes=recipes, recipe_ingredients_list=None)
 
         elif "NLU" in topic:
             self.from_NLU = msg
             self.from_NLU = self.parse_from_NLU(self.from_NLU)
 
-            recipe = None
+            recipes = None
             self.next_state = self.nodes.get(self.currState).get_action(self.from_NLU)
 
             if fc.inform_food in self.currState:
                 pass
 
             if fc.inform in self.from_NLU[fc.intent]:
-                # print(self.from_NLU)
                 if fc.user_name in self.from_NLU[fc.entity_type]:
                     self.user_model[fc.user_name] = self.from_NLU[fc.entity]
                 if fc.health in self.from_NLU[fc.entity_type]:
@@ -171,10 +167,6 @@ class DM(wbc.WhiteBoardClient):
                     self.user_model[fc.liked_features].append(fc.time)
                 if fc.duration in self.from_NLU[fc.entity_type]:
                     self.user_model[fc.time_to_cook] = self.from_NLU[fc.entity]
-                # if fc.vegan in self.from_NLU[fc.entity_type] and self.from_NLU[fc.entity] is True:
-                #     print(colored("user is vegan", "green"))
-                #     self.user_model[fc.diet].append(fc.vegan)
-                #     fc.EDAMAM_ADDITIONAL_DIET = "&health=vegan"
                 if fc.diet in self.from_NLU[fc.entity_type]:
                     self.user_model[fc.diet] = self.from_NLU[fc.entity]
                 if fc.intolerances in self.from_NLU[fc.entity_type]:
@@ -192,7 +184,6 @@ class DM(wbc.WhiteBoardClient):
                             self.add_disliked_foods(ingredients_list)
                             self.remove_recipes_with_disliked_ingredients()
                 if fc.cuisine in self.from_NLU[fc.entity_type]:
-                    # print("Got cuisine!")
                     cuisines_list = self.from_NLU[fc.entity]
                     if self.currState == "request(usual_dinner)" and "+" in self.from_NLU[fc.polarity]:
                         self.user_model[fc.usual_dinner] += cuisines_list
@@ -201,8 +192,6 @@ class DM(wbc.WhiteBoardClient):
                             self.add_liked_cuisines(cuisines_list)
                         else:
                             self.add_disliked_cuisines(cuisines_list)
-
-                    # print(self.user_model[fc.liked_cuisine], self.user_model[fc.disliked_cuisine])
 
 
             if fc.healthy in self.currState:
@@ -223,31 +212,15 @@ class DM(wbc.WhiteBoardClient):
                     wait_for_reco = True
                     self.ask_for_reco()
 
-                # if self.current_recipe_list:
-                #     recipe = self.current_recipe_list[0]
-                #     # print(recipe)
-                #     recipe_ingredients_list = self.get_all_ingredients(recipe)
-                #     msg = "HealthScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_health_score], self.food_values[fc.healthiness])
-                #     msg += "FillingnessScore: %.2f (user val: %.2f)\n" % (recipe[fc.normed_fillingness_score], self.food_values[fc.food_fillingness])
-                #     msg += "Avg distance: %.2f (%.2f, %.2f)" % (recipe[fc.average_health_fillingness_distance], recipe[fc.health_score_distance_to_user_s_health_value], recipe[fc.fillingness_score_distance_to_user_s_fillingness_value])
-                #     print(colored(msg, "magenta"))
-                #     log.info(msg)
-                #     self.already_recommended_recipe_list.append(recipe[fc.title])
-                #     self.n_recommendations += 1
-                # else:
-                #     self.next_state = "bye"
-
             # if the user comes back
             if self.next_state == 'greeting' and (self.user_model['liked_food']):
                 self.next_state = "greet_back"
 
-            # print(colored(self.next_state, 'green'))
-
             if not wait_for_reco:
-                self.move_state_and_publish_for_NLG(recipe=recipe, recipe_ingredients_list=recipe_ingredients_list)
+                self.move_state_and_publish_for_NLG(recipes=recipes, recipe_ingredients_list=recipe_ingredients_list)
 
 
-    def move_state_and_publish_for_NLG(self, recipe, recipe_ingredients_list):
+    def move_state_and_publish_for_NLG(self, recipes, recipe_ingredients_list):
 
         # saves the user model at the end of the interaction
         if self.next_state == 'bye' and fc.SAVE_USER_MODEL:
@@ -256,7 +229,7 @@ class DM(wbc.WhiteBoardClient):
 
         prev_state = self.currState
         self.currState = self.next_state
-        new_msg = self.msg_to_json(self.next_state, self.from_NLU, prev_state, self.user_model, recipe, recipe_ingredients_list)
+        new_msg = self.msg_to_json(self.next_state, self.from_NLU, prev_state, self.user_model, recipes, recipe_ingredients_list)
         self.from_NLU = None
         self.publish({"current_state": self.currState}, topic=self.publishes[4])
         self.publish(new_msg, topic=self.publishes[0])
@@ -270,7 +243,6 @@ class DM(wbc.WhiteBoardClient):
 
     def add_liked_foods(self, foods_list):
         self.requery_because_got_new_required_food = True
-        # print("requery_because_got_new_required_food, true",)
         self.user_model[fc.liked_food] += foods_list
         for food in foods_list:
             if food in self.user_model[fc.disliked_food]:
@@ -284,14 +256,12 @@ class DM(wbc.WhiteBoardClient):
 
     def add_liked_cuisines(self, cuisines_list):
         self.requery_because_got_new_required_food = True
-        # print("requery_because_got_new_required_food, true",)
         self.user_model[fc.liked_cuisine] += cuisines_list
         for cuisine in cuisines_list:
             if cuisine in self.user_model[fc.disliked_cuisine]:
                 self.user_model[fc.disliked_cuisine].remove(cuisine)
 
     def save_reco_data(self):
-        # print(colored("Did %d queries to Spoonacular\nWorked with ingredients: %s" % (len(self.spoonacular_queries), ", ".join(self.used_seed_ingredients)), "blue"))
         data_reco = dict()
         data_reco["n_queries"] = len(self.spoonacular_queries)
         data_reco["queries"] = self.spoonacular_queries
@@ -307,8 +277,8 @@ class DM(wbc.WhiteBoardClient):
         self.publish(data, topic=self.publishes[3])
 
 
-    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipe, ingredients=None):
-        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.recipe: recipe, fc.ingredients: ingredients}
+    def msg_to_json(self, intention, user_intent, previous_intent, user_frame, recipes, ingredients=None):
+        frame = {fc.intent: intention, fc.user_intent: user_intent, fc.previous_intent: previous_intent, fc.user_model: user_frame, fc.recipes: recipes, fc.ingredients: ingredients}
         # json_msg = json.dumps(frame)
         return frame
 
@@ -363,7 +333,6 @@ class DM(wbc.WhiteBoardClient):
         types_list = list()
         for index, row in ingredient_info.iterrows():
             t = row[fc.food_type]
-            # print(t)
             if t not in types_list:
                 types_list.append(t)
         return types_list
