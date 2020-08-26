@@ -370,7 +370,7 @@ class NLG(wbc.WhiteBoardClient):
             # print(colored(self.recipe['relaxed_constraints'], 'red'))
             relaxed_constraint_str = self.recipe['relaxed_constraints']
             if relaxed_constraint_str:
-                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketogenic")
+                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
                 relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
                 relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
                 relaxed_constraints_list = relaxed_constraint_str.split('+')

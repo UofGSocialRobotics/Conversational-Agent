@@ -128,18 +128,19 @@ if __name__ == "__main__":
 
     hi = ["hi", "hello", "good morning", "hiya", "hallo"]
     i_am_emotion = ["i m tired", "good", "amazing", "i feel great", "OK", "fine", "i m good", "exhausted", "i had a good night and i feel great this morning!", "not good", "i feel bad", "i am in a bad mood", "i am sick", "I have a headache"]
-    hungriness = ["i am starving", "i am hungry", "super hungry", "something light", "not too hungry", "never hungry for diner"]
-    healthiness = ["very healthy", "i don t care", "i don t know", "healthy maybe?", "not healthy", "testy, not healthy", "no healthy i want pizza"]
-    diet = ["no", "i am vegan", "i don t eat meat", "i dont eat dairy", "i eat gluten free", "no gluten please", "i don t eat eggs", "I am intolerant to shellfish", "no", "no", "no", "no", "no", "no", "no", "no"]
+    # hungriness = ["i am starving", "i am hungry", "super hungry", "something light", "not too hungry", "never hungry for diner"]
+    # healthiness = ["very healthy", "i don t care", "i don t know", "healthy maybe?", "not healthy", "testy, not healthy", "no healthy i want pizza"]
+    # diet = ["no", "i am vegan", "i don t eat meat", "i dont eat dairy", "i eat gluten free", "no gluten please", "i don t eat eggs", "I am intolerant to shellfish", "no", "no", "no", "no", "no", "no", "no", "no"]
+    diet = ["Dairy", "Egg", "Gluten", "Peanut", "Gluten Free", "Low carbs", "Ketonic", "Vegetarian", "Vegan", "Pescetarian"]
     time_options = ["I have time", "I don t have time", "I am in a rush", "something quick", "I have plenty of time", "not in a rush"]
     accept_recipe = ["no", "something else", "not that", "seems good", "yes", "sure", "I don t like salmon", "i don t like salad", "i don t like chicken"]
-    conversation_stages = [hi, i_am_emotion, hungriness, healthiness, diet, time_options, accept_recipe]
+    conversation_stages = [hi, i_am_emotion, diet, time_options, accept_recipe]
 
 
     autotest_scripts = dict()
     # autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
     #                                                  "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
-    autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'no', 'up to an hour', 'beef', 'yes i like it']
+    autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'I have a vegan Gluten Free low carbs diet', 'up to an hour', 'broccoli', 'yes i like it']
 
 
     args = argp.parse_args()

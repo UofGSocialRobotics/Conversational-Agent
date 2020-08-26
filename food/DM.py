@@ -323,13 +323,13 @@ class DM(wbc.WhiteBoardClient):
         msg = {"msg": fc.set_user_profile,
                       fc.liked_food: self.user_model[fc.liked_food],
                       fc.disliked_food: self.user_model[fc.disliked_food],
-                      fc.diet: list(),
+                      fc.diet: self.user_model[fc.diet],
                       fc.time_to_cook: self.user_model[fc.time_to_cook]}
 
-        if self.user_model[fc.diet]:
-            msg[fc.diet].append(self.user_model[fc.diet])
-        if self.user_model[fc.intolerances]:
-            msg[fc.diet].append(self.user_model[fc.intolerances])
+        # if self.user_model[fc.diet]:
+        #     msg[fc.diet].append(self.user_model[fc.diet])
+        # if self.user_model[fc.intolerances]:
+        #     msg[fc.diet].append(self.user_model[fc.intolerances])
 
         self.publish(msg, topic=self.publishes[5])
 

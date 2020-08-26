@@ -239,13 +239,26 @@ def inform_hungry(document, voc_no, voc_hungry, voc_light):
         return ("inform", "hungry", not positive, None)
     return False
 
-def inform_diet(document, voc_diet):
+def inform_diet(document, utterance, voc_diet):
+    diets = list()
+    if "gluten free" in utterance.lower():
+        diets.append("gluten_free")
+    if "dairy free" in utterance.lower():
+        diets.append("dairy_free")
+    if "low carbs" in utterance.lower():
+        diets.append("low_carbs")
     for token in document:
         score, word = nlu_helper.NLU_token_in_list_fuzz(token, voc_diet)
         if word:
-            return ("inform", "diet", word, None)
+            if word == "gluten" or word == "dairy":
+                word += "_free"
+            diets.append(word)
+            # return ("inform", "diet", word, None)
         elif nlu_helper.NLU_token_in_list_bool(token, ["keto"]):
-            return ("inform", "diet", "ketonic", None)
+            # return ("inform", "diet", "ketonic", None)
+            diets.append("ketonic")
+    if diets:
+        return ("inform", "diet", diets, None)
     return False
 
 def is_but_no_inform_food(sentence):
@@ -263,8 +276,13 @@ def inform_intolerance(document, uttenrance, voc_intolerances):
             intolerances.append(token.text)
     if nlu_helper.NLU_string_in_sentence_bool("lactose", uttenrance):
         intolerances.append("dairy")
-    if intolerances:
-        return ("inform", "intolerances", ",".join(intolerances), None)
+
+    new_intolerances = list()
+    for w in intolerances:
+        new_intolerances.append(w + '_free')
+
+    if new_intolerances:
+        return ("inform", "intolerances", ",".join(new_intolerances), None)
     else:
         return False
 
@@ -324,7 +342,7 @@ def get_intent_depending_on_conversation_stage(stage, document, utterance, voc, 
             elif f[0] == "no":
                 f = ("inform", "healthy", -1, None)
     elif stage == "request(diet)":
-        f = inform_diet(document, voc_diet=voc['diet'])
+        f = inform_diet(document, utterance=utterance, voc_diet=voc['diet'])
         if not f:
             f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
         if not f:
@@ -380,7 +398,7 @@ def get_intent_default(document, utterance, voc, food_list):
         f = inform_time(document, voc_no=voc["no"]["all_no_words"], voc_time=voc["time"], voc_no_time=voc["no_time"], voc_constraint=voc["constraint"])
     if not f:
         # f = inform_vegan(document, voc_no=voc["no"]["all_no_words"], voc_vegan=voc["vegan"], voc_no_vegan=voc["no_vegan"])
-        f = inform_diet(document, voc_diet=voc['diet'])
+        f = inform_diet(document, utterance=utterance, voc_diet=voc['diet'])
     if not f:
         f = inform_intolerance(document, uttenrance=utterance, voc_intolerances=voc["spoonacular_intolerances"])
     if not f:
@@ -429,10 +447,6 @@ class NLU(wbc.WhiteBoardClient):
         self.current_stage = self.conversation_stages.pop(0)
         # self.next_conversation_stage()
 
-
-
-
-
     def read_convesation_stages(self):
         path = fc.DM_MODEL
         with open(path, 'r') as f:
@@ -442,13 +456,6 @@ class NLU(wbc.WhiteBoardClient):
                 conversation_stages.append(row[0])
             return conversation_stages
 
-    # def next_conversation_stage(self):
-    #     if self.current_stage == "default":
-    #         return
-    #     if self.current_stage != "inform(food)":
-    #         self.current_stage = self.conversation_stages.pop(0)
-    #     else:
-    #         self.current_stage = "default"
 
     def treat_message(self, msg, topic):
         # print(msg, topic)

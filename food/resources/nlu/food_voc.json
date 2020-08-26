@@ -221,15 +221,12 @@
     ],
     "diet": [
         "gluten free",
+        "dairy free",
         "ketonic",
         "vegetarian",
-        "lacto-vegetarian",
-        "ovo-vegetarian",
         "vegan",
         "pescetarian",
-        "paleo",
-        "primal",
-        "whole30"
+        "low carbs"
     ],
     "pasta": [
         "cannelloni",

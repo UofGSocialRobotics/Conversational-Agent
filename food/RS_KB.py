@@ -112,7 +112,35 @@ class KBRS():
         # reco list --> list of lists that will help get order the elements of the reco dict
         self.reco_list = list()
 
+    def reset_reco_data(self):
+        ## Number of recipes in the list that best fit the required criteria; i.e. when we don't recipes matching one of the user's constraints, we put the ones that match in the beginning of the list and we keep the rest at the end...
+        self.best_match_recipes = list()
+
+        self.reco_dict = dict()
+        self.n_recipes_in_reco_dict = 0
+        self.all_recipes_in_reco_dict = list()
+        # we sometimes get recommendations that don't match the user profile. We need to know how we obtained those reco (i.e. which contraints we relaxed)
+        self.reco_rid_to_user_profile = dict()
+        self.reco_rid_to_relaxed_constraint = dict()
+        self.rid_to_utility = dict()
+
+        # reco list --> list of lists that will help get order the elements of the reco dict
+        self.reco_list = list()
+
+    def reset_user_profile(self):
+        self.user_profile = {
+            "liked_ingredients": list(),
+            "disliked_ingredients": list(),
+            "diets": list(),
+            "time": None,
+            "hungry": None,
+            "healthy": None
+        }
+
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
+        self.reset_user_profile()
+        self.reset_reco_data()
+
         if isinstance(liked_ingredients, list):
             for elt in liked_ingredients:
                 if not isinstance(elt, str):
@@ -586,6 +614,7 @@ class KBCFhybrid():
 
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
+        self.reco_list = list()
         self.kbrs.set_user_profile(liked_ingredients, disliked_ingredients, diets, time_val, hungry, healthy)
         self.get_cfrs_ratings_dict()
 
@@ -664,8 +693,23 @@ if __name__ == "__main__":
     print(ratings)
     hybridrs.set_user_ratings_list(ratings)
 
-    hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak', "tomato", "pasta", "rice"], disliked_ingredients=['ginger', 'onion', 'garlic'], diets=['keto'], time_val=20)
-    # hybridrs.set_user_profile(liked_ingredients=['broccoli', 'steak'], disliked_ingredients=['onion'], diets=[], time_val=20)
+    # ingredients_to_check = ["Beef", "Chicken", "Duck", "Eggs", "Lamb", "Pork", "Turkey", "Veal"]
+    # ingredients_to_check = ["Alaska pollock", "Clams", "Cod", "Crab", "Haddock", "Halibut", "Prawns", "salmon", "Seabass", "Shrimp", "Tilapia", "Tuna"] # ["Clams", "Shrimp", "Tilapia"]
+    # ingredients_to_check = ["Aspargus", "Avocado", "Beetroots", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Cucumbers", "Eggplant", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Red cabbage", "Spinach", "Spring onions", "Sweetcorn", "Sweet potato", "Tomatoes", "Turnips", "Zucchini"]
+    # ingredients_to_check = ["Avocado", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Spinach", "Sweet potato", "Tomatoes", "Zucchini"]
+    # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
+    # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries"]
+    # ingredients_to_check = ["Brown rice", "Chickpeas", "Couscous", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Quinoa", "Rice", "Tofu"]
+    ingredients_to_check = ["Brown rice", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Rice", "Tofu"]
 
-    print(hybridrs.get_recipe_pref())
-    print(hybridrs.get_recipe_healthier_than_pref())
+    for ingredient in ingredients_to_check:
+        print("Checking " + ingredient)
+
+        hybridrs.set_user_profile(liked_ingredients=[ingredient], disliked_ingredients=[], diets=[], time_val=1000)
+
+        rid, utility, cf_score, health_score = hybridrs.get_recipe_pref()
+        print(rid ,utility)
+
+        if utility != 100:
+            print(colored("No recipe with " + ingredient, 'red'))
+
