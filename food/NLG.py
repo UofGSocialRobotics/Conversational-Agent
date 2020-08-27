@@ -198,10 +198,18 @@ class NLG(wbc.WhiteBoardClient):
                 sentence = ""
 
             if self.recipes:
-                if config.chi_study_explanation_mode == config.chi_study_explanations:
-                    sentence = self.generate_explanation()
-                elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
-                    sentence = "What do you think about " + self.recipes[0][fc.title] + "?"
+
+                if config.chi_study_comparison_mode == config.chi_study_no_comp or (len(self.recipes) == 1 and self.recipes[0]['identical_recipes']):
+                    if config.chi_study_explanation_mode == config.chi_study_explanations:
+                        sentence = self.generate_explanation_one_recipe()
+                    elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
+                        sentence = "What do you think about " + self.recipes[0][fc.title] + "?"
+
+                elif config.chi_study_comparison_mode == config.chi_study_comp_healthier:
+                    if config.chi_study_explanation_mode == config.chi_study_explanations:
+                        sentence = self.generate_explanation_pref_vs_healthier()
+                    elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
+                        sentence = "What do you think about " + self.recipes[0][fc.title] + " or " + self.recipes[1][fc.title] + "?"
 
 
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
@@ -355,9 +363,9 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
-    def generate_explanation(self):
-        explanation = ""
+    def generate_explanation_one_recipe(self):
         if self.recipes:
+            explanation = ""
             recipe = self.recipes[0]
             # print(colored(self.recipe['relaxed_constraints'], 'red'))
             relaxed_constraint_str = recipe['relaxed_constraints']
@@ -410,9 +418,21 @@ class NLG(wbc.WhiteBoardClient):
 
 
             else:
-                explanation = recipe['title'] + " is the healthiest recipe corresponding to your preferences! What do you think?"
+                explanation = recipe[fc.title] + " is the healthiest recipe corresponding to your preferences! What do you think?"
 
 
+            return explanation
+
+
+    def generate_explanation_pref_vs_healthier(self):
+        if self.recipes:
+            if self.recipes[0][fc.reco_mode] == fc.reco_mode_pref:
+                healthier_recipe = self.recipes[1]
+                pref_recipe = self.recipes[0]
+            else:
+                healthier_recipe = self.recipes[0]
+                pref_recipe = self.recipes[1]
+            explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier. What do you think?"
             return explanation
 
 

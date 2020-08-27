@@ -21,6 +21,7 @@ N_CALORIES_HEAVY_DINNER = 450
 FSA_HEALTHY = 7
 FSA_UNHEALTHY = 10
 
+
 CONSTRAINTS_COSTS = {"vegan": 10,
                      "vegetarian": 10,
                      "gluten_free": 10,
@@ -66,22 +67,42 @@ class KBRSModule(wbc.WhiteBoardClient):
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
 
-            if config.chi_study_comparison_mode == config.chi_study_no_comp:
+            reco_list = list()
 
-                # reco = self.get_reco(n_reco=10)
-                reco_list = list()
-                # reco = self.get_reco_pref()
-                reco = self.get_reco_healthier_than_pref()
-                reco_id = reco[0]
-                reco_data = copy.deepcopy(recipes_data[reco_id])
-                reco_data['reviews'] = None
-                del reco_data['reviews']
-                reco_data['id'] = reco_id
-                reco_data['utility'] = reco[1]
-                reco_data['cf_score'] = reco[2]
-                reco_data['relaxed_constraints'] = self.hybridrs.get_relaxed_constraints(reco_id)
-                reco_list.append(reco_data)
-                self.publish({"msg": fc.reco_recipes, fc.reco_list: reco_list})
+            if config.chi_study_comparison_mode == config.chi_study_no_comp:
+                reco1 = self.get_reco_pref()
+                reco2 = self.get_reco_healthier_than_pref()
+                identical_recipes = True if reco1 == reco2 else False
+                reco_list.append(self.get_reco_data(reco2, reco_mode=fc.reco_mode_healthier, identical_recipes=identical_recipes))
+
+            elif config.chi_study_comparison_mode == config.chi_study_comp_healthier:
+                reco1 = self.get_reco_pref()
+                reco2 = self.get_reco_healthier_than_pref()
+                identical_recipes = True if reco1 == reco2 else False
+                reco_list.append(self.get_reco_data(reco1, reco_mode=fc.reco_mode_pref, identical_recipes=identical_recipes))
+                if not identical_recipes:
+                    reco_list.append(self.get_reco_data(reco2, reco_mode=fc.reco_mode_healthier, identical_recipes=identical_recipes))
+
+            print("KBRS")
+            print(reco_list)
+
+            self.publish({"msg": fc.reco_recipes, fc.reco_list: reco_list})
+
+
+
+    def get_reco_data(self, reco, reco_mode, identical_recipes=False):
+        reco_id = reco[0]
+        reco_data = copy.deepcopy(recipes_data[reco_id])
+        reco_data['reviews'] = None
+        del reco_data['reviews']
+        reco_data['id'] = reco_id
+        reco_data['utility'] = reco[1]
+        reco_data['cf_score'] = reco[2]
+        reco_data['relaxed_constraints'] = self.hybridrs.get_relaxed_constraints(reco_id)
+        reco_data['reco_mode'] = reco_mode
+        reco_data['identical_recipes'] = identical_recipes
+        return reco_data
+
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val):
         self.hybridrs.set_user_profile(liked_ingredients=liked_ingredients, disliked_ingredients=disliked_ingredients, diets=diets, time_val=time_val)
