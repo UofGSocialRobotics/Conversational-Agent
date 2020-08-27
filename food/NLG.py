@@ -46,7 +46,7 @@ class NLG(wbc.WhiteBoardClient):
 
         self.cs = cs
 
-        self.recipe_cards = dict()
+        # self.recipe_cards = dict()
 
     def load_sentence_model(self, path):
         with open(path, 'r') as f:
@@ -171,7 +171,7 @@ class NLG(wbc.WhiteBoardClient):
                 self.recipes = message['recipes']
                 recipe_cards = list()
                 for recipe in self.recipes:
-                    self.get_recipe_card(recipe)
+                    recipe_cards.append(self.get_recipe_card(recipe))
 
             sentence = self.choose_sentence(intent, cs=cs, tags_list=tags)
 
@@ -468,11 +468,13 @@ class NLG(wbc.WhiteBoardClient):
         if food_recipes and food_posters:
             if len(food_recipes) != len(food_posters):
                 raise AttributeError("We should have the same number of recipes and of posters! (got %d and %d)" % (len(food_recipes), len(food_posters)))
-        recipes_data = list()
-        if food_recipes and food_posters:
+        # recipes_data = list()
+        rids = list()
+        if food_recipes:
             for i, recipe in enumerate(food_recipes):
-                rid = recipe['id'] if recipe else None
-                rdata_item = {'rid': rid, 'recipe_card': food_posters[i]}
-                recipes_data.append(rdata_item)
-        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'recipes': recipes_data, fc.ingredients: ingredients_list}
+                rids.append(recipe['id'])
+        #         rid = recipe['id'] if recipe else None
+        #         rdata_item = {'rid': rid, 'recipe_card': food_posters[i]}
+        #         recipes_data.append(rdata_item)
+        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'recipe_cards': food_posters, 'rids': rids, fc.ingredients: ingredients_list}
         return frame
