@@ -31,7 +31,7 @@ chi_study_cs = exp_cs_human
 chi_study_no_comp = 'chi_study no_comp'
 chi_study_comp_healthier = "chi_study comp_pref_healthier"
 chi_study_comp_bad_options = 'chi_study comp_bad_options'
-chi_study_comparison_mode = chi_study_no_comp
+chi_study_comparison_mode = chi_study_comp_healthier
 # Explanation-Mode
 chi_study_no_explanations = "chi_study no_explanations"
 chi_study_explanations = "chi_study explanations"
