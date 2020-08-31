@@ -72,6 +72,25 @@ def inform_food(document, sentence, food_list, voc_no, voc_dislike, threshold=10
             ingredients_list.remove("vegetable")
             ingredients_list.append("vegetables")
         return ("inform", "food", ingredients_list, valence)
+
+    # if "oats" in sentence:
+    #     return ("inform", "food", ['cereals'], valence)
+    # if "salsa" in sentence:
+    #     return ("inform", "food", ['salsa'], valence)
+    # if "wurst" in sentence:
+    #     return ("inform", "food", ['sausage'], valence)
+    # if "raisin" in sentence:
+    #     return ("inform", "food", ['raisin'], valence)
+    # if "brownie mix" in sentence:
+    #     return ("inform", "food", ['brownie mix'], valence)
+
+    valence = "-" if negation else "+"
+    if "half-and-half" in sentence or "halfandhalf" in sentence:
+        return ("inform", "food", ['half-and-half'], valence)
+    if "rum" in sentence:
+        return ("inform", "food", ['rum'], valence)
+
+
     return False
 
 

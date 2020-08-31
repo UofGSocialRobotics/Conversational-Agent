@@ -27,7 +27,7 @@ CONSTRAINTS_COSTS = {"vegan": 10,
                      "gluten_free": 10,
                      "dairy_free": 10,
                      "pescetarian": 10,
-                     "keto": 5,
+                     "ketonic": 5,
                      "low_carbs": 5,
                      "ingredient": 5,
                      "time": 3}

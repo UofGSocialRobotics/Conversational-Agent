@@ -2,6 +2,7 @@ import json
 import csv
 import copy
 import spacy
+import random
 from termcolor import colored
 
 import food.resources.recipes_DB.allrecipes.nodejs_scrapper.consts as consts
@@ -270,7 +271,7 @@ def tag_recipes_with_diet(verbose=True):
     ## overwrite categories
     food_dict_food_to_category["chicken"] = "meat"
     food_dict_food_to_category["butter"] = "dairy"
-    food_dict_food_to_category["sauce"] = "unknown"
+    food_dict_food_to_category["sauce"] = "sauce"
     food_dict_food_to_category["cream"] = "dairy"
     food_dict_food_to_category["potato"] = "vegetables"
     food_dict_food_to_category["meat"] = "meat"
@@ -353,7 +354,7 @@ def print_unparsed_ingredients(errors_dict, rid, ingredient, ingredients_parsed,
 
 def parse_recipe(rid, rdata, count, n_err, spacy_nlp, food_list, food_dict_food_to_category, errors_dict, voc):
 
-    print(count, "|", rdata['title'])
+    print(count, "|", rdata['title'], "|", rid)
 
     error_bool, potential_error_bool = False, False
     all_categories, all_ingredients = list(), list()
@@ -402,7 +403,7 @@ def parse_recipe(rid, rdata, count, n_err, spacy_nlp, food_list, food_dict_food_
     gluten_free_ingredients_to_avoid = [
         "wheat", "flour", "farina",
         "bread", "bagels", "biscuit", "cornbread", "flatbread", "naan", "pita", "rolls", "breadcrumbs", "croutons",
-        "couscous", "bulgur", "barley", "rye", "gravy", "oat", "oats", "oatmeal",
+        "couscous", "bulgur", "barley", "rye", "gravy","oatmeal",# "oat", "oats",
         "soy sauce", "teriyaki sauce", "hoisin sauce", "beer",
         "crepes", "french toast", "pancakes", "waffles"
     ]
@@ -452,6 +453,23 @@ def check_vegan_recipes():
         json.dump(content, fjsonout, indent=True)
 
 
+def get_recipes_with_no_diet_info():
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f_parsed:
+        content = json.load(f_parsed)
+    recipes_data = content["recipes_data"]
+
+    with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f_parsed:
+        content_with_diets = json.load(f_parsed)
+    recipes_data_with_diets = content_with_diets["recipes_data"]
+    rids_recipes_with_diets = list(recipes_data_with_diets.keys())
+
+    no_diet_info = list()
+    for rid, rdata in recipes_data.items():
+        if rid not in rids_recipes_with_diets and 'diets' not in rdata.keys():
+            no_diet_info.append(rid)
+    return no_diet_info
+
+
 def manually_annotate_recipes():
     with open(consts.json_xUsers_Xrecipes_path, 'r') as f_parsed:
         content = json.load(f_parsed)
@@ -476,15 +494,18 @@ def manually_annotate_recipes():
     food_dict_food_to_category["potato"] = "vegetables"
     food_dict_food_to_category["meat"] = "meat"
     food_dict_food_to_category["cocoa"] = "cocoa"
+    food_dict_food_to_category["rum"] = "baking goods"
 
     errors_dict = dict()
     count, n_err = 0, 0
+
+    missing_diet_info = get_recipes_not_annotated_for_diets()
 
     for rid, rdata in recipes_data.items():
 
         count += 1
 
-        if rid not in rids_recipes_with_diets and 'diets' not in rdata.keys():
+        if (rid not in rids_recipes_with_diets and 'diets' not in rdata.keys()) or rid in missing_diet_info:
 
             error_bool, count, n_err, vegan, vegetarian, pescetarian, gluten_free, dairy_free, keto, low_carbs = parse_recipe(rid, rdata, count, n_err, spacy_nlp, food_list, food_dict_food_to_category, errors_dict, voc)
             print("error?", error_bool)
@@ -496,10 +517,21 @@ def manually_annotate_recipes():
 
                 rdata["diets"] = dict()
                 check_with_user(rdata, vegan, "vegan")
-                check_with_user(rdata, vegetarian, "vegetarian")
-                check_with_user(rdata, pescetarian, "pescetarian")
+                if not rdata['diets']['vegan']:
+                    check_with_user(rdata, vegetarian, "vegetarian")
+                    if not rdata['diets']['vegetarian']:
+                        check_with_user(rdata, pescetarian, "pescetarian")
+                    else:
+                        rdata["diets"]["pescetarian"] = True
+                else:
+                    rdata["diets"]['vegetarian'] = True
+                    rdata["diets"]["pescetarian"] = True
                 check_with_user(rdata, gluten_free, "gluten_free")
                 check_with_user(rdata, dairy_free, "dairy_free")
+                rdata["diets"]["keto"] = keto
+                rdata["diets"]["low_carbs"] = low_carbs
+
+                # print(rdata)
 
                 print("\n===============================\n")
 
@@ -519,6 +551,8 @@ def manually_annotate_recipes():
             content_with_diets['recipes_data'] = recipes_data_with_diets
             with open(consts.json_xUsers_Xrecipes_withDiets_path, 'w') as fjsonout:
                 json.dump(content_with_diets, fjsonout, indent=True)
+                print("wrote in ", consts.json_xUsers_Xrecipes_withDiets_path)
+                # print(rid, rdata)
 
 def get_recipes_not_annotated_for_diets():
     keys_list = ['vegan', 'vegetarian', 'pescetarian', 'low_carbs', 'keto', 'gluten_free', 'dairy_free']
@@ -530,8 +564,9 @@ def get_recipes_not_annotated_for_diets():
             if diet not in rdata['diets'].keys():
                 missing_diet_info.append(rid)
     missing_diet_info = set(missing_diet_info)
-    print(len(missing_diet_info))
-    print(missing_diet_info)
+    # print(len(missing_diet_info))
+    # print(missing_diet_info)
+    return missing_diet_info
 
 def check_with_user(rdata, var, label):
     if var == True:
@@ -540,6 +575,8 @@ def check_with_user(rdata, var, label):
             rdata["diets"][label] = False
         else:
             rdata["diets"][label] = True
+    else:
+        rdata["diets"][label] = False
 
 
 def is_recipe_parsed_for_diets(title):
@@ -555,14 +592,87 @@ def is_recipe_parsed_for_diets(title):
 
 
 def find_recipe(rid):
-    with open(consts.json_xUsers_Xrecipes_path, 'r') as f_parsed:
+    with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f_parsed:
         content = json.load(f_parsed)
     recipes_ids = list(content["recipes_data"].keys())
     if rid in recipes_ids:
         print("Found!")
+        rdata = content["recipes_data"][rid]
+        rdata['reviews'] = None
+        del rdata['reviews']
+        print(rdata)
     else:
         print("recipe not in DB")
 
+
+def get_10_random_recipes():
+    with open(consts.json_xUsers_Xrecipes_withDiets_path, 'r') as f_parsed:
+        content = json.load(f_parsed)
+    recipes_ids = list(content["recipes_data"].keys())
+    random.shuffle(recipes_ids)
+    for i in range(10):
+        rid = recipes_ids[i]
+        print(colored(rid, 'green'))
+        rdata = content["recipes_data"][rid]
+        print(rdata['diets'])
+
+
+recipes_for_user_proflie = [
+    "47931/baked-beans-texas-ranger/", #gluten free
+    "34159/spicy-oven-fried-chicken/", #keto
+    "11800/fettuccini-with-mushroom-ham-and-rose-sauce/", # vege, gluten free
+    "8533/quick-chicken-divan/", #gluten free, keto, fast?
+    "21430/tangy-grilled-pork-tenderloin/", #pork
+    "7307/mini-cheesecakes-i/", #dessert cheese cake
+    "15475/stephens-chocolate-chip-cookies/", #chocolate chips cookies
+    '34911/fried-rice-with-cilantro/', #chicken
+    '44742/marinated-baked-pork-chops/', #pork
+    '24527/sunshine-toast/', #keto, egg
+    #10
+    "20593/broccoli-beef-i/", #beef
+    "17981/one-bowl-chocolate-cake-iii/", #chocolate
+    "12906/chicken-and-corn-chili/", #healthy green
+    "9615/healthy-banana-cookies/", #healthy, dessert, banana
+    "11032/oatmeal-craisin-cookies/", #dessert
+    '211165/pumpkin-brownies/', #dessert
+    '26460/quick-and-easy-chicken-noodle-soup/',
+    '14146/blt-salad/', #salad
+    '15836/strawberry-pie-ii/', #dessert
+    '8584/holiday-chicken-salad/', #salad
+    # 20
+    '18275/cowboy-mashed-potatoes/',
+    "11314/delicious-raspberry-oatmeal-cookie-bars/", #dessert
+    "25787/coconut-macaroons-iii/",
+    "8665/braised-balsamic-chicken/",
+    "74949/grilled-roasted-red-pepper-and-ham-sandwich/",
+    "201313/mini-meatball-subs/",
+    "23685/fried-cabbage-ii/",
+    "88108/amazing-italian-lemon-butter-chicken/",
+    "8372/black-magic-cake/",
+    "159374/byrdhouse-blistered-cherry-tomatoes/"
+    # "76935/molten-chocolate-cakes-with-sugar-coated-raspberries/"
+]
+
+def get_rdata_recipes_list(rids_list):
+    with open(consts.json_xUsers_Xrecipes_path, 'r') as f_parsed:
+        content = json.load(f_parsed)
+        recipes_data = content['recipes_data']
+    rdata_list = list()
+    for rid in rids_list:
+        rdata = recipes_data[rid]
+        rdata['reviews'] = None
+        del rdata['reviews']
+        rdata['ingredients'] = None
+        del rdata['ingredients']
+        rdata['nutrition'] = None
+        del rdata['nutrition']
+        rdata['instructions'] = None
+        del rdata['instructions']
+        rdata_list.append(rdata)
+        # print(rid)
+        # print(rdata)
+        # print()
+    return rdata_list
 
 
 if __name__ == "__main__":
@@ -576,5 +686,7 @@ if __name__ == "__main__":
     # check_vegan_recipes()
     # is_recipe_parsed_for_diets("Califo rnia Chicken")
     # manually_annotate_recipes()
-    # find_recipe('8606/ranch-crispy-chicken/')
-    get_recipes_not_annotated_for_diets()
+    # find_recipe('7255/dirt-cake-i/')
+    print(len(get_recipes_not_annotated_for_diets()), len(get_recipes_with_no_diet_info()))
+    # get_10_random_recipes()
+    # print(get_rdata_recipes_list(recipes_for_user_proflie))
