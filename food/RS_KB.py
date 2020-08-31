@@ -58,12 +58,15 @@ class KBRSModule(wbc.WhiteBoardClient):
     def treat_message(self, msg, topic):
         super(KBRSModule, self).treat_message(msg, topic)
 
+        if 'liked_recipes' in msg.keys():
+            ratings = [(rid, 5) for rid in msg['liked_recipes']]
+            self.hybridrs.set_user_ratings_list(ratings)
+            return
+
+
         subject = msg['msg']
         if subject == fc.set_user_profile:
             #TODO: get ratings from user for cf.
-            df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-            ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-            self.hybridrs.set_user_ratings_list(ratings)
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
 
@@ -732,7 +735,8 @@ if __name__ == "__main__":
     # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
     # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries"]
     # ingredients_to_check = ["Brown rice", "Chickpeas", "Couscous", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Quinoa", "Rice", "Tofu"]
-    ingredients_to_check = ["Brown rice", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Rice", "Tofu"]
+    # ingredients_to_check = ["Brown rice", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Rice", "Tofu"]
+    ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
 
     for ingredient in ingredients_to_check:
         print("Checking " + ingredient)

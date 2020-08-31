@@ -71,6 +71,14 @@ def stream_handler_dialog_ref(message):
         whiteboard.publish(utterance, topic)
 
 
+def stream_handler_rsdata_ref(message):
+    client_id, data = filter_client_id_data(message)
+    if client_id:
+        topic = config.MSG_RS_IN + client_id
+        log.debug(message)
+        whiteboard.publish(data, topic)
+
+
 def get_path_in_sessions(client_id, key=None):
     if key:
         return config.FIREBASE_KEY_SESSIONS + '/' + client_id + '/' + key
@@ -245,8 +253,10 @@ class ServerUsingFirebase:
         # Listener: for client
         dialog_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DIALOG))
         datacol_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_DATACOLLECTION))
+        rs_data_ref = self.firebase_root_ref.new_ref(get_path_in_sessions(client_id, config.FIREBASE_KEY_RS_DATA))
         self.firebase_streams_dialog[client_id] = dialog_ref.stream(stream_handler_dialog_ref, stream_id=client_id+"dialog")
         self.firebase_streams_datacol[client_id] = datacol_ref.stream(stream_handler_datacollection_ref, stream_id=client_id+"dialog")
+        self.firebase_streams_dialog[client_id] = rs_data_ref.stream(stream_handler_rsdata_ref, stream_id=client_id+"RSdata")
         # Create services
         self.create_services(client_id)
         self.start_timer(client_id)

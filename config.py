@@ -179,6 +179,7 @@ FIREBASE_KEY_FOOD_DIAGNOSIS_ANSWERS = "food_diagnosis_answers"
 FIREBASE_KEY_DATA_RECO = "data_recommendation"
 FIREBASE_KEY_RS_EVAL_DATA = "rs_eval_data"
 FIREBASE_KEY_XP_COND = "xp_condition"
+FIREBASE_KEY_RS_DATA = "rs_data"
 
 
 
