@@ -441,6 +441,7 @@ class NLG(wbc.WhiteBoardClient):
                     explanation += "as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
             explanation += ". What do you think?"
             explanation = explanation.replace("total fat", "fat")
+            explanation = explanation.replace("sodium", "salt")
             return explanation
 
 

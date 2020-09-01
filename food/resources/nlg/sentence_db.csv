@@ -5,7 +5,7 @@ request(mood),NONE,NONE,And how are you doing today? Is everything alright?
 request(from),NONE,NONE,I'd like to know you a bit better. Can you tell me where you live?
 request(from),robot,NONE,"My programmers would like to know you a bit better. I was created in Glasgow, United Kingdom. Can you tell me where you live?"
 request(from),human,NONE,"I'd like us to know each other a bit better. I've just moved to Glasgow, Scotland a few months ago, I used to live in Pittsburgh, USA before that. It's raining a lot but I like it here. Can you tell me where you live?"
-request(usual_dinner),NONE,NONE,I'd like to know a bit more about your eating habits. So tell me. What do you usually eat for dinner?
+request(usual_dinner),NONE,NONE,I'd like to know a bit more about your eating habits. So tell me. What do you usually cook at home?
 request(why_dinner),NONE,NONE,Could you tell me why you usually eat #usual_dinner for dinner?
 request(filling),NONE,NONE,So before I recommend something let me ask you a few questions. First things first: how hungry are you?
 request(healthy),NONE,NONE,How healthy do you want your meal to be?
