@@ -413,7 +413,7 @@ class NLG(wbc.WhiteBoardClient):
                     explanation += args_list[0]
                 else:
                     explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
-                explanation += "; but it is healthier than other options."
+                explanation += "; but it is healthier than other options (contains less fat, sugar or salt)."
                 explanation += " What do you think?"
 
 
@@ -432,8 +432,17 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 healthier_recipe = self.recipes[0]
                 pref_recipe = self.recipes[1]
-            explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier. What do you think?"
+            explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier, " #. What do you think?"
+            r1_has_less_than_r2 = helper.compare_fat_sugar_salt(healthier_recipe, pref_recipe)
+            if r1_has_less_than_r2:
+                if len(r1_has_less_than_r2) == 1:
+                    explanation += "as it contains less " + r1_has_less_than_r2[0]
+                else:
+                    explanation += "as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
+            explanation += ". What do you think?"
+            explanation = explanation.replace("total fat", "fat")
             return explanation
+
 
 
     def cut_message(self, message):

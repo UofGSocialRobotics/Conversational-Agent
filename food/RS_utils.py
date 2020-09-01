@@ -94,13 +94,8 @@ def FSA_heathsclore(recipe):
             return -1
         # print(elt, recipe['nutrition'], recipe['nutrition'][elt])
         try:
-            if '<' in elt_quantity_str:
-                elt_quantity_str = elt_quantity_str.replace('<','')
-            if 'mg' in elt_quantity_str:
-                elt_quantity = float(elt_quantity_str.replace('mg','')) * 1000
-            elif 'g' in elt_quantity_str:
-                elt_quantity = float(elt_quantity_str.replace('g',''))
             elt_quantity_str.strip()
+            elt_quantity = get_elt_quantity(elt_quantity_str)
             if elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.low_to_medium]:
                 FSA_healthiness_score += 1
             elif elt_quantity <= fc.FSA_RECOMMENDED_VALUES[elt][fc.medium_to_high]:

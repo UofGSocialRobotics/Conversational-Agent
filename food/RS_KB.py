@@ -67,6 +67,11 @@ class KBRSModule(wbc.WhiteBoardClient):
         subject = msg['msg']
         if subject == fc.set_user_profile:
             #TODO: get ratings from user for cf.
+
+            # df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+            # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+            # self.hybridrs.set_user_ratings_list(ratings)
+
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
 

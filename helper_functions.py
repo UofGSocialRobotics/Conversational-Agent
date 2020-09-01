@@ -211,5 +211,24 @@ def any_elt_of_L1_in_L2(L1, L2):
     res = [i for i in L1 if i in L2]
     return (len(res) > 0)
 
+
 def duplicates_in_lists(l):
     return [item for item, count in collections.Counter(l).items() if count > 1]
+
+
+def compare_fat_sugar_salt(rdata1, rdata2):
+    r1_contains_less_than_r2 = list()
+    for elt in ["Total Fat:", "Saturated Fat:", "Sodium:", "Sugars:"]:
+        qt1, qt2 = rdata1['nutrition']['nutrients'][elt], rdata2['nutrition']['nutrients'][elt]
+        if  qt1 < qt2:
+            r1_contains_less_than_r2.append(elt[:-1].lower())
+    return r1_contains_less_than_r2
+
+
+def get_elt_quantity(elt_quantity_str):
+    if '<' in elt_quantity_str:
+        elt_quantity_str = elt_quantity_str.replace('<','')
+    if 'mg' in elt_quantity_str:
+        elt_quantity = float(elt_quantity_str.replace('mg','')) * 1000
+    elif 'g' in elt_quantity_str:
+        elt_quantity = float(elt_quantity_str.replace('g',''))
