@@ -109,17 +109,12 @@ class TestCora():
 
     def parse_user_pref(self, sentence):
         if self.parse_diet:
-            if sentence == "None":
-                self.csv_current_row.append(sentence)
-            else:
-                self.csv_current_row.append(sentence[len("I have a "):-len(" diet")])
+            self.csv_current_row.append(sentence)
             self.parse_diet = False
         elif self.parse_time:
             self.csv_current_row.append(sentence)
             self.parse_time = False
         elif self.parse_ingredients:
-            if len(sentence) > 4:
-                sentence = sentence[len("I would like "):]
             self.csv_current_row.append(sentence)
             self.parse_ingredients = False
 

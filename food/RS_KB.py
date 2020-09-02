@@ -41,6 +41,18 @@ with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
 def get_health_score(rid):
     rdata = recipes_data[rid]
     return rdata['FSAscore']
+
+def get_avg_healthScore(rids_list):
+    sum = 0
+    for rid in rids_list:
+        sum += get_health_score(rid)
+    return float(sum/len(rids_list))
+
+def is_recipe_dessert(rid):
+    for word in ['cake', 'cookie', 'marshmallow', 'muffin', 'macaroons', 'magic-peanut-butter-middles', "smoothie", 'brownies', 'eileens-spicy-gingerbread-men', 'apple-squares', 'peanut-butter-temptations-ii', 'pecan-sandies']:
+        if word in rid:
+            return True
+    return False
     
 
 class KBRSModule(wbc.WhiteBoardClient):
@@ -54,6 +66,7 @@ class KBRSModule(wbc.WhiteBoardClient):
         # self.kbrs = KBRS()
         self.hybridrs = KBCFhybrid(clientid=clientid)
         self.user_ratings_set_bool = False
+
 
 
     def set_user_ratings_for_cf(self, ratings):
@@ -320,6 +333,18 @@ class KBRS():
     def get_recipes_for_user_rec(self, user_profile, previous_cost=0, n_recipes=5, print_user_profile=False):
         # print(self.n_recipes_in_reco_dict, user_profile)
 
+        #################################################
+        ##      When too many ingredients directly relax constraints
+        if len(user_profile['liked_ingredients']) > 3:
+            new_user_profile = copy.deepcopy(user_profile)
+            random.shuffle(new_user_profile['liked_ingredients'])
+            new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
+            # print(new_user_profile)
+            self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
+
+
+        #################################################
+        ##      Perfect match
         recipes_matching_all_criteria = list(self.get_recipes_matching_constraints(user_profile, print_user_profile).keys())
         self.add_item_to_reco_dict(100-previous_cost, recipes_matching_all_criteria, None, user_profile=user_profile)
 
@@ -657,10 +682,11 @@ class KBCFhybrid():
         # list of lists of reco
         self.reco_list = list()
 
-
+        self.cf_profile_hs = None
 
     def set_user_ratings_list(self, ratings_list):
         self.user_ratings_list = ratings_list
+        self.cf_profile_hs = get_avg_healthScore([rid for [rid, _] in ratings_list])
 
 
     def set_user_profile(self, liked_ingredients, disliked_ingredients, diets, time_val, hungry=None, healthy=None):
@@ -712,11 +738,15 @@ class KBCFhybrid():
         if not self.reco_list:
             self.get_reco()
         rid_pref, utility_pref, cf_score_pref, health_score_pref = self.get_recipe_pref()
+
+        is_dessert_pref = is_recipe_dessert(rid_pref)
+
         # reco_with_healthscores_list = list()
         for [utility, sublist] in self.reco_list:
             for [rid, cf_score] in sublist:
                 health_score = get_health_score(rid)
-                if health_score < health_score_pref:
+                is_dessert_health = is_recipe_dessert(rid)
+                if health_score < health_score_pref and is_dessert_pref == is_dessert_health and self.cf_profile_hs > health_score:
                     return rid, utility, cf_score, health_score
         #         reco_with_healthscores_list.append([rid, get_health_score(rid)])
         # reco_with_healthscores_list = sorted(reco_with_healthscores_list, key=operator.itemgetter(1))
@@ -739,32 +769,34 @@ if __name__ == "__main__":
     #
     # kbrs.print_current_DB_ids()
 
-    hybridrs = KBCFhybrid("lucile")
-
-    df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-    # print(df.shape)
-    ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-    print(ratings)
-    hybridrs.set_user_ratings_list(ratings)
-
-    # ingredients_to_check = ["Beef", "Chicken", "Duck", "Eggs", "Lamb", "Pork", "Turkey", "Veal"]
-    # ingredients_to_check = ["Alaska pollock", "Clams", "Cod", "Crab", "Haddock", "Halibut", "Prawns", "salmon", "Seabass", "Shrimp", "Tilapia", "Tuna"] # ["Clams", "Shrimp", "Tilapia"]
-    # ingredients_to_check = ["Aspargus", "Avocado", "Beetroots", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Cucumbers", "Eggplant", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Red cabbage", "Spinach", "Spring onions", "Sweetcorn", "Sweet potato", "Tomatoes", "Turnips", "Zucchini"]
-    # ingredients_to_check = ["Avocado", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Spinach", "Sweet potato", "Tomatoes", "Zucchini"]
+    # hybridrs = KBCFhybrid("lucile")
+    #
+    # df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+    # # print(df.shape)
+    # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+    # print(ratings)
+    # hybridrs.set_user_ratings_list(ratings)
+    #
+    # # ingredients_to_check = ["Beef", "Chicken", "Duck", "Eggs", "Lamb", "Pork", "Turkey", "Veal"]
+    # # ingredients_to_check = ["Alaska pollock", "Clams", "Cod", "Crab", "Haddock", "Halibut", "Prawns", "salmon", "Seabass", "Shrimp", "Tilapia", "Tuna"] # ["Clams", "Shrimp", "Tilapia"]
+    # # ingredients_to_check = ["Aspargus", "Avocado", "Beetroots", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Cucumbers", "Eggplant", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Red cabbage", "Spinach", "Spring onions", "Sweetcorn", "Sweet potato", "Tomatoes", "Turnips", "Zucchini"]
+    # # ingredients_to_check = ["Avocado", "Broccoli", "Brussels sprouts", "Cabbage", "Carrots", "Cauliflower", "Celery", "Chilies", "Corn", "Garlic", "Green beans", "Kale", "Kidney beans", "Lettuce", "Mushrooms", "Onions", "Peas", "Peppers", "Potato", "Spinach", "Sweet potato", "Tomatoes", "Zucchini"]
+    # # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
+    # # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries"]
+    # # ingredients_to_check = ["Brown rice", "Chickpeas", "Couscous", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Quinoa", "Rice", "Tofu"]
+    # # ingredients_to_check = ["Brown rice", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Rice", "Tofu"]
     # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
-    # ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries"]
-    # ingredients_to_check = ["Brown rice", "Chickpeas", "Couscous", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Quinoa", "Rice", "Tofu"]
-    # ingredients_to_check = ["Brown rice", "Kidney beans", "Lentils", "Pasta", "Potatoes", "Rice", "Tofu"]
-    ingredients_to_check = ["Apples", "Bananas", "Blueberries", "Cantaloupe", "Cherries", "Grapes", "Lemons", "Limes", "Oranges", "Peaches", "Pineapple", "Strawberries", "Watermelon"]
+    #
+    # for ingredient in ingredients_to_check:
+    #     print("Checking " + ingredient)
+    #
+    #     hybridrs.set_user_profile(liked_ingredients=[ingredient], disliked_ingredients=[], diets=[], time_val=1000)
+    #
+    #     rid, utility, cf_score, health_score = hybridrs.get_recipe_pref()
+    #     print(rid, utility)
+    #
+    #     if utility != 100:
+    #         print(colored("No recipe with " + ingredient, 'red'))
 
-    for ingredient in ingredients_to_check:
-        print("Checking " + ingredient)
-
-        hybridrs.set_user_profile(liked_ingredients=[ingredient], disliked_ingredients=[], diets=[], time_val=1000)
-
-        rid, utility, cf_score, health_score = hybridrs.get_recipe_pref()
-        print(rid, utility)
-
-        if utility != 100:
-            print(colored("No recipe with " + ingredient, 'red'))
-
+    print(is_recipe_dessert("6854/streusel-topped-blueberry-muffins/"), is_recipe_dessert("9870/easy-sugar-cookies/"))
+    print(is_recipe_dessert("6854/streusel-topped-blueberry-muffins/") == is_recipe_dessert("9870/easy-sugar-cookies/"))
