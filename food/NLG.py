@@ -479,10 +479,21 @@ class NLG(wbc.WhiteBoardClient):
             if len(food_recipes) != len(food_posters):
                 raise AttributeError("We should have the same number of recipes and of posters! (got %d and %d)" % (len(food_recipes), len(food_posters)))
         # recipes_data = list()
-        rids, titles = list(), list()
+        rids, titles, utilities, cf_scores, relaxed_constraints = list(), list(), list(), list(), list()
         if food_recipes:
             for i, recipe in enumerate(food_recipes):
                 rids.append(recipe['id'])
                 titles.append(recipe['title'])
-        frame = {'intent': intent, 'sentences_and_delays': sentences_and_delays, 'recipe_cards': food_posters, 'rids': rids, 'titles': titles, fc.ingredients: ingredients_list}
+                utilities.append(recipe['utility'])
+                cf_scores.append(recipe['cf_score'])
+                relaxed_constraints.append(recipe['relaxed_constraints'])
+        frame = {'intent': intent,
+                 'sentences_and_delays': sentences_and_delays,
+                 'recipe_cards': food_posters,
+                 'rids': rids,
+                 'titles': titles,
+                 'utilities': utilities,
+                 'cf_scores': cf_scores,
+                 'relaxed_constraints': relaxed_constraints,
+                 fc.ingredients: ingredients_list}
         return frame

@@ -68,6 +68,18 @@ class DM(wbc.WhiteBoardClient):
         self.used_seed_ingredients = list()
 
 
+    def reset_user_profile(self):
+        self.user_model = {fc.user_name: None,
+                           fc.usual_dinner: [],
+                           fc.liked_features: [], fc.disliked_features: [],
+                           fc.liked_food: [], fc.disliked_food: [],
+                           fc.liked_cuisine: [], fc.disliked_cuisine: [],
+                           fc.liked_recipe: [], fc.disliked_recipe: [],
+                           fc.diet: [], fc.intolerances: None,
+                           fc.time_to_cook: False,
+                           fc.situation: "Usual Dinner",
+                           fc.food_scores_trait: None, fc.food_scores_state: None}
+
 
     def set_use_local_recipe_DB(self, val):
         self.use_local_recipe_DB = val
@@ -215,6 +227,11 @@ class DM(wbc.WhiteBoardClient):
             # if the user comes back
             if self.next_state == 'greeting' and (self.user_model['liked_food']):
                 self.next_state = "greet_back"
+
+
+            if self.next_state == "request(diet)":
+                self.reset_user_profile()
+
 
             if not wait_for_reco:
                 self.move_state_and_publish_for_NLG(recipes=recipes, recipe_ingredients_list=recipe_ingredients_list)

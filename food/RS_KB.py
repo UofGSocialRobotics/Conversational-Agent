@@ -53,6 +53,12 @@ class KBRSModule(wbc.WhiteBoardClient):
         self.client_id = clientid
         # self.kbrs = KBRS()
         self.hybridrs = KBCFhybrid(clientid=clientid)
+        self.user_ratings_set_bool = False
+
+
+    def set_user_ratings_for_cf(self, ratings):
+        self.user_ratings_set_bool = True
+        self.hybridrs.set_user_ratings_list(ratings)
 
 
     def treat_message(self, msg, topic):
@@ -60,7 +66,7 @@ class KBRSModule(wbc.WhiteBoardClient):
 
         if 'liked_recipes' in msg.keys():
             ratings = [(rid, 5) for rid in msg['liked_recipes']]
-            self.hybridrs.set_user_ratings_list(ratings)
+            self.set_user_ratings_for_cf(ratings)
             return
 
 
@@ -68,9 +74,13 @@ class KBRSModule(wbc.WhiteBoardClient):
         if subject == fc.set_user_profile:
             #TODO: get ratings from user for cf.
 
-            # df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
-            # ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
-            # self.hybridrs.set_user_ratings_list(ratings)
+            if not self.user_ratings_set_bool:
+                df = pd.read_csv(consts.csv_xUsers_Xrecipes_path)
+                ratings = [(rid, 5) for rid in rs_utils.get_recipes(df, "chicken")] + [(rid, 5) for rid in rs_utils.get_recipes(df, "chocolate")]
+                self.set_user_ratings_for_cf(ratings)
+                error_msg = "WARNING: randomly selecting recipes for cf user profile!!"
+                log.warn(error_msg)
+                print(colored(error_msg, "red"))
 
             self.set_user_profile(liked_ingredients=msg[fc.liked_food], disliked_ingredients=msg[fc.disliked_food], diets=msg[fc.diet], time_val=msg[fc.time_to_cook])
         elif subject == fc.get_reco:
@@ -86,13 +96,14 @@ class KBRSModule(wbc.WhiteBoardClient):
             elif config.chi_study_comparison_mode == config.chi_study_comp_healthier:
                 reco1 = self.get_reco_pref()
                 reco2 = self.get_reco_healthier_than_pref()
-                identical_recipes = True if reco1 == reco2 else False
+                identical_recipes = True if (reco2 == None or reco1 == reco2) else False
                 reco_list.append(self.get_reco_data(reco1, reco_mode=fc.reco_mode_pref, identical_recipes=identical_recipes))
                 if not identical_recipes:
+                    print(reco2)
                     reco_list.append(self.get_reco_data(reco2, reco_mode=fc.reco_mode_healthier, identical_recipes=identical_recipes))
-
-            print("KBRS")
-            print(reco_list)
+            #
+            # print("KBRS")
+            # print(reco_list)
 
             self.publish({"msg": fc.reco_recipes, fc.reco_list: reco_list})
 
@@ -309,7 +320,6 @@ class KBRS():
     def get_recipes_for_user_rec(self, user_profile, previous_cost=0, n_recipes=5, print_user_profile=False):
         # print(self.n_recipes_in_reco_dict, user_profile)
 
-        #TODO: use previous cost!
         recipes_matching_all_criteria = list(self.get_recipes_matching_constraints(user_profile, print_user_profile).keys())
         self.add_item_to_reco_dict(100-previous_cost, recipes_matching_all_criteria, None, user_profile=user_profile)
 
@@ -701,16 +711,20 @@ class KBCFhybrid():
         '''
         if not self.reco_list:
             self.get_reco()
-        reco_with_healthscores_list = list()
+        rid_pref, utility_pref, cf_score_pref, health_score_pref = self.get_recipe_pref()
+        # reco_with_healthscores_list = list()
         for [utility, sublist] in self.reco_list:
             for [rid, cf_score] in sublist:
-                reco_with_healthscores_list.append([rid, get_health_score(rid)])
-        reco_with_healthscores_list = sorted(reco_with_healthscores_list, key=operator.itemgetter(1))
-        rid = reco_with_healthscores_list[0][0]
-        utility = self.kbrs.rid_to_utility[rid]
-        cf_score = self.rid_to_cfscore[rid]
-        health_score = reco_with_healthscores_list[0][1]
-        return rid, utility, cf_score, health_score
+                health_score = get_health_score(rid)
+                if health_score < health_score_pref:
+                    return rid, utility, cf_score, health_score
+        #         reco_with_healthscores_list.append([rid, get_health_score(rid)])
+        # reco_with_healthscores_list = sorted(reco_with_healthscores_list, key=operator.itemgetter(1))
+        # rid = reco_with_healthscores_list[0][0]
+        # utility = self.kbrs.rid_to_utility[rid]
+        # cf_score = self.rid_to_cfscore[rid]
+        # health_score = reco_with_healthscores_list[0][1]
+        # return rid, utility, cf_score, health_score
     
 
     def get_relaxed_constraints(self, rid):
