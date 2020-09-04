@@ -382,9 +382,9 @@ class NLG(wbc.WhiteBoardClient):
 
 
     def generate_explanation_relaxed_constraints(self, recipe, r_to_compare_with=None, positive_phrasing=True):
-        relaxed_constraint_str = recipe['relaxed_constraints']
+        relaxed_constraint_str = recipe['relaxed_constraints'].replace("time2","TWO")
         if r_to_compare_with and r_to_compare_with['relaxed_constraints']:
-            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].split("+")
+            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].replace("time2","TWO").split("+")
             for c in constraints_to_eliminate:
                 relaxed_constraint_str = relaxed_constraint_str.replace(c, "")
                 relaxed_constraint_str = relaxed_constraint_str.replace("++", "+")
@@ -437,7 +437,7 @@ class NLG(wbc.WhiteBoardClient):
 
             if len(args_list) == 1:
                 explanation += args_list[0]
-            else:
+            elif len(args_list) > 1:
                 explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
             return explanation
         return ""

@@ -35,7 +35,6 @@ CONSTRAINTS_COSTS = {"vegan": 10,
 with open(consts.json_xUsers_Xrecipes_path, 'r') as f:
     recipes_data = json.load(f)['recipes_data']
     TOTAL_RECIPES = len(list(recipes_data.keys()))
-    # print(TOTAL_RECIPES)
 
 
 def get_health_score(rid):
@@ -115,7 +114,6 @@ class KBRSModule(wbc.WhiteBoardClient):
                 identical_recipes = True if (reco2 == None or reco1 == reco2) else False
                 reco_list.append(self.get_reco_data(reco1, reco_mode=fc.reco_mode_pref, identical_recipes=identical_recipes))
                 if not identical_recipes:
-                    # print(reco2)
                     reco_list.append(self.get_reco_data(reco2, reco_mode=fc.reco_mode_healthier, identical_recipes=identical_recipes))
 
             elif config.chi_study_comparison_mode == config.chi_study_comp_bad_options:
@@ -126,7 +124,6 @@ class KBRSModule(wbc.WhiteBoardClient):
                 reco_list.append(self.get_reco_data(reco1, reco_mode=fc.reco_mode_pref, identical_recipes=identical_recipes))
 
                 if not identical_recipes:
-                    # print(reco2)
                     reco_list.append(self.get_reco_data(reco2, reco_mode=fc.reco_mode_healthier, identical_recipes=identical_recipes))
                     reco3 = self.get_reco_less_healthy_less_pref()
                     if reco3:
@@ -292,7 +289,8 @@ class KBRS():
 
 
     def add_item_to_reco_dict(self, utility, rid_list, relaxed_constraint, user_profile):
-        if rid_list:
+        # print(utility, rid_list, relaxed_constraint, user_profile)
+        if rid_list and len(rid_list):
             if utility not in self.reco_dict.keys():
                 self.reco_dict[utility] = {"rids": list(), "relaxed_constraints": list()}
             # self.reco_dict[utility]['rids'] += rid_list
@@ -337,28 +335,20 @@ class KBRS():
 
     def get_recipes_for_user(self, n_recipes=5, print_user_profile=False):
         self.get_recipes_for_user_rec(self.user_profile, n_recipes=n_recipes, print_user_profile=print_user_profile)
-        # print(self.n_recipes_in_reco_dict, self.reco_dict)
-        # random_recipe = random.choice(self.all_recipes_in_reco_dict)
-        # user_profile_random_recipe = self.reco_rid_to_user_profile[random_recipe]
-        # print(random_recipe, user_profile_random_recipe)
         for utility, reco_item in self.reco_dict.items():
             rids = reco_item['rids']
             self.reco_list.append([rids, utility])
         self.reco_list = sorted(self.reco_list, key=operator.itemgetter(1), reverse=True)
-        # print(self.reco_list[:3])
 
 
     def get_recipes_for_user_rec(self, user_profile, previous_cost=0, n_recipes=5, print_user_profile=False):
-        # print(self.n_recipes_in_reco_dict, user_profile)
 
         #################################################
         ##      When too many ingredients directly relax constraints
         if len(user_profile['liked_ingredients']) > 3:
             new_user_profile = copy.deepcopy(user_profile)
             random.shuffle(new_user_profile['liked_ingredients'])
-            print(new_user_profile['liked_ingredients'][:3])
             new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
-            # print(new_user_profile)
             self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
 
 
@@ -384,7 +374,6 @@ class KBRS():
             new_user_profile = copy.deepcopy(user_profile)
             if new_user_profile["time"]:
                 new_user_profile['time'] = 1000
-                # print(new_user_profile)
                 recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
                 self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time2", user_profile=new_user_profile)
 
@@ -416,7 +405,6 @@ class KBRS():
                 new_user_profile = copy.deepcopy(user_profile)
                 random.shuffle(new_user_profile['liked_ingredients'])
                 new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
-                # print(new_user_profile)
                 self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
 
             if len(user_profile['disliked_ingredients']) > 3:
@@ -432,12 +420,9 @@ class KBRS():
                 self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['diets']) - 3), print_user_profile=print_user_profile)
 
 
-
-
     def get_recipes_3_contraints_relaxed(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
         #Relax liked ingredients and 2 others
         for ingredient in user_profile['liked_ingredients']:
-            # print("relaxing ingredient %s" % ingredient)
             new_user_profile = copy.deepcopy(user_profile)
             new_user_profile['liked_ingredients'].remove(ingredient)
             self.get_recipes_2_contraints_relaxed(new_user_profile, previous_costs=previous_costs+CONSTRAINTS_COSTS['ingredient'], previous_constraints_str=previous_constraints_str+ingredient+"+", print_user_profile=print_user_profile)
@@ -568,18 +553,6 @@ class KBRS():
 
         return self.recipe_DB
 
-        # reco = list()
-        # for rid, rdata in self.recipe_DB.items():
-        #     list_of_keys_to_copy = list(rdata.keys())
-        #     list_of_keys_to_copy.remove("reviews")
-        #     new_reco = {'id': rid}
-        #     for k in list_of_keys_to_copy:
-        #         new_reco[k] = rdata[k]
-        #     reco.append(new_reco)
-        # print(colored(self.best_match_recipes, 'blue'))
-        # return reco[:n_recipes]
-
-
     def reset_current_DB(self):
         self.recipe_DB = copy.copy(self.recipe_DB_all)
 
@@ -624,10 +597,8 @@ class KBRS():
     def get_recipes_with_diet(self, diet):
         recipes_to_return = list()
         for rid, rdata in self.recipe_DB.items():
-            # print(rdata)
             if diet not in rdata['diets'].keys():
                 pass
-                # print(colored("Missing diet info for recipe %s!" % rid, "red"))
             else:
                 if rdata['diets'][diet]:
                     recipes_to_return.append(rid)
@@ -723,13 +694,18 @@ class KBCFhybrid():
     def get_reco(self):
         self.kbrs.get_recipes_for_user(TOTAL_RECIPES-len(self.user_ratings_list))
         for [rids_list, utility] in self.kbrs.reco_list:
-            sublist = list()
-            for rid in rids_list:
-                if rid in self.rid_to_cfscore.keys():
-                    rid_w_cf_rating = [rid, self.rid_to_cfscore[rid]]
-                    sublist.append(rid_w_cf_rating)
-            sublist = sorted(sublist, key=operator.itemgetter(1), reverse=True)
-            self.reco_list.append([utility, sublist])
+            if rids_list:
+                sublist = list()
+                for rid in rids_list:
+                    if rid in self.rid_to_cfscore.keys():
+                        rid_w_cf_rating = [rid, self.rid_to_cfscore[rid]]
+                        sublist.append(rid_w_cf_rating)
+                    # else:
+                    #     print(colored("USED IN CF PROFILE!!!!!!", "green"))
+                if sublist:
+                    sublist = sorted(sublist, key=operator.itemgetter(1), reverse=True)
+                    self.reco_list.append([utility, sublist])
+
 
 
 
@@ -739,11 +715,16 @@ class KBCFhybrid():
         '''
         if not self.reco_list:
             self.get_reco()
-        rid = self.reco_list[0][1][0][0]
-        utility = self.reco_list[0][0]
-        cf_score = self.reco_list[0][1][0][1]
-        health_score = get_health_score(rid)
-        return rid, utility, cf_score, health_score
+        # print(self.reco_list[:3])
+        try:
+            rid = self.reco_list[0][1][0][0]
+            utility = self.reco_list[0][0]
+            cf_score = self.reco_list[0][1][0][1]
+            health_score = get_health_score(rid)
+            return rid, utility, cf_score, health_score
+        except IndexError as e:
+            print(self.reco_list)
+            raise  IndexError(e)
 
 
     def get_recipe_healthier_than_pref(self):
@@ -783,7 +764,6 @@ class KBCFhybrid():
                 is_dessert_current = is_recipe_dessert(rid)
                 # healthiER than pref but NOT healthier than the one we want the user to choose (healthier recipe)
                 cond_health = health_score < health_score_pref and health_score >= health_score_h
-                # print(rid, health_score, health_score_pref, health_score_h, cond_health, is_dessert_current, is_dessert_current, utility, utility_pref)
                 if rid != rid_h and cond_health and utility < utility_pref and is_dessert_current == is_dessert_pref:
                     # try to get utility of bad reco worse than utility of healthier reco
                     if not rid_to_return:
