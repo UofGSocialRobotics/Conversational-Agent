@@ -209,7 +209,8 @@ class TestCora():
             utterance = self.autotest_script[self.autotest_script_index]
             self.autotest_script_index += 1
             self.publish_whiteboard({"dialog": utterance}, config.MSG_DATACOL_IN + self.client_id)
-            self.parse_user_pref(sentence=utterance)
+            if self.csv_output:
+                self.parse_user_pref(sentence=utterance)
             print(colored("User: "+utterance, "yellow"))
         else:
             utterance = input(colored("Enter text (q to quit): ", "yellow"))
@@ -268,14 +269,16 @@ if __name__ == "__main__":
     #                                                  "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
     # autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'vegan', 'up to an hour', 'broccoli', 'I prefer Spicy Garlic Lime Chicken']
     small_talk = ["hi", "user", "Fine", "vegetarian", "healthy"]
-    autotest_scripts['user1'] = small_talk + ["None", "30min", "eggs", "No"]
+    autotest_scripts['user1'] = small_talk + ["vegan", "40min", "cauliflower, garlic, lettuce, onions, peppers, spinach, rice", "No"]
+    liked_recipes = dict()
+    liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
 
-    autotest_scripts, liked_recipes = get_test_scripts()
+    # autotest_scripts, liked_recipes = get_test_scripts()
 
     # liked_recipes = dict()
     # liked_recipes['user1'] = ["8372/black-magic-cake/", "7307/mini-cheesecakes-i/", "8533/quick-chicken-divan/", "25787/coconut-macaroons-iii/", "14146/blt-salad/"]
 
-    CSV_OUTPUT = True
+    CSV_OUTPUT = False
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False

@@ -485,7 +485,7 @@ class NLG(wbc.WhiteBoardClient):
                 rids.append(recipe['id'])
                 titles.append(recipe['title'])
                 utilities.append(recipe['utility'])
-                cf_scores.append(recipe['cf_score'])
+                cf_scores.append(recipe['cf_score'].__str__())
                 relaxed_constraints.append(recipe['relaxed_constraints'])
         frame = {'intent': intent,
                  'sentences_and_delays': sentences_and_delays,

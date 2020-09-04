@@ -49,7 +49,9 @@ def get_avg_healthScore(rids_list):
     return float(sum/len(rids_list))
 
 def is_recipe_dessert(rid):
-    for word in ['cake', 'cookie', 'marshmallow', 'muffin', 'macaroons', 'magic-peanut-butter-middles', "smoothie", 'brownies', 'eileens-spicy-gingerbread-men', 'apple-squares', 'peanut-butter-temptations-ii', 'pecan-sandies']:
+    for word in ['cake', 'cookie', 'marshmallow', 'muffin', 'macaroons', 'magic-peanut-butter-middles', "smoothie", 'brownies',
+                 'eileens-spicy-gingerbread-men', 'apple-squares', 'peanut-butter-temptations-ii', 'pecan-sandies', 'gobble-up-granola-snacks',
+                 'thin-mint-crackers']:
         if word in rid:
             return True
     return False

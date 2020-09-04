@@ -176,7 +176,16 @@ class ServerUsingFirebase:
                         # if message_to_send['food_recipe']:
                         #     message_to_send['rid'] = message_to_send['food_recipe']['id']
                         # message_to_send['food_recipe'] = None
+
+                        # if 'utilities' in message_to_send.keys():
+                        #     message_to_send['utilities'] = None
+                        # if 'cf_scores' in message_to_send.keys():
+                        #     message_to_send['cf_scores'] = None
+                        # if 'relaxed_constraints' in message_to_send.keys():
+                        #     message_to_send['relaxed_constraints'] = None
+
                         print(colored(message_to_send, 'blue'))
+                        print(type(message_to_send))
                         self.firebase_root_ref.push_at(message_to_send, path=get_path_in_sessions(client_id=client_id, key=firebase_key))
                         # if 'recipe_card' in message_to_send and message_to_send['recipe_card']:
                         #     self.firebase_root_ref.put_here(message_to_send['recipe_card'])
