@@ -24,6 +24,8 @@ def get_healthScore(rid):
     return recipes_data[rid]['FSAscore']
 
 def get_avg_healthScore(rids_list):
+    if not liked_recipes:
+        return -1
     sum = 0
     for rid in rids_list:
         sum += get_healthScore(rid)
@@ -104,7 +106,7 @@ class TestCora():
         # star services in dedicated threads
         for s in self.services:
             s.start_service()
-            if "KBRS" in s.name:
+            if "KBRS" in s.name and self.liked_recipes:
                 s.set_user_ratings_for_cf([[rid, 5] for rid in self.liked_recipes])
 
     def parse_user_pref(self, sentence):
@@ -248,6 +250,8 @@ def get_test_scripts():
 
 if __name__ == "__main__":
 
+    liked_recipes = None
+
     argp = argparse.ArgumentParser()
     argp.add_argument('domain', metavar='domain', type=str, help='Domain to test (e.g. movies? food?)')
     argp.add_argument("--autotest", help="To test the system with a predefined script (to write bellow directly in the python file)", action="store_true")
@@ -270,17 +274,17 @@ if __name__ == "__main__":
     # autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'vegan', 'up to an hour', 'broccoli', 'I prefer Spicy Garlic Lime Chicken']
     small_talk = ["hi", "user", "Fine", "vegetarian", "healthy"]
     # autotest_scripts['user1'] = small_talk + ['hi', 'user', 'Fine', 'vegetarian', 'healthy', 'vegan die', '40 min', 'lettuce, cauliflower, rice', 'no']
-    # autotest_scripts['user2'] = small_talk + ["None", "30min", "pasta", "No"]
-    # autotest_scripts['user3'] = small_talk + ["None", "2000min", "pasta", "No"]
+    # autotest_scripts['user2'] = small_talk + ["None", "1h", "sweet potato", "No"]
+    autotest_scripts['user3'] = small_talk + ["None", "2000min", "pasta", "No"]
     # liked_recipes = dict()
     # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
     # liked_recipes['user2'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
     # liked_recipes['user3'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
 
-    autotest_scripts, liked_recipes = get_test_scripts()
+    # autotest_scripts, liked_recipes = get_test_scripts()
     #
     # liked_recipes = dict()
-    # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
+    # liked_recipes['user2'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
 
 
     CSV_OUTPUT = True
@@ -305,7 +309,10 @@ if __name__ == "__main__":
                         n_iter = 2
                     for i in range(n_iter):
                         print(colored(script_name, "blue"))
-                        test = TestCora(timeit, script, liked_recipes[script_name], CSV_OUTPUT)
+                        if liked_recipes:
+                            test = TestCora(timeit, script, liked_recipes[script_name], CSV_OUTPUT)
+                        else:
+                            test = TestCora(timeit, script, None, CSV_OUTPUT)
                         test.start_testCora()
 
             elif args.test:

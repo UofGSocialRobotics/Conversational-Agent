@@ -21,6 +21,11 @@ import config
 SentenceParameters = namedtuple("Sentence", [fc.intent, fc.cs, fc.tags])
 AckParameters = namedtuple("Ack", [fc.previous_intent, fc.cs, fc.valence, fc.current_intent_should_not_be, fc.current_intent_should_be])
 
+
+def html_emphasis(text):
+    return "<b><i>" + text + "</b></i>"
+
+
 class NLG(wbc.WhiteBoardClient):
     def __init__(self, clientid, subscribes, publishes, tags_explanation_types=[], cs=None, resp_time=False, delay=False, cut_message=False):
         subscribes = helper.append_c_to_elts(subscribes, clientid)
@@ -197,7 +202,10 @@ class NLG(wbc.WhiteBoardClient):
             if not sentence:
                 sentence = ""
 
+            capitalize = True
             if self.recipes:
+
+                capitalize = False
 
                 if config.chi_study_comparison_mode == config.chi_study_no_comp or (len(self.recipes) == 1 and self.recipes[0]['identical_recipes']):
                     if config.chi_study_explanation_mode == config.chi_study_explanations:
@@ -220,7 +228,9 @@ class NLG(wbc.WhiteBoardClient):
                 else:
                     raise ValueError("got %d recipes, and identical_recipes flag set to %s" % (len(self.recipes), self.recipes[0]['identical_recipes'].__str__()))
 
-            final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
+            final_sentence = self.replace(ack + " " + sentence)
+            if capitalize:
+                final_sentence = helper.capitalize_after_punctuation(final_sentence)
 
             if message['recipes']:
                 recipes = self.recipes
@@ -371,56 +381,66 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
-    def generate_explanation_relaxed_constraints(self, recipe, positive_phrasing=True):
-            relaxed_constraint_str = recipe['relaxed_constraints']
-            if relaxed_constraint_str:
-                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
-                relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
-                relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
-                relaxed_constraints_list = relaxed_constraint_str.split('+')
-                if positive_phrasing:
-                    explanation = recipe['title'] + " corresponds to your preferences except that"
+    def generate_explanation_relaxed_constraints(self, recipe, r_to_compare_with=None, positive_phrasing=True):
+        relaxed_constraint_str = recipe['relaxed_constraints']
+        if r_to_compare_with and r_to_compare_with['relaxed_constraints']:
+            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].split("+")
+            for c in constraints_to_eliminate:
+                relaxed_constraint_str = relaxed_constraint_str.replace(c, "")
+                relaxed_constraint_str = relaxed_constraint_str.replace("++", "+")
+                if relaxed_constraint_str and relaxed_constraint_str[0] == "+":
+                    relaxed_constraint_str = relaxed_constraint_str[1:]
+                if relaxed_constraint_str and relaxed_constraint_str[-1] == "+":
+                    relaxed_constraint_str = relaxed_constraint_str[:-1]
+        if relaxed_constraint_str:
+            relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
+            relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
+            relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
+            relaxed_constraints_list = relaxed_constraint_str.split('+')
+            if positive_phrasing:
+                explanation = html_emphasis(recipe['title']) + " corresponds to your preferences except that"
+            else:
+                explanation = " but"
+            args_list = list()
+            missing_liked_ingredients = list()
+            added_disliked_ingredients = list()
+            for constraint in relaxed_constraints_list:
+                if "time2" == constraint:
+                    args_list.append(" it takes longer to prepare")
+                elif "time" == constraint:
+                    args_list.append(" it takes a bit longer to prepare")
+                elif constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
+                    args_list.append(" it is not " + constraint)
+                elif constraint in ["keto", "low cal"]:
+                    args_list.append(" it does not correspond to a " + constraint + " diet")
                 else:
-                    explanation = "but"
-                args_list = list()
-                missing_liked_ingredients = list()
-                added_disliked_ingredients = list()
-                for constraint in relaxed_constraints_list:
-                    if "time2" == constraint:
-                        args_list.append(" it takes longer to prepare")
-                    elif "time" == constraint:
-                        args_list.append(" it takes a bit longer to prepare")
-                    elif constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
-                        args_list.append(" it is not " + constraint)
-                    elif constraint in ["keto", "low cal"]:
-                        args_list.append(" it does not correspond to a " + constraint + " diet")
+                    if constraint in self.user_model[fc.liked_food]:
+                        missing_liked_ingredients.append(constraint)
+                    elif constraint in self.user_model[fc.disliked_food]:
+                        added_disliked_ingredients.append(constraint)
                     else:
-                        if constraint in self.user_model[fc.liked_food]:
-                            missing_liked_ingredients.append(constraint)
-                        elif constraint in self.user_model[fc.disliked_food]:
-                            added_disliked_ingredients.append(constraint)
-                        else:
-                            print(colored("Don't know what to do with %s" % constraint, "red"))
-                if missing_liked_ingredients:
-                    missing_ingredients_str = " it does not contain "
-                    if len(missing_liked_ingredients) == 1:
-                        missing_ingredients_str += missing_liked_ingredients[0]
-                    else:
-                        missing_ingredients_str += ", ".join(missing_liked_ingredients[:-1]) + " or " + missing_liked_ingredients[-1]
-                    args_list.append(missing_ingredients_str)
-                if added_disliked_ingredients:
-                    added_ingredients_str = " it contains "
-                    if len(added_disliked_ingredients) == 1:
-                        added_ingredients_str += added_disliked_ingredients[0]
-                    else:
-                        added_ingredients_str += ", ".join(added_disliked_ingredients[:-1]) + " and " + added_disliked_ingredients[-1]
-                    args_list.append(added_ingredients_str)
+                        print(colored("Don't know what to do with %s" % constraint, "red"))
+            if missing_liked_ingredients:
+                missing_ingredients_str = " it does not contain "
+                if len(missing_liked_ingredients) == 1:
+                    missing_ingredients_str += missing_liked_ingredients[0]
+                else:
+                    missing_ingredients_str += ", ".join(missing_liked_ingredients[:-1]) + " or " + missing_liked_ingredients[-1]
+                args_list.append(missing_ingredients_str)
+            if added_disliked_ingredients:
+                added_ingredients_str = " it contains "
+                if len(added_disliked_ingredients) == 1:
+                    added_ingredients_str += added_disliked_ingredients[0]
+                else:
+                    added_ingredients_str += ", ".join(added_disliked_ingredients[:-1]) + " and " + added_disliked_ingredients[-1]
+                args_list.append(added_ingredients_str)
 
-                if len(args_list) == 1:
-                    explanation += args_list[0]
-                else:
-                    explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
+            if len(args_list) == 1:
+                explanation += args_list[0]
+            else:
+                explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
             return explanation
+        return ""
 
 
     def generate_explanation_one_recipe(self):
@@ -439,7 +459,7 @@ class NLG(wbc.WhiteBoardClient):
 
 
     def generate_comparison_pref_vs_healtier(self, pref_recipe, healthier_recipe):
-        explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier, " #. What do you think?"
+        explanation =  html_emphasis(pref_recipe[fc.title]) + " best matches your preferences but " + html_emphasis(healthier_recipe[fc.title]) + " is healthier, " #. What do you think?"
         r1_has_less_than_r2 = helper.compare_fat_sugar_salt(healthier_recipe, pref_recipe)
         if r1_has_less_than_r2:
             if len(r1_has_less_than_r2) == 1:
@@ -467,7 +487,9 @@ class NLG(wbc.WhiteBoardClient):
         if self.recipes:
             explanation = self.generate_comparison_pref_vs_healtier(self.recipes[0], self.recipes[1])
             print(explanation)
-            explanation += ". " + self.recipes[2]['title'] + " is also healthier " + self.generate_explanation_relaxed_constraints(self.recipes[2], positive_phrasing=False)
+            explanation += ". " + html_emphasis(self.recipes[2]['title']) \
+                           + " is also healthier" \
+                           + self.generate_explanation_relaxed_constraints(self.recipes[2], r_to_compare_with=self.recipes[1], positive_phrasing=False)
             explanation += ". What do you think?"
             return explanation
 
@@ -494,7 +516,7 @@ class NLG(wbc.WhiteBoardClient):
             sentences_and_delays = list()
             for sentence in sentences:
                 delay = self.delay_answer(sentence) if self.delay_bool else 0
-                sentences_and_delays.append({'sentence': sentence, 'delay':delay})
+                sentences_and_delays.append({'sentence': sentence, 'delay': delay})
             return self.single_msg_to_json(intent, sentences_and_delays, food_recipe, food_poster, ingredients_list)
         else:
             delay = 0
