@@ -265,20 +265,25 @@ if __name__ == "__main__":
 
 
     autotest_scripts = dict()
-    # autotest_scripts["error_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
+    # autotest_scripts["errcor_pop_from_empty_list"] = ["hello", "Lucile", "better now", "soup", "it s healthy and light", "bot too much yet", "very", 'i m vegetarian', "20 min", "nop",
     #                                                  "why not", "sure", 'something else than soup?', 'yep', "yep" 'no', 'ok', "seems nice", "ya", "good", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "no thanks"]
     # autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'vegan', 'up to an hour', 'broccoli', 'I prefer Spicy Garlic Lime Chicken']
     small_talk = ["hi", "user", "Fine", "vegetarian", "healthy"]
-    autotest_scripts['user1'] = small_talk + ["vegan", "40min", "cauliflower, garlic, lettuce, onions, peppers, spinach, rice", "No"]
-    liked_recipes = dict()
-    liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
-
-    # autotest_scripts, liked_recipes = get_test_scripts()
-
+    # autotest_scripts['user1'] = small_talk + ['hi', 'user', 'Fine', 'vegetarian', 'healthy', 'vegan die', '40 min', 'lettuce, cauliflower, rice', 'no']
+    # autotest_scripts['user2'] = small_talk + ["None", "30min", "pasta", "No"]
+    # autotest_scripts['user3'] = small_talk + ["None", "2000min", "pasta", "No"]
     # liked_recipes = dict()
-    # liked_recipes['user1'] = ["8372/black-magic-cake/", "7307/mini-cheesecakes-i/", "8533/quick-chicken-divan/", "25787/coconut-macaroons-iii/", "14146/blt-salad/"]
+    # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
+    # liked_recipes['user2'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
+    # liked_recipes['user3'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
 
-    CSV_OUTPUT = False
+    autotest_scripts, liked_recipes = get_test_scripts()
+    #
+    # liked_recipes = dict()
+    # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
+
+
+    CSV_OUTPUT = True
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False
@@ -297,7 +302,7 @@ if __name__ == "__main__":
                 for script_name, script in autotest_scripts.items():
                     n_iter = 1
                     if CSV_OUTPUT:
-                        n_iter = 5
+                        n_iter = 2
                     for i in range(n_iter):
                         print(colored(script_name, "blue"))
                         test = TestCora(timeit, script, liked_recipes[script_name], CSV_OUTPUT)

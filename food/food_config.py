@@ -31,7 +31,8 @@ inform = "inform"
 reco_mode = 'reco_mode'
 reco_mode_pref = "reco_mode_pref"
 reco_mode_healthier = "reco_mode_healthier"
-reco_mode_utlra_healthy = "reco_mode_utlra_healthy"
+reco_mode_bad_reco = "reco_mode_dab_reco"
+# reco_mode_utlra_healthy = "reco_mode_utlra_healthy"
 
 user_name = "user_name"
 

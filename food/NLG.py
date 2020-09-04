@@ -205,12 +205,20 @@ class NLG(wbc.WhiteBoardClient):
                     elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
                         sentence = "What do you think about " + self.recipes[0][fc.title] + "?"
 
-                elif config.chi_study_comparison_mode == config.chi_study_comp_healthier:
+                elif config.chi_study_comparison_mode == config.chi_study_comp_healthier or len(self.recipes) == 2:
                     if config.chi_study_explanation_mode == config.chi_study_explanations:
                         sentence = self.generate_explanation_pref_vs_healthier()
                     elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
                         sentence = "What do you think about " + self.recipes[0][fc.title] + " or " + self.recipes[1][fc.title] + "?"
 
+                elif config.chi_study_comparison_mode == config.chi_study_comp_bad_options and len(self.recipes) == 3:
+                    if config.chi_study_explanation_mode == config.chi_study_explanations:
+                        sentence = self.generate_explanation_bad_option()
+                    elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
+                        sentence = "I have three otptions for you. What do you think about " + self.recipes[0][fc.title] + " or " + self.recipes[1][fc.title] + " or " + self.recipes[2]['title'] + "?"
+
+                else:
+                    raise ValueError("got %d recipes, and identical_recipes flag set to %s" % (len(self.recipes), self.recipes[0]['identical_recipes'].__str__()))
 
             final_sentence = helper.capitalize_after_punctuation(self.replace(ack + " " + sentence))
 
@@ -363,18 +371,17 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
-    def generate_explanation_one_recipe(self):
-        if self.recipes:
-            explanation = ""
-            recipe = self.recipes[0]
-            # print(colored(self.recipe['relaxed_constraints'], 'red'))
+    def generate_explanation_relaxed_constraints(self, recipe, positive_phrasing=True):
             relaxed_constraint_str = recipe['relaxed_constraints']
             if relaxed_constraint_str:
                 relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
                 relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
                 relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
                 relaxed_constraints_list = relaxed_constraint_str.split('+')
-                explanation = recipe['title'] + " corresponds to your preferences except that"
+                if positive_phrasing:
+                    explanation = recipe['title'] + " corresponds to your preferences except that"
+                else:
+                    explanation = "but"
                 args_list = list()
                 missing_liked_ingredients = list()
                 added_disliked_ingredients = list()
@@ -413,15 +420,35 @@ class NLG(wbc.WhiteBoardClient):
                     explanation += args_list[0]
                 else:
                     explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
+            return explanation
+
+
+    def generate_explanation_one_recipe(self):
+        if self.recipes:
+            recipe = self.recipes[0]
+            explanation = self.generate_explanation_relaxed_constraints(recipe)
+
+            if explanation:
                 explanation += "; but it is healthier than other options (contains less fat, sugar or salt)."
                 explanation += " What do you think?"
-
 
             else:
                 explanation = recipe[fc.title] + " is the healthiest recipe corresponding to your preferences! What do you think?"
 
-
             return explanation
+
+
+    def generate_comparison_pref_vs_healtier(self, pref_recipe, healthier_recipe):
+        explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier, " #. What do you think?"
+        r1_has_less_than_r2 = helper.compare_fat_sugar_salt(healthier_recipe, pref_recipe)
+        if r1_has_less_than_r2:
+            if len(r1_has_less_than_r2) == 1:
+                explanation += "as it contains less " + r1_has_less_than_r2[0]
+            else:
+                explanation += "as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
+        explanation = explanation.replace("total fat", "fat")
+        explanation = explanation.replace("sodium", "salt")
+        return explanation
 
 
     def generate_explanation_pref_vs_healthier(self):
@@ -432,17 +459,18 @@ class NLG(wbc.WhiteBoardClient):
             else:
                 healthier_recipe = self.recipes[0]
                 pref_recipe = self.recipes[1]
-            explanation = pref_recipe[fc.title] + " best matches your preferences but " + healthier_recipe[fc.title] + " is healthier, " #. What do you think?"
-            r1_has_less_than_r2 = helper.compare_fat_sugar_salt(healthier_recipe, pref_recipe)
-            if r1_has_less_than_r2:
-                if len(r1_has_less_than_r2) == 1:
-                    explanation += "as it contains less " + r1_has_less_than_r2[0]
-                else:
-                    explanation += "as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
+            explanation = self.generate_comparison_pref_vs_healtier(pref_recipe, healthier_recipe)
             explanation += ". What do you think?"
-            explanation = explanation.replace("total fat", "fat")
-            explanation = explanation.replace("sodium", "salt")
             return explanation
+
+    def generate_explanation_bad_option(self):
+        if self.recipes:
+            explanation = self.generate_comparison_pref_vs_healtier(self.recipes[0], self.recipes[1])
+            print(explanation)
+            explanation += ". " + self.recipes[2]['title'] + " is also healthier " + self.generate_explanation_relaxed_constraints(self.recipes[2], positive_phrasing=False)
+            explanation += ". What do you think?"
+            return explanation
+
 
 
 
