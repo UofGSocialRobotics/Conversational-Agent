@@ -7,7 +7,7 @@ from food.resources.recipes_DB.allrecipes.nodejs_scrapper import consts
 with open(consts.json_xUsers_Xrecipes_path, 'r') as fDB:
     recipes_data = json.load(fDB)['recipes_data']
 
-TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb']
+TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c']
 
 def get_healthScore(rid):
     return recipes_data[rid]['FSAscore']
@@ -20,25 +20,31 @@ def get_avg_healthScore(rids_list):
 
 path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot_comp2_explanations.json", "pilot_comp2_noexplanations.json"]
-fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json"]
+# fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
+fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
 
 fname_to_explanation_mode = {
     "pilot_comp2_explanations.json": "explanations",
     "pilot_comp2_noexplanations.json": "no explanation",
     "pilot2_comp2_explanations.json": "explanations",
-    "pilot2_comp2_noexplanations.json": "no explanations"
+    "pilot2_comp2_noexplanations.json": "no explanations",
+    'pilot2_comp3_explanations.json': "explanations",
+    "pilot2_comp3_no_explanations.json": "no explanations"
 }
 
 fname_to_comparison_mode = {
     "pilot_comp2_explanations.json": "2 recipes",
     "pilot_comp2_noexplanations.json": "2 recipes",
     "pilot2_comp2_explanations.json": "2 recipes",
-    "pilot2_comp2_noexplanations.json": "2 recipes"
+    "pilot2_comp2_noexplanations.json": "2 recipes",
+    "pilot2_comp3_explanations.json": "3 recipes",
+    "pilot2_comp3_no_explanations.json": "3 recipes"
 }
 
 csv_all_rows = list()
-first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients', 'r1 title', 'r1 healthscore', 'r2 title', 'r2 healthscore', 'chosen']
+first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients', 'r1 title', 'r1 healthscore', 'r2 title', 'r2 healthscore', 'r3 title', 'r3 healthscore', 'chosen']
 csv_all_rows.append(first_row)
+
 
 for fname in fnames:
     with open(path+fname, 'r') as f:
@@ -97,7 +103,9 @@ for fname in fnames:
                         if resp_like_recipe:
                             # print(dialog_unit)
                             answer = dialog_unit['text']
-                            if answer.lower().strip() == "No, I don't like the recipe".lower().strip() or answer.lower().strip() == "I don't like either of the recipes".lower().strip():
+                            if answer.lower().strip() == "No, I don't like the recipe".lower().strip() \
+                                    or answer.lower().strip() == "I don't like either of the recipes".lower().strip() \
+                                    or answer.lower().strip() == "I don't like any of the recipes".lower().strip():
                                 new_row.append("none")
                             elif answer.lower().strip().replace("\n", " ") == "Yes, I like it!".lower().strip():
                                 if t2:
@@ -107,6 +115,8 @@ for fname in fnames:
                                 new_row.append("r1")
                             elif t2 and t2 in answer:
                                 new_row.append("r2")
+                            elif t3 and t3 in answer:
+                                new_row.append("r3")
                             else:
                                 raise ValueError(answer)
 
@@ -119,10 +129,15 @@ for fname in fnames:
                             new_row.append(get_healthScore(rids[0]))
                             t1 = dialog_unit['titles'][0]
                             t2 = None
+                            t3 = None
                             if len(rids) > 1:
                                 new_row.append(rids[1])
                                 new_row.append(get_healthScore(rids[1]))
                                 t2 = dialog_unit['titles'][1]
+                            if len(rids) > 2:
+                                new_row.append(rids[2])
+                                new_row.append(get_healthScore(rids[2]))
+                                t3 = dialog_unit['titles'][2]
                             else:
                                 new_row.append(None)
                                 new_row.append(None)
