@@ -16,7 +16,7 @@ request(from),human,What a coincidence! I spent some time there on vacation a fe
 request(from),robot,"I see. Sometimes, my programmers go there. I see that Wikipedia says nice things about it.",NONE,NONE,NONE
 greeting_back,NONE,Looking good as always!,NONE,NONE,NONE
 request(usual_dinner),NONE,Okay.,NONE,NONE,NONE
-request(usual_dinner),human,I see. I myself try to have a healthy diet so I eat light dinners with lots of vegetables.,NONE,NONE,NONE
+request(usual_dinner),human,I see. I myself try to have a healthy diet so I eat light meals with lots of vegetables.,NONE,NONE,NONE
 request(usual_dinner),robot,"I see. I used to eat lots of CDs and DVDs back in the days, but I only get USB sticks once in a while now.",NONE,NONE,NONE
 request(why_dinner),NONE,Good to know.,NONE,NONE,NONE
 request(why_dinner),human,Good to know.,NONE,NONE,NONE
