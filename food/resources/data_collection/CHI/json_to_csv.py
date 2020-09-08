@@ -21,7 +21,7 @@ def get_avg_healthScore(rids_list):
 path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot_comp2_explanations.json", "pilot_comp2_noexplanations.json"]
 # fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
-fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
+fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json", "pilot3_comp3_no_explanations.json"]
 
 fname_to_explanation_mode = {
     "pilot_comp2_explanations.json": "explanations",
@@ -29,7 +29,8 @@ fname_to_explanation_mode = {
     "pilot2_comp2_explanations.json": "explanations",
     "pilot2_comp2_noexplanations.json": "no explanations",
     'pilot2_comp3_explanations.json': "explanations",
-    "pilot2_comp3_no_explanations.json": "no explanations"
+    "pilot2_comp3_no_explanations.json": "no explanations",
+    "pilot3_comp3_no_explanations.json": "no explanations"
 }
 
 fname_to_comparison_mode = {
@@ -38,7 +39,8 @@ fname_to_comparison_mode = {
     "pilot2_comp2_explanations.json": "2 recipes",
     "pilot2_comp2_noexplanations.json": "2 recipes",
     "pilot2_comp3_explanations.json": "3 recipes",
-    "pilot2_comp3_no_explanations.json": "3 recipes"
+    "pilot2_comp3_no_explanations.json": "3 recipes",
+    "pilot3_comp3_no_explanations.json": "3 recipes"
 }
 
 csv_all_rows = list()

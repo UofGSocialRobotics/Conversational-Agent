@@ -82,7 +82,7 @@ inform(food),robot,I though you would like it. Humans are such a mystery to me. 
 inform(food),robot,I have other recipes in my database.,no,bye,NONE
 inform(food),robot,My programmers need to do a better job if you don't like it. I will pass on the information.,no,bye,NONE
 inform(food),NONE,I can't find anything else to recommend that fits your criteria.,no,NONE,bye
-inform(food),human,"I'm sorry I have nothing else to recommend that fits your criteria, but I had a great time chatting with you. I think we have a lot in common.",no,NONE,bye
+inform(food),human,"I'm sorry I could not find a recipe for you.",no,NONE,bye
 inform(food),robot,I'm sorry I can't find anything that correspond to your criteria in my database. I had more success with the 856 other people I recommended recipe to in the last hour.,no,NONE,bye
 NONE,NONE,Okay.,NONE,NONE,NONE
 NONE,NONE,Alright.,NONE,NONE,NONE

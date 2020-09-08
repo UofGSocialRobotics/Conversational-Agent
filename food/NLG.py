@@ -211,19 +211,19 @@ class NLG(wbc.WhiteBoardClient):
                     if config.chi_study_explanation_mode == config.chi_study_explanations:
                         sentence = self.generate_explanation_one_recipe()
                     elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
-                        sentence = "What do you think about " + self.recipes[0][fc.title] + "?"
+                        sentence = "What do you think about " + html_emphasis(self.recipes[0][fc.title]) + "?"
 
                 elif config.chi_study_comparison_mode == config.chi_study_comp_healthier or len(self.recipes) == 2:
                     if config.chi_study_explanation_mode == config.chi_study_explanations:
                         sentence = self.generate_explanation_pref_vs_healthier()
                     elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
-                        sentence = "What do you think about " + self.recipes[0][fc.title] + " or " + self.recipes[1][fc.title] + "?"
+                        sentence = "What do you think about " + html_emphasis(self.recipes[0][fc.title]) + " or " + html_emphasis(self.recipes[1][fc.title]) + "?"
 
                 elif config.chi_study_comparison_mode == config.chi_study_comp_bad_options and len(self.recipes) == 3:
                     if config.chi_study_explanation_mode == config.chi_study_explanations:
                         sentence = self.generate_explanation_bad_option()
                     elif config.chi_study_explanation_mode == config.chi_study_no_explanations:
-                        sentence = "I have three otptions for you. What do you think about " + self.recipes[0][fc.title] + " or " + self.recipes[1][fc.title] + " or " + self.recipes[2]['title'] + "?"
+                        sentence = "I have three otptions for you. What do you think about " + html_emphasis(self.recipes[0][fc.title]) + " or " + html_emphasis(self.recipes[1][fc.title]) + " or " + html_emphasis(self.recipes[2]['title']) + "?"
 
                 else:
                     raise ValueError("got %d recipes, and identical_recipes flag set to %s" % (len(self.recipes), self.recipes[0]['identical_recipes'].__str__()))
