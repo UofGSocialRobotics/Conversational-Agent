@@ -383,8 +383,9 @@ class NLG(wbc.WhiteBoardClient):
 
     def generate_explanation_relaxed_constraints(self, recipe, r_to_compare_with=None, positive_phrasing=True):
         relaxed_constraint_str = recipe['relaxed_constraints'].replace("time2","TWO")
+        print(relaxed_constraint_str, r_to_compare_with['relaxed_constraints'])
         if r_to_compare_with and r_to_compare_with['relaxed_constraints']:
-            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].replace("time2","TWO").split("+")
+            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].replace("time2", "TWO").split("+")
             for c in constraints_to_eliminate:
                 relaxed_constraint_str = relaxed_constraint_str.replace(c, "")
                 relaxed_constraint_str = relaxed_constraint_str.replace("++", "+")
@@ -401,25 +402,26 @@ class NLG(wbc.WhiteBoardClient):
                 explanation = html_emphasis(recipe['title']) + " corresponds to your preferences except that"
             else:
                 explanation = " but"
+
             args_list = list()
             missing_liked_ingredients = list()
             added_disliked_ingredients = list()
             for constraint in relaxed_constraints_list:
-                if "time2" == constraint:
+                if "TWO" == constraint:
                     args_list.append(" it takes longer to prepare")
                 elif "time" == constraint:
                     args_list.append(" it takes a bit longer to prepare")
-                elif constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
+                if constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
                     args_list.append(" it is not " + constraint)
-                elif constraint in ["keto", "low cal"]:
+                if constraint in ["keto", "low cal"]:
                     args_list.append(" it does not correspond to a " + constraint + " diet")
+                # else:
+                if constraint in self.user_model[fc.liked_food]:
+                    missing_liked_ingredients.append(constraint)
+                elif constraint in self.user_model[fc.disliked_food]:
+                    added_disliked_ingredients.append(constraint)
                 else:
-                    if constraint in self.user_model[fc.liked_food]:
-                        missing_liked_ingredients.append(constraint)
-                    elif constraint in self.user_model[fc.disliked_food]:
-                        added_disliked_ingredients.append(constraint)
-                    else:
-                        print(colored("Don't know what to do with %s" % constraint, "red"))
+                    print(colored("Don't know what to do with %s" % constraint, "red"))
             if missing_liked_ingredients:
                 missing_ingredients_str = " it does not contain "
                 if len(missing_liked_ingredients) == 1:
@@ -439,6 +441,11 @@ class NLG(wbc.WhiteBoardClient):
                 explanation += args_list[0]
             elif len(args_list) > 1:
                 explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
+
+            print(explanation[-4:-1])
+            if len(explanation) > 3 and explanation[-4:] == " but":
+                explanation = explanation[:-4]
+
             return explanation
         return ""
 
@@ -459,13 +466,13 @@ class NLG(wbc.WhiteBoardClient):
 
 
     def generate_comparison_pref_vs_healtier(self, pref_recipe, healthier_recipe):
-        explanation =  html_emphasis(pref_recipe[fc.title]) + " best matches your preferences but " + html_emphasis(healthier_recipe[fc.title]) + " is healthier, " #. What do you think?"
+        explanation =  html_emphasis(pref_recipe[fc.title]) + " best matches your preferences but " + html_emphasis(healthier_recipe[fc.title]) + " is healthier" #. What do you think?"
         r1_has_less_than_r2 = helper.compare_fat_sugar_salt(healthier_recipe, pref_recipe)
         if r1_has_less_than_r2:
             if len(r1_has_less_than_r2) == 1:
-                explanation += "as it contains less " + r1_has_less_than_r2[0]
+                explanation += " as it contains less " + r1_has_less_than_r2[0]
             else:
-                explanation += "as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
+                explanation += " as it contains less " + ", ".join(r1_has_less_than_r2[:-1]) + " and " + r1_has_less_than_r2[-1]
         explanation = explanation.replace("total fat", "fat")
         explanation = explanation.replace("sodium", "salt")
         return explanation

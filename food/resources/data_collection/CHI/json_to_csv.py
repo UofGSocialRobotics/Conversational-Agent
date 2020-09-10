@@ -7,7 +7,11 @@ from food.resources.recipes_DB.allrecipes.nodejs_scrapper import consts
 with open(consts.json_xUsers_Xrecipes_path, 'r') as fDB:
     recipes_data = json.load(fDB)['recipes_data']
 
-TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c']
+TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c', '5d595adfe1e7440001133597']
+
+WRONG_IDS = {
+    "1114022477": "5bdc4ebb1d6f32000183476a"
+}
 
 def get_healthScore(rid):
     return recipes_data[rid]['FSAscore']
@@ -21,7 +25,8 @@ def get_avg_healthScore(rids_list):
 path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot_comp2_explanations.json", "pilot_comp2_noexplanations.json"]
 # fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
-fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json", "pilot3_comp3_no_explanations.json"]
+# fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json", "pilot3_comp3_no_explanations.json"]
+fnames = ["datacol_comp3_noexp2.json"]
 
 fname_to_explanation_mode = {
     "pilot_comp2_explanations.json": "explanations",
@@ -30,7 +35,9 @@ fname_to_explanation_mode = {
     "pilot2_comp2_noexplanations.json": "no explanations",
     'pilot2_comp3_explanations.json': "explanations",
     "pilot2_comp3_no_explanations.json": "no explanations",
-    "pilot3_comp3_no_explanations.json": "no explanations"
+    "pilot3_comp3_no_explanations.json": "no explanations",
+    "datacol_comp3_noexp.json": "no explanations",
+    "datacol_comp3_noexp2.json": "no explanations"
 }
 
 fname_to_comparison_mode = {
@@ -40,7 +47,9 @@ fname_to_comparison_mode = {
     "pilot2_comp2_noexplanations.json": "2 recipes",
     "pilot2_comp3_explanations.json": "3 recipes",
     "pilot2_comp3_no_explanations.json": "3 recipes",
-    "pilot3_comp3_no_explanations.json": "3 recipes"
+    "pilot3_comp3_no_explanations.json": "3 recipes",
+    "datacol_comp3_noexp.json": "3 recipes",
+    "datacol_comp3_noexp2.json": "3 recipes"
 }
 
 csv_all_rows = list()
@@ -149,9 +158,9 @@ for fname in fnames:
 
 
                         if isinstance(dialog_unit, dict) and "source" in dialog_unit.keys() and dialog_unit['source'] == "agent":
-                            if "Any specific diet or intolerances I should be aware of?" in dialog_unit['sentence']:
+                            if "Any specific diet or intolerance I should be aware of?" in dialog_unit['sentence']:
                                 parse_diet = True
-                            elif "How much time do you want to spend cooking tonight?" in dialog_unit['sentence']:
+                            elif "How much time do you want to spend cooking?" in dialog_unit['sentence']:
                                 parse_time = True
                             elif "Is there any food you'd like to use? Something already in your kitchen or that you could buy?" in dialog_unit['sentence']:
                                 parse_ingredients = True

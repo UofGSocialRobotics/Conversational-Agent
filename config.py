@@ -35,7 +35,7 @@ chi_study_comparison_mode = chi_study_comp_bad_options
 # Explanation-Mode
 chi_study_no_explanations = "chi_study no_explanations"
 chi_study_explanations = "chi_study explanations"
-chi_study_explanation_mode = chi_study_no_explanations
+chi_study_explanation_mode = chi_study_explanations
 
 health_recsys_study_cond = "pref-based RS"
 

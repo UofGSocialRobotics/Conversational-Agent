@@ -273,20 +273,20 @@ if __name__ == "__main__":
     # autotest_scripts['test1'] = ['hi', 'Lucile', "yup", 'what my husband cooks', 'because i take care of the baby so i don\'t cook', 'vegan', 'up to an hour', 'broccoli', 'I prefer Spicy Garlic Lime Chicken']
     small_talk = ["hi", "user", "Fine", "vegetarian", "healthy"]
     # autotest_scripts['user1'] = ['hi', 'user', 'Fine', 'vegetarian', 'healthy', 'vegan die', '40 min', 'cauliflower, garlic, lettuce, onions, peppers, spinach, rice', 'no']
-    autotest_scripts['user2'] = small_talk + ["None", "30min", "eggs, cabbage, carrots, cauliflower, garlic, green beans, kidney beans, mushrooms, onions, peas, peppers, potato, zucchini, tomatoes, apples, bananas, grapes, cheese, lentils, pasta, rice", "No"]
-    # autotest_scripts['user3'] = small_talk + ["None", "2000min", "pasta", "No"]
+    # autotest_scripts['user2'] = small_talk + ["None", "30min", "eggs, cabbage, carrots, cauliflower, garlic, green beans, kidney beans, mushrooms, onions, peas, peppers, potato, zucchini, tomatoes, apples, bananas, grapes, cheese, lentils, pasta, rice", "No"]
+    autotest_scripts['user2'] = small_talk + ["none", "60min", "chicken", "No"]
     # liked_recipes = dict()
     # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
     # liked_recipes['user2'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
     # liked_recipes['user3'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
 
-    autotest_scripts, liked_recipes = get_test_scripts()
+    # autotest_scripts, liked_recipes = get_test_scripts()
     # print("liked_recipes", liked_recipes)
     #
-    # liked_recipes = dict()
-    # liked_recipes['user2'] = ['88108/amazing-italian-lemon-butter-chicken/', '8584/holiday-chicken-salad/', '8533/quick-chicken-divan/', '9615/healthy-banana-cookies/', '20593/broccoli-beef-i/']
+    liked_recipes = dict()
+    liked_recipes['user2'] = [ "9615/healthy-banana-cookies/", "11032/oatmeal-craisin-cookies/", "8533/quick-chicken-divan/", "11800/fettuccini-with-mushroom-ham-and-rose-sauce/", "34159/spicy-oven-fried-chicken/" ]
 
-    CSV_OUTPUT = True
+    CSV_OUTPUT = False
 
     args = argp.parse_args()
     timeit = args.timeit if args.timeit else False

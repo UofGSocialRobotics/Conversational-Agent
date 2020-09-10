@@ -51,7 +51,7 @@ def is_recipe_dessert(rid):
     for word in ['cake', 'cookie', 'marshmallow', 'muffin', 'macaroons', 'magic-peanut-butter-middles', "smoothie", 'brownies',
                  'eileens-spicy-gingerbread-men', 'apple-squares', 'peanut-butter-temptations-ii', 'pecan-sandies', 'gobble-up-granola-snacks',
                  'thin-mint-crackers', 'chocolate-crinkles-ii', 'cranberry-pistachio-biscotti', 'peppermint-meringues', 'biscotti', 'chocolate-rum-balls-i',
-                 'gingerbread-men', 'blueberry-crumb-bars']:
+                 'gingerbread-men', 'blueberry-crumb-bars', 'fresh-strawberry-pie-i']:
         if word in rid:
             return True
     return False
