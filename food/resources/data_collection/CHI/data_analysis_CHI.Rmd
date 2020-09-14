@@ -21,6 +21,7 @@ mydata_1recipe <- subset(mydata, Comparison.mode == "1 recipe")
 mydata_2recipes <- subset(mydata, Comparison.mode == "2 recipes")
 mydata_3recipes <- subset(mydata, Comparison.mode == "3 recipes")
 
+mydata_exp_1recipe <- subset(mydata_1recipe, Explanation.mode == "explanations")
 mydata_noexp_1recipe <- subset(mydata_1recipe, Explanation.mode == "no explanations")
 mydata_noexp_2recipes <- subset(mydata_2recipes, Explanation.mode == "no explanations")
 mydata_exp_2recipes <- subset(mydata_2recipes, Explanation.mode == "explanations")
@@ -48,9 +49,13 @@ View(mydata)
 
 Number of mydata points per condition
 ```{r}
-aggregate(cbind(count = file.name) ~ file.name, 
-          data = mydata, 
-          FUN = function(x){NROW(x)})
+# aggregate(cbind(count = file.name) ~ file.name, data = mydata, FUN = function(x){NROW(x)})
+cat("mydata_exp_1recipe", nrow(mydata_exp_1recipe), "\n")
+cat("mydata_noexp_1recipe", nrow(mydata_noexp_1recipe), "\n")
+cat("mydata_exp_2recipes", nrow(mydata_exp_2recipes), "\n")
+cat("mydata_noexp_2recipes", nrow(mydata_noexp_2recipes), "\n")
+cat("mydata_exp_3recipes", nrow(mydata_exp_3recipes), "\n")
+cat("mydata_noexp_3recipes", nrow(mydata_noexp_3recipes), "\n")
 ```
 
 # Recipe choice

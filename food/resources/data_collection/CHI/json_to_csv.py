@@ -11,7 +11,7 @@ with open(consts.json_xUsers_Xrecipes_path, 'r') as fDB:
     recipes_data = json.load(fDB)['recipes_data']
 
 TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c', '5d595adfe1e7440001133597', '593a5560cc988600017935be', '5d7c060606189b0017ba79c9',
-            '5baf6705848bbd0001d6fc8a', 'popo', '5df5143f58a5c738d0e197af-00', '5e2174afcf46ff459df4e238', "5b222aff59f9620001c109cb", "5aa67d76f053610001726e65", "5d767ab1abbb3200160bf2d6", "5d36e5a972282e0019605fa0", "5b9f7f9eaa0e0e0001573bd2"]
+            '5baf6705848bbd0001d6fc8a', 'popo', '5df5143f58a5c738d0e197af-00', '5e2174afcf46ff459df4e238', "5b222aff59f9620001c109cb", "5aa67d76f053610001726e65", "5d767ab1abbb3200160bf2d6", "5d36e5a972282e0019605fa0", "5b9f7f9eaa0e0e0001573bd2", "5c65ed60d9c5be00017428bf"]
 
 WRONG_IDS = {
     "1114022477": "5bdc4ebb1d6f32000183476a"
