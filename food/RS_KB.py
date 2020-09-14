@@ -342,16 +342,20 @@ class KBRS():
         self.reco_list = sorted(self.reco_list, key=operator.itemgetter(1), reverse=True)
 
 
-    def get_recipes_for_user_rec(self, user_profile, n_recipes, previous_cost=0, print_user_profile=False):
+    def get_recipes_for_user_rec(self, user_profile, n_recipes, previous_cost=0, previous_relaxed_constraints="", print_user_profile=False):
 
         #################################################
         ##      When too many ingredients directly relax constraints
         if len(user_profile['liked_ingredients']) > 3:
             new_user_profile = copy.deepcopy(user_profile)
             random.shuffle(new_user_profile['liked_ingredients'])
+            previous_relaxed_constraints = "+".join(new_user_profile['liked_ingredients'][3:]) + "+"
             new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
-            print(new_user_profile['liked_ingredients'][:3])
-            self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
+            self.get_recipes_for_user_rec(new_user_profile,
+                                          n_recipes=n_recipes,
+                                          previous_cost=5*(len(user_profile['liked_ingredients']) - 3),
+                                          previous_relaxed_constraints=previous_relaxed_constraints,
+                                          print_user_profile=print_user_profile)
             return
 
         #################################################
@@ -369,7 +373,10 @@ class KBRS():
             if new_user_profile["time"]:
                 new_user_profile['time'] += 15
                 recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
-                self.add_item_to_reco_dict(100-previous_cost-CONSTRAINTS_COSTS['time'], rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time", user_profile=new_user_profile)
+                self.add_item_to_reco_dict(100-previous_cost-CONSTRAINTS_COSTS['time'],
+                                           rid_list=recipes_matching_all_criteria_but_time,
+                                           relaxed_constraint=previous_relaxed_constraints+"time",
+                                           user_profile=new_user_profile)
 
         # Relax time (cancelled)
         if self.n_recipes_in_reco_dict < n_recipes:
@@ -377,26 +384,38 @@ class KBRS():
             if new_user_profile["time"]:
                 new_user_profile['time'] = 1000
                 recipes_matching_all_criteria_but_time = list(self.get_recipes_matching_constraints(new_user_profile, print_user_profile).keys())
-                self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2), rid_list=recipes_matching_all_criteria_but_time, relaxed_constraint="time2", user_profile=new_user_profile)
+                self.add_item_to_reco_dict(100-previous_cost-(CONSTRAINTS_COSTS['time']*2),
+                                           rid_list=recipes_matching_all_criteria_but_time,
+                                           relaxed_constraint=previous_relaxed_constraints+"time2",
+                                           user_profile=new_user_profile)
 
         # Relax liked ingredient, disliked ingredient, diet
         if self.n_recipes_in_reco_dict < n_recipes:
-            self.get_recipes_with_relaxed_liked_ingredient_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
-            self.get_recipes_with_relaxed_diet_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
-            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_liked_ingredient_constraint(user_profile,
+                                                                      previous_costs=previous_cost,
+                                                                      previous_constraints_str=previous_relaxed_constraints,
+                                                                      print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_diet_constraint(user_profile,
+                                                          previous_costs=previous_cost,
+                                                          previous_constraints_str=previous_relaxed_constraints,
+                                                          print_user_profile=print_user_profile)
+            self.get_recipes_with_relaxed_DISliked_ingredient_constraint(user_profile,
+                                                                         previous_costs=previous_cost,
+                                                                         previous_constraints_str=previous_relaxed_constraints,
+                                                                         print_user_profile=print_user_profile)
 
         #################################################
         ##      Relax 2 constraints
 
         if self.n_recipes_in_reco_dict < n_recipes:
-            self.get_recipes_2_contraints_relaxed(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
+            self.get_recipes_2_contraints_relaxed(user_profile, previous_costs=previous_cost, previous_constraints_str=previous_relaxed_constraints, print_user_profile=print_user_profile)
 
 
         #################################################
         ##      Relax 3 constraints
 
         if self.n_recipes_in_reco_dict < n_recipes:
-            self.get_recipes_3_contraints_relaxed(user_profile, previous_costs=previous_cost, print_user_profile=print_user_profile)
+            self.get_recipes_3_contraints_relaxed(user_profile, previous_costs=previous_cost, previous_constraints_str=previous_relaxed_constraints, print_user_profile=print_user_profile)
 
         #################################################
         ##      If more than 3 constraints to relax, just pick at random constraint to keep
@@ -404,20 +423,34 @@ class KBRS():
             if len(user_profile['liked_ingredients']) > 3:
                 new_user_profile = copy.deepcopy(user_profile)
                 random.shuffle(new_user_profile['liked_ingredients'])
+                relaxed_constraints = previous_relaxed_constraints + "+".join(new_user_profile['liked_ingredients'][3:])
                 new_user_profile['liked_ingredients'] = new_user_profile['liked_ingredients'][:3]
-                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['liked_ingredients']) - 3), print_user_profile=print_user_profile)
+                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes,
+                                              previous_cost=5*(len(user_profile['liked_ingredients']) - 3),
+                                              previous_relaxed_constraints=relaxed_constraints,
+                                              print_user_profile=print_user_profile)
 
             if len(user_profile['disliked_ingredients']) > 3:
                 new_user_profile = copy.deepcopy(user_profile)
                 random.shuffle(new_user_profile['disliked_ingredients'])
+                relaxed_constraints = previous_relaxed_constraints + "+".join(new_user_profile['disliked_ingredients'][3:])
                 new_user_profile['disliked_ingredients'] = new_user_profile['disliked_ingredients'][:3]
-                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['disliked_ingredients']) - 3), print_user_profile=print_user_profile)
+                self.get_recipes_for_user_rec(new_user_profile,
+                                              n_recipes=n_recipes,
+                                              previous_cost=5*(len(user_profile['disliked_ingredients']) - 3),
+                                              previous_relaxed_constraints=relaxed_constraints,
+                                              print_user_profile=print_user_profile)
 
             if len(user_profile['diets']) > 3:
                 new_user_profile = copy.deepcopy(user_profile)
                 random.shuffle(new_user_profile['diets'])
+                relaxed_constraints = previous_relaxed_constraints + "+".join(new_user_profile['diets'][3:])
                 new_user_profile['diets'] = new_user_profile['diets'][:3]
-                self.get_recipes_for_user_rec(new_user_profile, n_recipes=n_recipes, previous_cost=5*(len(user_profile['diets']) - 3), print_user_profile=print_user_profile)
+                self.get_recipes_for_user_rec(new_user_profile,
+                                              n_recipes=n_recipes,
+                                              previous_cost=5*(len(user_profile['diets']) - 3),
+                                              previous_relaxed_constraints=relaxed_constraints,
+                                              print_user_profile=print_user_profile)
 
 
     def get_recipes_3_contraints_relaxed(self, user_profile, previous_costs=0, previous_constraints_str="", print_user_profile=False):
@@ -744,6 +777,8 @@ class KBCFhybrid():
                 is_dessert_health = is_recipe_dessert(rid)
                 if health_score < health_score_pref and is_dessert_pref == is_dessert_health and self.cf_profile_hs > health_score:
                     return rid, utility, cf_score, health_score
+
+        return rid_pref, utility_pref, cf_score_pref, health_score_pref
 
 
 

@@ -152,6 +152,8 @@ class NLG(wbc.WhiteBoardClient):
         start = time.time()
         super(NLG, self).treat_message(message, topic)
 
+        # print(message)
+
 
         if topic == self.subscribes[1]:
             log.debug("Will start fetching recipe cards!")
@@ -381,72 +383,87 @@ class NLG(wbc.WhiteBoardClient):
         return sentence
 
 
-    def generate_explanation_relaxed_constraints(self, recipe, r_to_compare_with=None, positive_phrasing=True):
-        relaxed_constraint_str = recipe['relaxed_constraints'].replace("time2","TWO")
-        print(relaxed_constraint_str, r_to_compare_with['relaxed_constraints'])
-        if r_to_compare_with and r_to_compare_with['relaxed_constraints']:
-            constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].replace("time2", "TWO").split("+")
-            for c in constraints_to_eliminate:
-                relaxed_constraint_str = relaxed_constraint_str.replace(c, "")
-                relaxed_constraint_str = relaxed_constraint_str.replace("++", "+")
-                if relaxed_constraint_str and relaxed_constraint_str[0] == "+":
-                    relaxed_constraint_str = relaxed_constraint_str[1:]
-                if relaxed_constraint_str and relaxed_constraint_str[-1] == "+":
-                    relaxed_constraint_str = relaxed_constraint_str[:-1]
-        if relaxed_constraint_str:
-            relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
-            relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
-            relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
-            relaxed_constraints_list = relaxed_constraint_str.split('+')
-            if positive_phrasing:
-                explanation = html_emphasis(recipe['title']) + " corresponds to your preferences except that"
-            else:
-                explanation = " but"
-
-            args_list = list()
-            missing_liked_ingredients = list()
-            added_disliked_ingredients = list()
-            for constraint in relaxed_constraints_list:
-                if "TWO" == constraint:
-                    args_list.append(" it takes longer to prepare")
-                elif "time" == constraint:
-                    args_list.append(" it takes a bit longer to prepare")
-                if constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
-                    args_list.append(" it is not " + constraint)
-                if constraint in ["keto", "low cal"]:
-                    args_list.append(" it does not correspond to a " + constraint + " diet")
-                # else:
-                if constraint in self.user_model[fc.liked_food]:
-                    missing_liked_ingredients.append(constraint)
-                elif constraint in self.user_model[fc.disliked_food]:
-                    added_disliked_ingredients.append(constraint)
+    def generate_explanation_relaxed_constraints(self, recipe, r_to_compare_with=None, positive_phrasing=True, liked_ingedients=None):
+        #TODO AttributeError: 'NoneType' object has no attribute 'replace'
+        if recipe and recipe['relaxed_constraints']:
+            relaxed_constraint_str = recipe['relaxed_constraints'].replace("time2", "TWO")
+            # print(relaxed_constraint_str, r_to_compare_with['relaxed_constraints'])
+            if r_to_compare_with and r_to_compare_with['relaxed_constraints']:
+                constraints_to_eliminate = r_to_compare_with['relaxed_constraints'].replace("time2", "TWO").split("+")
+                for c in constraints_to_eliminate:
+                    relaxed_constraint_str = relaxed_constraint_str.replace(c, "")
+                    relaxed_constraint_str = relaxed_constraint_str.replace("++", "+")
+                    if relaxed_constraint_str and relaxed_constraint_str[0] == "+":
+                        relaxed_constraint_str = relaxed_constraint_str[1:]
+                    if relaxed_constraint_str and relaxed_constraint_str[-1] == "+":
+                        relaxed_constraint_str = relaxed_constraint_str[:-1]
+            if relaxed_constraint_str:
+                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
+                relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
+                relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
+                relaxed_constraints_list = relaxed_constraint_str.split('+')
+                if positive_phrasing:
+                    explanation = html_emphasis(recipe['title']) + " corresponds to your preferences except that"
                 else:
-                    print(colored("Don't know what to do with %s" % constraint, "red"))
-            if missing_liked_ingredients:
-                missing_ingredients_str = " it does not contain "
-                if len(missing_liked_ingredients) == 1:
-                    missing_ingredients_str += missing_liked_ingredients[0]
-                else:
-                    missing_ingredients_str += ", ".join(missing_liked_ingredients[:-1]) + " or " + missing_liked_ingredients[-1]
-                args_list.append(missing_ingredients_str)
-            if added_disliked_ingredients:
-                added_ingredients_str = " it contains "
-                if len(added_disliked_ingredients) == 1:
-                    added_ingredients_str += added_disliked_ingredients[0]
-                else:
-                    added_ingredients_str += ", ".join(added_disliked_ingredients[:-1]) + " and " + added_disliked_ingredients[-1]
-                args_list.append(added_ingredients_str)
+                    explanation = " but"
 
-            if len(args_list) == 1:
-                explanation += args_list[0]
-            elif len(args_list) > 1:
-                explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
+                args_list = list()
+                missing_liked_ingredients = list()
+                added_disliked_ingredients = list()
+                for constraint in relaxed_constraints_list:
+                    if "TWO" == constraint:
+                        args_list.append(" it takes longer to prepare")
+                    elif "time" == constraint:
+                        args_list.append(" it takes a bit longer to prepare")
+                    if constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
+                        args_list.append(" it is not " + constraint)
+                    if constraint in ["keto", "low cal"]:
+                        args_list.append(" it does not correspond to a " + constraint + " diet")
+                    # else:
+                    if constraint in self.user_model[fc.liked_food]:
+                        missing_liked_ingredients.append(constraint)
+                    elif constraint in self.user_model[fc.disliked_food]:
+                        added_disliked_ingredients.append(constraint)
+                    # else:
+                    #     print(colored("Don't know what to do with %s" % constraint, "red"))
+                if missing_liked_ingredients:
+                    if len(missing_liked_ingredients) <= 2 or config.chi_study_comparison_mode != config.chi_study_no_comp:
+                        missing_ingredients_str = " it does not contain "
+                        if len(missing_liked_ingredients) == 1:
+                            missing_ingredients_str += missing_liked_ingredients[0]
+                        else:
+                            missing_ingredients_str += ", ".join(missing_liked_ingredients[:-1]) + " or " + missing_liked_ingredients[-1]
+                        args_list.append(missing_ingredients_str)
+                    else:
+                        liked_ingredients = self.user_model[fc.liked_food]
+                        if len(liked_ingredients) == len(missing_liked_ingredients):
+                            args_list.append(" it contains different ingredients than the ones you specified")
+                        else:
+                            used_ingedients = helper.diff_list(liked_ingredients, missing_liked_ingredients)
+                            used_ingredients_str = " it contains only "
+                            if len(used_ingedients) == 1:
+                                used_ingredients_str += used_ingedients[0]
+                            else:
+                                used_ingredients_str += ", ".join(used_ingedients[:-1]) + " and " + used_ingedients[-1]
+                            used_ingredients_str += " from your list of ingredients"
+                            args_list.append(used_ingredients_str)
+                if added_disliked_ingredients:
+                    added_ingredients_str = " it contains "
+                    if len(added_disliked_ingredients) == 1:
+                        added_ingredients_str += added_disliked_ingredients[0]
+                    else:
+                        added_ingredients_str += ", ".join(added_disliked_ingredients[:-1]) + " and " + added_disliked_ingredients[-1]
+                    args_list.append(added_ingredients_str)
 
-            print(explanation[-4:-1])
-            if len(explanation) > 3 and explanation[-4:] == " but":
-                explanation = explanation[:-4]
+                if len(args_list) == 1:
+                    explanation += args_list[0]
+                elif len(args_list) > 1:
+                    explanation += "; ".join(args_list[:-1]) + " and" + args_list[-1]
 
-            return explanation
+                if len(explanation) > 3 and explanation[-4:] == " but":
+                    explanation = explanation[:-4]
+
+                return explanation
         return ""
 
 
@@ -454,7 +471,6 @@ class NLG(wbc.WhiteBoardClient):
         if self.recipes:
             recipe = self.recipes[0]
             explanation = self.generate_explanation_relaxed_constraints(recipe)
-
             if explanation:
                 explanation += "; but it is healthier than other options (contains less fat, sugar or salt)."
                 explanation += " What do you think?"

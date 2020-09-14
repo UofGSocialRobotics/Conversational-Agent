@@ -551,6 +551,6 @@ def compute_similarities_reco_vs_selected_recipes():
 
 
 if __name__ == "__main__":
-    json_to_csv()
+    # json_to_csv()
     # json_to_csv_health_scores_reco()
-    # count_reasons_for_choice()
+    count_reasons_for_choice()

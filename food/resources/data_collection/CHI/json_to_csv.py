@@ -1,5 +1,8 @@
 import csv
 import json
+import operator
+
+from termcolor import colored
 
 from food.resources.data_collection.json_to_csv import parse_datetime
 from food.resources.recipes_DB.allrecipes.nodejs_scrapper import consts
@@ -7,7 +10,8 @@ from food.resources.recipes_DB.allrecipes.nodejs_scrapper import consts
 with open(consts.json_xUsers_Xrecipes_path, 'r') as fDB:
     recipes_data = json.load(fDB)['recipes_data']
 
-TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c', '5d595adfe1e7440001133597']
+TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c', '5d595adfe1e7440001133597', '593a5560cc988600017935be', '5d7c060606189b0017ba79c9',
+            '5baf6705848bbd0001d6fc8a', 'popo', '5df5143f58a5c738d0e197af-00', '5e2174afcf46ff459df4e238', "5b222aff59f9620001c109cb"]
 
 WRONG_IDS = {
     "1114022477": "5bdc4ebb1d6f32000183476a"
@@ -26,7 +30,7 @@ path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot_comp2_explanations.json", "pilot_comp2_noexplanations.json"]
 # fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
 # fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json", "pilot3_comp3_no_explanations.json"]
-fnames = ["datacol_comp3_noexp2.json"]
+fnames = ["datacol_comp3_noexp2.json", "datacol_comp3_exp2.json", 'datacol_nocomp_noexp.json', 'datacol_nocomp_noexp2.json', 'datacol_comp2_noexp2.json', 'datacol_comp2_exp.json']
 
 fname_to_explanation_mode = {
     "pilot_comp2_explanations.json": "explanations",
@@ -37,7 +41,13 @@ fname_to_explanation_mode = {
     "pilot2_comp3_no_explanations.json": "no explanations",
     "pilot3_comp3_no_explanations.json": "no explanations",
     "datacol_comp3_noexp.json": "no explanations",
-    "datacol_comp3_noexp2.json": "no explanations"
+    "datacol_comp3_noexp2.json": "no explanations",
+    "datacol_comp3_exp2.json": "explanations",
+    "datacol_nocomp_noexp.json": "no explanations",
+    "datacol_nocomp_noexp2.json": "no explanations",
+    "datacol_comp2_noexp.json": "no explanations",
+    "datacol_comp2_noexp2.json": "no explanations",
+    "datacol_comp2_exp.json": "explanations"
 }
 
 fname_to_comparison_mode = {
@@ -49,21 +59,31 @@ fname_to_comparison_mode = {
     "pilot2_comp3_no_explanations.json": "3 recipes",
     "pilot3_comp3_no_explanations.json": "3 recipes",
     "datacol_comp3_noexp.json": "3 recipes",
-    "datacol_comp3_noexp2.json": "3 recipes"
+    "datacol_comp3_noexp2.json": "3 recipes",
+    "datacol_comp3_exp2.json": "3 recipes",
+    "datacol_nocomp_noexp.json": "1 recipe",
+    "datacol_nocomp_noexp2.json": "1 recipe",
+    "datacol_comp2_noexp.json": "2 recipes",
+    "datacol_comp2_noexp2.json": "2 recipes",
+    "datacol_comp2_exp.json": "2 recipes"
 }
 
 csv_all_rows = list()
 first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients', 'r1 title', 'r1 healthscore', 'r2 title', 'r2 healthscore', 'r3 title', 'r3 healthscore', 'chosen']
+first_row += ["chosen r healthy", "small-talk", "self disclosures", "feedback", "usefulness", "transparency", "ease of use", "authority", "liking", "trust", "satisfaction", "intention to cook", "intention of use", "recommendation accuracy"]
+first_row += ["wants to eat healthy (1-5)", "likes coocking (1-5)", "cooking frequency", "healthy eating frequency", "CA familiarity"]
 csv_all_rows.append(first_row)
 
 
 for fname in fnames:
     with open(path+fname, 'r') as f:
         content = json.load(f)
+        print(colored(fname,"green"))
 
         for key_user, data in content["Sessions"].items():
 
-            if isinstance(data, dict) and "data_collection" in data.keys() and isinstance(data["data_collection"]['amt_id'], dict):
+            if isinstance(data, dict) and "data_collection" in data.keys() and isinstance(data["data_collection"]['amt_id'], dict)\
+                    and isinstance(data["data_collection"]['questionnaire_answers_q1'], dict):
 
                 new_row = list()
                 data_collection = data["data_collection"]
@@ -71,8 +91,9 @@ for fname in fnames:
                 start_time = parse_datetime(data_collection['amt_id']['datetime'])
 
                 print(amtid)
+                # print("+"+amtid.strip()+"+")
 
-                if "lucile" in amtid or amtid in TO_REMOE:
+                if "lucile" in amtid or amtid.strip() in TO_REMOE:
                     pass
 
                 else:
@@ -145,6 +166,10 @@ for fname in fnames:
                                 new_row.append(rids[1])
                                 new_row.append(get_healthScore(rids[1]))
                                 t2 = dialog_unit['titles'][1]
+                            else:
+                                new_row.append(None)
+                                new_row.append(None)
+                                new_row[3] = "1 recipe"
                             if len(rids) > 2:
                                 new_row.append(rids[2])
                                 new_row.append(get_healthScore(rids[2]))
@@ -152,7 +177,7 @@ for fname in fnames:
                             else:
                                 new_row.append(None)
                                 new_row.append(None)
-                                new_row[3] = "1 recipe"
+                                # new_row[3] = "1 recipe"
 
                             resp_like_recipe = True
 
@@ -164,6 +189,26 @@ for fname in fnames:
                                 parse_time = True
                             elif "Is there any food you'd like to use? Something already in your kitchen or that you could buy?" in dialog_unit['sentence']:
                                 parse_ingredients = True
+
+
+                    questionnaire_answers_list = list()
+                    for qid, v in data_collection['questionnaire_answers_q1'].items():
+                        if "question" in qid:
+                            qid_n = int(qid.replace("question", ""))
+                            questionnaire_answers_list.append((qid_n, int(v)))
+                    if len(questionnaire_answers_list) == 13:
+                        questionnaire_answers_list.append((0, None))
+                    questionnaire_answers_list = [v for (_, v) in sorted(questionnaire_answers_list, key=operator.itemgetter(0), reverse=False)]
+                    new_row += questionnaire_answers_list
+
+                    demographics = data_collection['demographics']
+                    # first_row += ["wants to eat healthy (1-5)", "likes coocking (1-5)", "cooking frequency", "healthy eating frequency", "CA familiarity"]
+                    new_row.append(int(demographics['want_to_eat_healthy']))
+                    new_row.append(int(demographics['like_cooking']))
+                    new_row.append(demographics['freq_cook'])
+                    new_row.append(demographics['healthy_food'])
+                    new_row.append(demographics['CA_familiarity'])
+
 
 
 
