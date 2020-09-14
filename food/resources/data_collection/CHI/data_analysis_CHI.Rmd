@@ -1,0 +1,261 @@
+---
+title: "Data Analysis CHI"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+# Set up
+
+Set working directory and load the data
+```{r ggpubr}
+setwd("/Users/lucileca/Desktop/Conversational_Agent/server_side/food/resources/data_collection/CHI")
+##library(ggpubr)
+mydata <- read.csv("res.csv")
+
+mydata_noexp <- subset(mydata, Explanation.mode == "no explanations")
+mydata_exp <- subset(mydata, Explanation.mode == "explanations")
+
+mydata_1recipe <- subset(mydata, Comparison.mode == "1 recipe")
+mydata_2recipes <- subset(mydata, Comparison.mode == "2 recipes")
+mydata_3recipes <- subset(mydata, Comparison.mode == "3 recipes")
+
+mydata_noexp_1recipe <- subset(mydata_1recipe, Explanation.mode == "no explanations")
+mydata_noexp_2recipes <- subset(mydata_2recipes, Explanation.mode == "no explanations")
+mydata_exp_2recipes <- subset(mydata_2recipes, Explanation.mode == "explanations")
+mydata_noexp_3recipes <- subset(mydata_3recipes, Explanation.mode == "no explanations")
+mydata_exp_3recipes <- subset(mydata_3recipes, Explanation.mode == "explanations")
+```
+
+Libraries
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(magrittr)
+library(car)
+library(lsmeans)
+library(ggpubr)
+```
+
+Check the data
+```{r}
+View(mydata)
+```
+
+Number of mydata points per condition
+```{r}
+aggregate(cbind(count = file.name) ~ file.name, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+```
+
+# Recipe choice
+
+## Recipe choice per condition
+
+```{r}
+mydata_noexp_1recipe_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_noexp_1recipe, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_noexp_1recipe_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_noexp_2recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_noexp_2recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_noexp_2recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_exp_2recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_exp_2recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_exp_2recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_noexp_3recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_noexp_3recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_noexp_3recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_exp_3recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_exp_3recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_exp_3recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+```
+
+## Recipe choice per Comparison-Mode
+
+```{r}
+mydata_1recipe_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_1recipe, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_1recipe_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_2recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_2recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_2recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_3recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_3recipes, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_3recipes_chosen, .(), mutate, pct = count / sum(count) * 100)
+```
+
+## Recipe choice per Explanation-Mode
+
+```{r}
+mydata_exp_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_exp, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_exp_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_noexp_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_noexp, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_noexp_chosen, .(), mutate, pct = count / sum(count) * 100)
+```
+
+# Plots
+
+## Plots per condition
+```{r}
+ggplot(data=mydata, aes(x=file.name, y=chosen.r.healthy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=small.talk)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=self.disclosures)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=feedback)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=usefulness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=transparency)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=ease.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=authority)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=liking)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=trust)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=intention.to.cook)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=intention.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=file.name, y=recommendation.accuracy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+## Plots per Comparison-Mode
+```{r}
+ggplot(data=mydata, aes(x=Comparison.mode, y=chosen.r.healthy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=small.talk)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=self.disclosures)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=feedback)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=usefulness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=transparency)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=ease.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=authority)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=liking)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=trust)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=intention.to.cook)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=intention.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Comparison.mode, y=recommendation.accuracy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+
+## Plots per Explanation-Mode
+```{r}
+ggplot(data=mydata, aes(x=Explanation.mode, y=chosen.r.healthy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=small.talk)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=self.disclosures)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=feedback)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=usefulness)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=transparency)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=ease.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=authority)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=liking)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=trust)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=satisfaction)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=intention.to.cook)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=intention.of.use)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+
+ggplot(data=mydata, aes(x=Explanation.mode, y=recommendation.accuracy)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3,show.legend = FALSE)
+```
+
+
+# ANOVAs 
+
+```{r}
+model = lm(chosen.r.healthy ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(small.talk ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(self.disclosures ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(feedback ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(usefulness ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(transparency ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(ease.of.use ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(authority ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(liking ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(trust ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(satisfaction ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(intention.to.cook ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+
+model = lm(intention.of.use ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+
+model = lm(recommendation.accuracy ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+print(Anova(model, type = 'II'))
+```
