@@ -58,6 +58,76 @@ cat("mydata_exp_3recipes", nrow(mydata_exp_3recipes), "\n")
 cat("mydata_noexp_3recipes", nrow(mydata_noexp_3recipes), "\n")
 ```
 
+# Demographics
+
+Age
+```{r}
+mydata_age <- mydata["Age"]
+mydata_long <- gather(mydata_age, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
+  summarise(mean= mean(value,na.rm=TRUE), 
+            sd= sd(value,na.rm=TRUE), 
+            max = max(value,na.rm=TRUE),
+            min = min(value,na.rm=TRUE), 
+            upperQ = quantile(value,0.75,na.rm=TRUE),
+            lowerQ = quantile(value,0.25,na.rm=TRUE))
+```
+
+Number of male / female
+```{r}
+gender_mydata <- aggregate(cbind(count = Sex) ~ Sex, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(gender_mydata, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Employment category
+```{r}
+employment_mydata <- aggregate(cbind(count = Employment.Status) ~ Employment.Status, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(employment_mydata, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Student
+```{r}
+education_mydata <- aggregate(cbind(count = Student.Status) ~ Student.Status, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(education_mydata, .(), mutate, pct = count / sum(count) * 100)
+```
+
+First language
+```{r}
+tmp <- aggregate(cbind(count = First.Language) ~ First.Language, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Natioanality
+```{r}
+tmp <- aggregate(cbind(count = Nationality) ~ Nationality, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+CA familiarity
+```{r}
+tmp <- aggregate(cbind(count = CA.familiarity) ~ CA.familiarity, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+
 # Recipe choice
 
 ## Recipe choice per condition
@@ -67,6 +137,11 @@ mydata_noexp_1recipe_chosen <- aggregate(cbind(count = chosen) ~ chosen,
           data = mydata_noexp_1recipe, 
           FUN = function(x){NROW(x)})
 ddply(mydata_noexp_1recipe_chosen, .(), mutate, pct = count / sum(count) * 100)
+
+mydata_exp_1recipe_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
+          data = mydata_exp_1recipe, 
+          FUN = function(x){NROW(x)})
+ddply(mydata_exp_1recipe_chosen, .(), mutate, pct = count / sum(count) * 100)
 
 mydata_noexp_2recipes_chosen <- aggregate(cbind(count = chosen) ~ chosen, 
           data = mydata_noexp_2recipes, 
