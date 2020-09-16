@@ -127,6 +127,133 @@ tmp <- aggregate(cbind(count = CA.familiarity) ~ CA.familiarity,
 ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
 ```
 
+# Recommendations -- health scores of recipes
+
+## Healthier recipe
+Mean of healthier recipe health score
+```{r}
+mean(mydata$r.healthier.healthscore)
+```
+
+Mean of healthier recipe health score per condition
+```{r}
+cat("mydata_exp_1recipe", mean(mydata_exp_1recipe$r.healthier.healthscore), "\n")
+cat("mydata_noexp_1recipe", mean(mydata_noexp_1recipe$r.healthier.healthscore), "\n")
+cat("mydata_exp_2recipes", mean(mydata_exp_2recipes$r.healthier.healthscore), "\n")
+cat("mydata_noexp_2recipes", mean(mydata_noexp_2recipes$r.healthier.healthscore), "\n")
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.healthier.healthscore), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.healthier.healthscore), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.healthier.healthscore ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
+
+## Pref recipe
+
+Mean of pref recipe health score
+```{r}
+mean(mydata$r.pref.healthscore, na.rm=TRUE)
+```
+
+Mean of pref recipe health score per condition
+```{r}
+cat("mydata_exp_2recipes", mean(mydata_exp_2recipes$r.pref.healthscore), "\n")
+cat("mydata_noexp_2recipes", mean(mydata_noexp_2recipes$r.pref.healthscore), "\n")
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.pref.healthscore), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.pref.healthscore), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.pref.healthscore ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
+
+## Decoy recipe
+
+Mean of pref recipe health score
+```{r}
+mean(mydata$r.decoy.healthscore, na.rm=TRUE)
+```
+
+Mean of pref recipe health score per condition
+```{r}
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.decoy.healthscore), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.decoy.healthscore), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.decoy.healthscore ~ Explanation.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
+
+# Recommendations -- utility of recipes
+
+## Healthier recipe
+Mean of healthier recipe utility
+```{r}
+mean(mydata$r.healthier.utility)
+```
+
+Mean of healthier recipe utility per condition
+```{r}
+cat("mydata_exp_1recipe", mean(mydata_exp_1recipe$r.healthier.utility), "\n")
+cat("mydata_noexp_1recipe", mean(mydata_noexp_1recipe$r.healthier.utility), "\n")
+cat("mydata_exp_2recipes", mean(mydata_exp_2recipes$r.healthier.utility), "\n")
+cat("mydata_noexp_2recipes", mean(mydata_noexp_2recipes$r.healthier.utility), "\n")
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.healthier.utility), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.healthier.utility), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.healthier.utility ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
+
+## Pref recipe
+
+Mean of pref recipe utility
+```{r}
+mean(mydata$r.pref.utility, na.rm=TRUE)
+```
+
+Mean of pref recipe utility per condition
+```{r}
+cat("mydata_exp_2recipes", mean(mydata_exp_2recipes$r.pref.utility), "\n")
+cat("mydata_noexp_2recipes", mean(mydata_noexp_2recipes$r.pref.utility), "\n")
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.pref.utility), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.pref.utility), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.pref.utility ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
+
+## Decoy recipe
+
+Mean of pref recipe utility
+```{r}
+mean(mydata$r.decoy.utility, na.rm=TRUE)
+```
+
+Mean of pref recipe utility per condition
+```{r}
+cat("mydata_exp_3recipes", mean(mydata_exp_3recipes$r.decoy.utility), "\n")
+cat("mydata_noexp_3recipes", mean(mydata_noexp_3recipes$r.decoy.utility), "\n")
+```
+
+Is the difference between conditions significative?
+```{r}
+model = lm(r.decoy.utility ~ Explanation.mode, data = mydata)
+print(Anova(model, type = 'II'))
+```
 
 # Recipe choice
 

@@ -96,10 +96,13 @@ fname_to_comparison_mode = {
 
 csv_all_rows = list()
 first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients',]
-first_row += ['r1 title', 'r1 healthscore', 'r1 utility', 'r1 CF score', 'r2 title', 'r2 healthscore', 'r2 utility', 'r2 CF score', 'r3 title', 'r3 healthscore', 'r3 utility', 'r3 CF score', 'chosen']
+first_row += ['r1 title', 'r1 healthscore', 'r1 utility', 'r1 CF score']
+first_row += ['r2 title', 'r2 healthscore', 'r healthier healthscore', 'r pref healthscore', 'r2 utility', 'r healthier utility', 'r pref utility', 'r2 CF score']
+first_row += ['r3 title', 'r3 healthscore', 'r decoy healthscore', 'r3 utility', 'r decoy utility', 'r3 CF score', 'chosen']
 first_row += ["chosen r healthy", "small-talk", "self disclosures", "feedback", "usefulness", "transparency", "ease of use", "authority", "liking", "trust", "satisfaction", "intention to cook", "intention of use", "recommendation accuracy"]
 first_row += ["wants to eat healthy (1-5)", "likes coocking (1-5)", "cooking frequency", "healthy eating frequency", "CA familiarity"]
 first_row += ['Age', 'Country of Birth', 'Current Country of Residence', 'Employment Status', 'First Language', 'Nationality', 'Sex', 'Student Status']
+first_row += ['Comments Cora', 'Comments Study']
 
 csv_all_rows.append(first_row)
 
@@ -209,23 +212,32 @@ def parse_json():
                                 t2 = None
                                 t3 = None
                                 if len(rids) > 1:
+# ['r2 title', 'r2 healthscore', 'r healthier healthscore', 'r pref healthscore', 'r2 utility', 'r healthier utility', 'r pref utility', 'r2 CF score']
                                     new_row.append(rids[1])
                                     new_row.append(get_healthScore(rids[1]))
+                                    new_row.append(get_healthScore(rids[1]))
+                                    new_row.append(get_healthScore(rids[0]))
                                     new_row.append(dialog_unit['utilities'][1])
+                                    new_row.append(dialog_unit['utilities'][1])
+                                    new_row.append(dialog_unit['utilities'][0])
                                     new_row.append(dialog_unit['cf_scores'][1])
                                     t2 = dialog_unit['titles'][1]
                                 else:
-                                    new_row += [None, None, None, None]
+                                    new_row += [None, None, get_healthScore(rids[0]), None, None, dialog_unit['utilities'][0], None, None]
                                     # new_row += [None, None, None]
                                     new_row[3] = "1 recipe"
                                 if len(rids) > 2:
                                     new_row.append(rids[2])
                                     new_row.append(get_healthScore(rids[2]))
+                                    new_row.append(get_healthScore(rids[2]))
+                                    new_row.append(dialog_unit['utilities'][2])
                                     new_row.append(dialog_unit['utilities'][2])
                                     new_row.append(dialog_unit['cf_scores'][2])
                                     t3 = dialog_unit['titles'][2]
                                 else:
-                                    new_row += [None, None, None, None]
+                                    new_row += [None, None, None, None, None, None]
+                                    if new_row[3] == "3 recipes":
+                                        new_row[3] = "2 recipes"
                                     # new_row[3] = "1 recipe"
 
                                 resp_like_recipe = True
@@ -261,6 +273,9 @@ def parse_json():
 
                         to_append = [age, c_birth, c_residence, employment, language, nationality, sex, student]
                         new_row += to_append
+
+                        new_row.append(data_collection['free_comments']['free_text_about_cora'])
+                        new_row.append(data_collection['free_comments']['free_text_about_study'])
 
                 # except KeyError:
                 #     print(data['data_collection'])
