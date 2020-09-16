@@ -15,7 +15,8 @@ with open(consts.json_xUsers_Xrecipes_path, 'r') as fDB:
 TO_REMOE = ['A2M45YGLOWMO4N', '5a89661caa46dd00016bc1bb', '5c71054a5444f60001ec032c', '5d595adfe1e7440001133597', '593a5560cc988600017935be', '5d7c060606189b0017ba79c9',
             '5baf6705848bbd0001d6fc8a', 'popo', '5df5143f58a5c738d0e197af-00', '5e2174afcf46ff459df4e238', "5b222aff59f9620001c109cb", "5aa67d76f053610001726e65",
             "5d767ab1abbb3200160bf2d6", "5d36e5a972282e0019605fa0", "5b9f7f9eaa0e0e0001573bd2", "5c65ed60d9c5be00017428bf", "5c39ed7a688b59000102a145",
-            "5c337ffaca23620001b278e0", '5de3bc33cdff8e3beabfc96a', "5c4254f4d77d7c000189ac0f", "5b2a14d40ec82d0001d2721f"]
+            "5c337ffaca23620001b278e0", '5de3bc33cdff8e3beabfc96a', "5c4254f4d77d7c000189ac0f", "5b2a14d40ec82d0001d2721f", "5bafd12a70f8df0001be84a7",
+            "5c4ef5379a3f430001757afe"]
 
 REMOVE_BUT_PUT_BACK = ["fakeID", "5c322f84508b7a0001fcb70d"]
 
@@ -39,7 +40,8 @@ path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
 # fnames = ["pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json", "pilot3_comp3_no_explanations.json"]
 fnames = ["datacol_comp3_noexp2.json", "datacol_comp3_exp2.json", 'datacol_nocomp_noexp.json', 'datacol_nocomp_noexp2.json', 'datacol_comp2_noexp2.json', 'datacol_comp2_exp.json', "datacol_nocomp_exp.json",
-          "datacol_comp3_exp3.json", "datacol_comp3_noexp3.json", "datacol_comp2_noexp3.json", "datacol_comp2_exp2.json", "datacol_nocom_noexp3.json"]
+          "datacol_comp3_exp3.json", "datacol_comp3_noexp3.json", "datacol_comp2_noexp3.json", "datacol_comp2_exp2.json", "datacol_nocom_noexp3.json",
+          "datacol_nocomp_exp2.json"]
 # fnames = []
 
 fname_to_explanation_mode = {
@@ -63,7 +65,8 @@ fname_to_explanation_mode = {
     "datacol_comp3_noexp3.json": "no explanations",
     "datacol_comp2_noexp3.json": "no explanations",
     "datacol_comp2_exp2.json": "explanations",
-    "datacol_nocom_noexp3.json": "no explanations"
+    "datacol_nocom_noexp3.json": "no explanations",
+    "datacol_nocomp_exp2.json": "explanations"
 }
 
 fname_to_comparison_mode = {
@@ -87,11 +90,13 @@ fname_to_comparison_mode = {
     "datacol_comp3_noexp3.json": "3 recipes",
     "datacol_comp2_noexp3.json": "2 recipes",
     "datacol_comp2_exp2.json": "2 recipes",
-    "datacol_nocom_noexp3.json": "1 recipe"
+    "datacol_nocom_noexp3.json": "1 recipe",
+    "datacol_nocomp_exp2.json": "1 recipe"
 }
 
 csv_all_rows = list()
-first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients', 'r1 title', 'r1 healthscore', 'r2 title', 'r2 healthscore', 'r3 title', 'r3 healthscore', 'chosen']
+first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients',]
+first_row += ['r1 title', 'r1 healthscore', 'r1 utility', 'r1 CF score', 'r2 title', 'r2 healthscore', 'r2 utility', 'r2 CF score', 'r3 title', 'r3 healthscore', 'r3 utility', 'r3 CF score', 'chosen']
 first_row += ["chosen r healthy", "small-talk", "self disclosures", "feedback", "usefulness", "transparency", "ease of use", "authority", "liking", "trust", "satisfaction", "intention to cook", "intention of use", "recommendation accuracy"]
 first_row += ["wants to eat healthy (1-5)", "likes coocking (1-5)", "cooking frequency", "healthy eating frequency", "CA familiarity"]
 first_row += ['Age', 'Country of Birth', 'Current Country of Residence', 'Employment Status', 'First Language', 'Nationality', 'Sex', 'Student Status']
@@ -198,24 +203,29 @@ def parse_json():
                                 rids = dialog_unit['rids']
                                 new_row.append(rids[0])
                                 new_row.append(get_healthScore(rids[0]))
+                                new_row.append(dialog_unit['utilities'][0])
+                                new_row.append(dialog_unit['cf_scores'][0])
                                 t1 = dialog_unit['titles'][0]
                                 t2 = None
                                 t3 = None
                                 if len(rids) > 1:
                                     new_row.append(rids[1])
                                     new_row.append(get_healthScore(rids[1]))
+                                    new_row.append(dialog_unit['utilities'][1])
+                                    new_row.append(dialog_unit['cf_scores'][1])
                                     t2 = dialog_unit['titles'][1]
                                 else:
-                                    new_row.append(None)
-                                    new_row.append(None)
+                                    new_row += [None, None, None, None]
+                                    # new_row += [None, None, None]
                                     new_row[3] = "1 recipe"
                                 if len(rids) > 2:
                                     new_row.append(rids[2])
                                     new_row.append(get_healthScore(rids[2]))
+                                    new_row.append(dialog_unit['utilities'][2])
+                                    new_row.append(dialog_unit['cf_scores'][2])
                                     t3 = dialog_unit['titles'][2]
                                 else:
-                                    new_row.append(None)
-                                    new_row.append(None)
+                                    new_row += [None, None, None, None]
                                     # new_row[3] = "1 recipe"
 
                                 resp_like_recipe = True
