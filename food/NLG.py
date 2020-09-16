@@ -398,7 +398,8 @@ class NLG(wbc.WhiteBoardClient):
                     if relaxed_constraint_str and relaxed_constraint_str[-1] == "+":
                         relaxed_constraint_str = relaxed_constraint_str[:-1]
             if relaxed_constraint_str:
-                relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
+                if "keto" in relaxed_constraint_str and "ketonic" not in relaxed_constraint_str:
+                    relaxed_constraint_str = relaxed_constraint_str.replace("keto", "ketonic")
                 relaxed_constraint_str = relaxed_constraint_str.replace("low_cal", "low calory")
                 relaxed_constraint_str = relaxed_constraint_str.replace("_", "")
                 relaxed_constraints_list = relaxed_constraint_str.split('+')
@@ -417,7 +418,7 @@ class NLG(wbc.WhiteBoardClient):
                         args_list.append(" it takes a bit longer to prepare")
                     if constraint in ["vegan", "vegetarian", "pescetarian", 'dairy free', 'gluten free']:
                         args_list.append(" it is not " + constraint)
-                    if constraint in ["keto", "low cal"]:
+                    if constraint in ["ketonic", "low calory"]:
                         args_list.append(" it does not correspond to a " + constraint + " diet")
                     # else:
                     if constraint in self.user_model[fc.liked_food]:
