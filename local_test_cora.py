@@ -274,8 +274,8 @@ if __name__ == "__main__":
     small_talk = ["hi", "user", "Fine", "vegetarian", "healthy"]
     # autotest_scripts['user1'] = ['hi', 'user', 'Fine', 'vegetarian', 'healthy', 'vegan die', '40 min', 'cauliflower, garlic, lettuce, onions, peppers, spinach, rice', 'no']
     # autotest_scripts['user2'] = small_talk + ["vegan", "30min", "eggs, cabbage, carrots, cauliflower, garlic, green beans, kidney beans, mushrooms, onions, peas, peppers, potato, zucchini, tomatoes, apples, bananas, grapes, cheese, lentils, pasta, rice", "No"]
-    # autotest_scripts['user2'] = small_talk + ["none", "30min", "chicken, steak", "No"]
-    autotest_scripts['user2'] = small_talk + ["dairy free", "40min", "chicken", "No"]
+    autotest_scripts['user2'] = small_talk + ["none", "30min", "chicken, steak", "No"]
+    # autotest_scripts['user2'] = small_talk + ["dairy free", "40min", "chicken", "No"]
     # liked_recipes = dict()
     # liked_recipes['user1'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']
     # liked_recipes['user2'] = ['9615/healthy-banana-cookies/', '15836/strawberry-pie-ii/', '11314/delicious-raspberry-oatmeal-cookie-bars/', '17981/one-bowl-chocolate-cake-iii/', '25787/coconut-macaroons-iii/', '15475/stephens-chocolate-chip-cookies/']

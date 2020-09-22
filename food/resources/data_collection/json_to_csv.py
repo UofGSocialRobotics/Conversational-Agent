@@ -55,18 +55,31 @@ def format_date(value):
     if len(time_splited_at_semicolumn[1]) == 1:
         time_splited_at_semicolumn[1] = '0' + time_splited_at_semicolumn[1].strip()
     new_value = ("/".join(date_splited_at_slash)).strip() + "," + ":".join(time_splited_at_semicolumn)
+    new_value = new_value.replace("/,", ",")
     return new_value
 
 def parse_datetime(value):
     try:
         new_value = format_date(value)
-        if len(new_value) == len("09/11/2019,14:45:33"):
-            return datetime.datetime.strptime(new_value, '%d/%m/%Y,%H:%M:%S')
+        if len(new_value) == len("9/11/2019,14:45:33") and new_value[1]=="/":
+            res = datetime.datetime.strptime(new_value, '%d/%m/%Y,%H:%M:%S')
+            return res
+        elif len(new_value) == len("09/11/2019,14:45:33") and new_value[2]=="/":
+            res = datetime.datetime.strptime(new_value, '%d/%m/%Y,%H:%M:%S')
+            return res
+        elif len(new_value) == len("09/11/2019,14:45:33") and new_value[4]=="/":
+            res = datetime.datetime.strptime(new_value, '%Y/%m/%d,%H:%M:%S')
+            return res
         else:
-            if len(new_value) == len("11/09/2019,10:12:06AM") or len(new_value) == len("11/9/2019,4:14:04PM"):
-                return datetime.datetime.strptime(new_value, '%m/%d/%Y,%H:%M:%S%p')
+            if len(new_value) == len("11/09/2019,10:12:06AM") and new_value[0] == '0':
+                new_value = new_value[1:]
+                res = datetime.datetime.strptime(new_value, '%m/%d/%Y,%H:%M:%S%p')
+                return res
+            elif len(new_value) == len("11/09/2019,10:12:06AM") or len(new_value) == len("11/9/2019,4:14:04PM"):
+                res = datetime.datetime.strptime(new_value, '%m/%d/%Y,%H:%M:%S%p')
+                return res
             else:
-                print('error', value, new_value)
+                print('error here', value, new_value)
                 print(len("09/11/2019,14:45:33"), len("11/9/2019,10:12:06AM"), len(new_value))
                 return False
     except ValueError as e:
@@ -76,7 +89,7 @@ def parse_datetime(value):
         month = int(new_value_splited_at_slash[0])
         if month > 12 and day < 12:
             new_value = new_value_splited_at_slash[1] + "/" + new_value_splited_at_slash[0] + "/" + "/".join(new_value_splited_at_slash[2:])
-            parse_datetime(new_value)
+            return parse_datetime(new_value)
         else:
             return False
 

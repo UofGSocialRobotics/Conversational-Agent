@@ -35,6 +35,11 @@ def get_avg_healthScore(rids_list):
         sum += get_healthScore(rid)
     return float(sum/len(rids_list))
 
+def get_sec(time_str):
+    """Get Seconds from time."""
+    h, m, s = time_str.split(':')
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
 path = 'food/resources/data_collection/CHI/'
 # fnames = ["pilot_comp2_explanations.json", "pilot_comp2_noexplanations.json"]
 # fnames = ["pilot2_comp2_explanations.json", "pilot2_comp2_noexplanations.json", "pilot2_comp3_explanations.json", "pilot2_comp3_no_explanations.json"]
@@ -98,11 +103,12 @@ csv_all_rows = list()
 first_row = ['prolific ID', 'file name', 'Explanation mode', 'Comparison mode', 'liked recipes', 'liked recipes healthscore', 'diet', 'time', 'ingredients',]
 first_row += ['r1 title', 'r1 healthscore', 'r1 utility', 'r1 CF score']
 first_row += ['r2 title', 'r2 healthscore', 'r healthier healthscore', 'r pref healthscore', 'r2 utility', 'r healthier utility', 'r pref utility', 'r2 CF score']
-first_row += ['r3 title', 'r3 healthscore', 'r decoy healthscore', 'r3 utility', 'r decoy utility', 'r3 CF score', 'chosen']
+first_row += ['r3 title', 'r3 healthscore', 'r decoy healthscore', 'r3 utility', 'r decoy utility', 'r3 CF score', 'chosen', 'chosen healthscore', 'diff profile HS chosen HS', 'diff profile HS Rhealthier HS']
 first_row += ["chosen r healthy", "small-talk", "self disclosures", "feedback", "usefulness", "transparency", "ease of use", "authority", "liking", "trust", "satisfaction", "intention to cook", "intention of use", "recommendation accuracy"]
 first_row += ["wants to eat healthy (1-5)", "likes coocking (1-5)", "cooking frequency", "healthy eating frequency", "CA familiarity"]
 first_row += ['Age', 'Country of Birth', 'Current Country of Residence', 'Employment Status', 'First Language', 'Nationality', 'Sex', 'Student Status']
-first_row += ['Comments Cora', 'Comments Study']
+first_row += ['Comments Cora', "Lenght Comment Cora", 'Comments Study', "Length Comment Study", "Total Length Comments", "Left Comment Bool"]
+first_row +=  ["Time spent", "Time spent sec"]
 
 csv_all_rows.append(first_row)
 
@@ -131,6 +137,10 @@ def parse_json():
                     data_collection = data["data_collection"]
                     amtid = data_collection['amt_id']['value']
                     start_time = parse_datetime(data_collection['amt_id']['datetime'])
+                    if not start_time:
+                        print("ERROR")
+                        print(data_collection['amt_id']['datetime'])
+                        return
 
                     if amtid in WRONG_IDS.keys():
                         amtid = WRONG_IDS[amtid]
@@ -152,7 +162,8 @@ def parse_json():
 
                         liked_recipes_cf = data['rs_data']['liked_recipes']
                         new_row.append(liked_recipes_cf)
-                        new_row.append(get_avg_healthScore(liked_recipes_cf))
+                        profile_healthscore = get_avg_healthScore(liked_recipes_cf)
+                        new_row.append(profile_healthscore)
 
                         resp_like_recipe = False
 
@@ -169,11 +180,11 @@ def parse_json():
                                     new_row.append(answer[len("I have a "):-len(" diet")])
                                 parse_diet = False
                             elif parse_time:
-                                answer = dialog_unit['text'].replace("\n"," ").strip()
+                                answer = dialog_unit['text'].replace("\n", " ").strip()
                                 new_row.append(answer)
                                 parse_time = False
                             elif parse_ingredients:
-                                answer = dialog_unit['text'].replace("\n"," ").strip()
+                                answer = dialog_unit['text'].replace("\n", " ").strip()
                                 if len(answer) > 4:
                                     answer = answer[len("I would like "):]
                                 new_row.append(answer)
@@ -186,18 +197,30 @@ def parse_json():
                                         or answer.lower().strip() == "I don't like either of the recipes".lower().strip() \
                                         or answer.lower().strip() == "I don't like any of the recipes".lower().strip():
                                     new_row.append("none")
-                                elif answer.lower().strip().replace("\n", " ") == "Yes, I like it!".lower().strip():
-                                    if t2:
-                                        raise ValueError("We have 2 recipes but answer is I like it!!")
-                                    new_row.append("r1")
-                                elif t1 in answer:
-                                    new_row.append("r1")
-                                elif t2 and t2 in answer:
-                                    new_row.append("r2")
-                                elif t3 and t3 in answer:
-                                    new_row.append("r3")
+                                    new_row.append("")
+                                    new_row.append("")
                                 else:
-                                    raise ValueError(answer)
+                                    if answer.lower().strip().replace("\n", " ") == "Yes, I like it!".lower().strip():
+                                        if t2:
+                                            raise ValueError("We have 2 recipes but answer is I like it!!")
+                                        new_row.append("r1")
+                                        h = h1
+                                    elif t1 in answer:
+                                        new_row.append("r1")
+                                        h = h1
+                                    elif t2 and t2 in answer:
+                                        new_row.append("r2")
+                                        h = h2
+                                    elif t3 and t3 in answer:
+                                        new_row.append("r3")
+                                        h = h3
+                                    else:
+                                        raise ValueError(answer)
+
+                                    new_row.append(h)
+                                    new_row.append(profile_healthscore-h)
+
+                                new_row.append(profile_healthscore-h_healthier)
 
                                 resp_like_recipe = False
                                 csv_all_rows.append(new_row)
@@ -205,31 +228,36 @@ def parse_json():
                             if isinstance(dialog_unit, dict) and "rids" in dialog_unit.keys():
                                 rids = dialog_unit['rids']
                                 new_row.append(rids[0])
-                                new_row.append(get_healthScore(rids[0]))
+                                h = get_healthScore(rids[0])
+                                new_row.append(h)
                                 new_row.append(dialog_unit['utilities'][0])
                                 new_row.append(dialog_unit['cf_scores'][0])
-                                t1 = dialog_unit['titles'][0]
-                                t2 = None
-                                t3 = None
+                                t1, h1 = dialog_unit['titles'][0], h
+                                t2, h2 = None, None
+                                t3, h3 = None, None
+                                h_healthier = h
                                 if len(rids) > 1:
 # ['r2 title', 'r2 healthscore', 'r healthier healthscore', 'r pref healthscore', 'r2 utility', 'r healthier utility', 'r pref utility', 'r2 CF score']
                                     new_row.append(rids[1])
-                                    new_row.append(get_healthScore(rids[1]))
-                                    new_row.append(get_healthScore(rids[1]))
+                                    h2 = get_healthScore(rids[1])
+                                    new_row.append(h2)
+                                    new_row.append(h2)
                                     new_row.append(get_healthScore(rids[0]))
                                     new_row.append(dialog_unit['utilities'][1])
                                     new_row.append(dialog_unit['utilities'][1])
                                     new_row.append(dialog_unit['utilities'][0])
                                     new_row.append(dialog_unit['cf_scores'][1])
                                     t2 = dialog_unit['titles'][1]
+                                    h_healthier = h2
                                 else:
                                     new_row += [None, None, get_healthScore(rids[0]), None, None, dialog_unit['utilities'][0], None, None]
                                     # new_row += [None, None, None]
                                     new_row[3] = "1 recipe"
                                 if len(rids) > 2:
                                     new_row.append(rids[2])
-                                    new_row.append(get_healthScore(rids[2]))
-                                    new_row.append(get_healthScore(rids[2]))
+                                    h3 = get_healthScore(rids[2])
+                                    new_row.append(h3)
+                                    new_row.append(h3)
                                     new_row.append(dialog_unit['utilities'][2])
                                     new_row.append(dialog_unit['utilities'][2])
                                     new_row.append(dialog_unit['cf_scores'][2])
@@ -270,12 +298,53 @@ def parse_json():
                         new_row.append(demographics['healthy_food'])
                         new_row.append(demographics['CA_familiarity'])
 
+                        stop_time = parse_datetime(demographics['datetime'])
+                        if not stop_time:
+                            print(demographics['datetime'])
+                            return
+
 
                         to_append = [age, c_birth, c_residence, employment, language, nationality, sex, student]
                         new_row += to_append
 
-                        new_row.append(data_collection['free_comments']['free_text_about_cora'])
-                        new_row.append(data_collection['free_comments']['free_text_about_study'])
+                        about_cora = data_collection['free_comments']['free_text_about_cora']
+                        if about_cora.lower().strip() in ["no", "na", "n/a", "none", "nop", "nope"]:
+                            about_cora = None
+                        new_row.append(about_cora)
+                        if about_cora:
+                            len_about_cora = len(about_cora.split())
+                        else:
+                            len_about_cora = None
+                        new_row.append(len_about_cora)
+                        about_study = data_collection['free_comments']['free_text_about_study']
+                        if about_study.lower().strip() in ["no", "na", "n/a", "none", "nop", "nope"]:
+                            about_study = None
+                        new_row.append(about_study)
+                        if about_study:
+                            len_about_study = len(about_study.split())
+                        else:
+                            len_about_study = None
+                        new_row.append(len_about_study)
+
+                        if about_cora and about_study:
+                            total_len = len_about_cora + len_about_study
+                        elif about_cora:
+                            total_len = len_about_cora
+                        elif about_study:
+                            total_len = len_about_study
+                        else:
+                            total_len = None
+                        new_row.append(total_len)
+
+                        if total_len:
+                            new_row.append(True)
+                        else:
+                            new_row.append(False)
+
+
+                        total_time = stop_time - start_time
+                        new_row.append(total_time)
+                        new_row.append(total_time.total_seconds())
 
                 # except KeyError:
                 #     print(data['data_collection'])

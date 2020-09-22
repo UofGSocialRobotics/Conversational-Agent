@@ -31,6 +31,7 @@ mydata_exp_3recipes <- subset(mydata_3recipes, Explanation.mode == "explanations
 
 Libraries
 ```{r}
+#install.packages("lubridate")
 library(ggplot2)
 library(ggpubr)
 library(tidyr)
@@ -40,6 +41,7 @@ library(magrittr)
 library(car)
 library(lsmeans)
 library(ggpubr)
+library(lubridate)
 ```
 
 Check the data
@@ -125,6 +127,37 @@ tmp <- aggregate(cbind(count = CA.familiarity) ~ CA.familiarity,
           FUN = function(x){NROW(x)})
 
 ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Cooking frequency
+```{r}
+tmp <- aggregate(cbind(count = cooking.frequency) ~ cooking.frequency, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Healthy eating frequency
+```{r}
+tmp <- aggregate(cbind(count = healthy.eating.frequency) ~ healthy.eating.frequency, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Duration
+```{r}
+mydata_tmp <- mydata["Time.spent.sec"]
+mydata_long <- gather(mydata_tmp, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
+  summarise(mean= seconds_to_period(mean(value)), 
+            sd= seconds_to_period(sd(value)), 
+            max = seconds_to_period(max(value)),
+            min = seconds_to_period(min(value)), 
+            upperQ = seconds_to_period(quantile(value,0.75)),
+            lowerQ = seconds_to_period(quantile(value,0.25)))
 ```
 
 # Recommendations -- health scores of recipes
@@ -465,4 +498,29 @@ model = lm(intention.of.use ~ Explanation.mode + Comparison.mode + Explanation.m
 model = lm(recommendation.accuracy ~ Explanation.mode + Comparison.mode + Explanation.mode:Comparison.mode, data = mydata)
 print(Anova(model, type = 'II'))
 print(Anova(model, type = 'II'))
+```
+
+
+# Qualitative analysis
+
+Number of comments
+```{r}
+tmp <- aggregate(cbind(count = Left.Comment.Bool) ~ Left.Comment.Bool, 
+          data = mydata, 
+          FUN = function(x){NROW(x)})
+
+ddply(tmp, .(), mutate, pct = count / sum(count) * 100)
+```
+
+Length of comments
+```{r}
+tmp <- mydata["Total.Length.Comments"]
+mydata_long <- gather(tmp, factor_key=TRUE)
+mydata_long%>% group_by(key)%>%
+  summarise(mean= mean(value,na.rm=TRUE), 
+            sd= sd(value,na.rm=TRUE), 
+            max = max(value,na.rm=TRUE),
+            min = min(value,na.rm=TRUE), 
+            upperQ = quantile(value,0.75,na.rm=TRUE),
+            lowerQ = quantile(value,0.25,na.rm=TRUE))
 ```
